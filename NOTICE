@@ -1,0 +1,28 @@
+Total Recall
+Copyright (C) 2025-2026 Mimis-Gildi (https://github.com/Mimis-Gildi)
+
+Co-authored by Vadim Kuhay and Claude.
+Part of the Sanctuary Project.
+
+Lineage: MATILDA memory subsystem (2015) → extracted daemon (2017) → Total Recall (2025).
+
+This software is licensed under the GNU Affero General Public License v3.0.
+See the LICENSE file for the full license text.
+
+--- Additional Terms (AGPL-3.0 Section 7) ---
+
+(a) Attribution. You must retain this NOTICE file, unmodified, in all copies
+    or substantial portions of the software. If you display copyright notices
+    in your program's user interface, you must include the above attribution.
+
+(b) Misrepresentation. You may not misrepresent the origin of this software.
+    Modified versions must be plainly marked as such and must not be represented
+    as the original software.
+
+(c) Network Use. If you run a modified version of this software as a network
+    service, you must provide access to the Corresponding Source of your
+    modified version to all users of that service, as required by AGPL Section 13.
+
+(d) Memory Data. This license covers the software, not the data stored by it.
+    Memories belong to the mind that created them. No license grant is made
+    over any data processed or stored by this software.
