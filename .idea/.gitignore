@@ -1,0 +1,8 @@
+#### Created by rdd13r on 2026-02-10
+# initial checkin
+# See ../.gitignore child exclusion expectations
+
+misc.xml
+modules.xml
+vcs.xml
+workspace.xml
