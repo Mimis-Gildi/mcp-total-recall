@@ -9,13 +9,11 @@ class TotalRecallTest : StringSpec({
 
     "the tree grows" {
         val originalOut = System.out
-        val captured = ByteArrayOutputStream()
-        System.setOut(PrintStream(captured))
-        try {
+        ByteArrayOutputStream().use { captured ->
+            System.setOut(PrintStream(captured))
             main()
-        } finally {
             System.setOut(originalOut)
+            captured.toString() shouldContain "the tree grows"
         }
-        captured.toString() shouldContain "the tree grows"
     }
 })
