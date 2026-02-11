@@ -1,0 +1,35 @@
+# PR Labeler Configuration
+# Automatically applies labels based on changed files
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*'
+          - buildSrc/**
+          - .github/**
+          - gradle/**
+
+memory-model:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/main/kotlin/**/model/**
+          - src/main/kotlin/**/memory/**
+
+backing-service:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/main/kotlin/**/repository/**
+          - src/main/kotlin/**/backing/**
+          - src/main/kotlin/**/redis/**
+
+transport:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/main/kotlin/**/transport/**
+          - src/main/kotlin/**/stdio/**
+
+mcp-protocol:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/main/kotlin/**/mcp/**
+          - src/main/kotlin/**/tools/**

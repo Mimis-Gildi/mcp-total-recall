@@ -1,0 +1,23 @@
+version: 2
+
+updates:
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: ":arrow_up: actions"
+    labels:
+      - dependencies
+      - actions
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: ":arrow_up: gradle"
+    labels:
+      - dependencies
+      - gradle
