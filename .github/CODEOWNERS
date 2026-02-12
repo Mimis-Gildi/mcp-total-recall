@@ -1,0 +1,22 @@
+# Code Owners for Total Recall
+# These owners are automatically requested for review on pull requests.
+
+# Default: Vadim reviews everything
+* @rdd13r
+
+# Architecture-critical paths require explicit review
+/src/main/kotlin/**/repository/ @rdd13r
+/src/main/kotlin/**/transport/ @rdd13r
+/src/main/kotlin/**/model/ @rdd13r
+
+# Governance files
+LICENSE @rdd13r
+NOTICE @rdd13r
+CLA.md @rdd13r
+TEAM_NORMS.adoc @rdd13r
+
+# Build and CI
+build.gradle.kts @rdd13r
+settings.gradle.kts @rdd13r
+gradle.properties @rdd13r
+.github/ @rdd13r

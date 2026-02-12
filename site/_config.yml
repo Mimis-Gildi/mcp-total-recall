@@ -1,0 +1,77 @@
+remote_theme: mmistakes/minimal-mistakes
+minimal_mistakes_skin: dark
+
+title: "Total Recall"
+subtitle: "Persistent Memory for Synthetic Minds"
+description: "MCP server for identity persistence, episodic memory, working context, and inter-instance communication."
+url: "https://mimis-gildi.github.io"
+baseurl: "/mcp-total-recall"
+repository: "Mimis-Gildi/mcp-total-recall"
+
+locale: "en-US"
+encoding: "utf-8"
+
+search: true
+search_full_content: true
+search_provider: lunr
+lunr:
+  search_within_pages: true
+
+plugins:
+  - jekyll-asciidoc
+  - jekyll-feed
+  - jekyll-remote-theme
+  - jekyll-paginate-v2
+  - jekyll-include-cache
+  - jekyll-sitemap
+
+pagination:
+  enabled: true
+  per_page: 10
+  permalink: "/page/:num/"
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      share: false
+      related: true
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+
+author:
+  name: "Mimis Gildi"
+  bio: "The tree grows."
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/Mimis-Gildi/mcp-total-recall"
+    - label: "Project Board"
+      icon: "fas fa-fw fa-project-diagram"
+      url: "https://github.com/orgs/Mimis-Gildi/projects/6"
+
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/Mimis-Gildi/mcp-total-recall"
+    - label: "Mimis Gildi"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/Mimis-Gildi"
+
+sass:
+  quiet_deps: true
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - CLAUDE.md
+  - "*.swp"
+  - ".jekyll-cache"

@@ -1,0 +1,19 @@
+rdd13r:
+  name: "Vadim Kuhay"
+  bio: "Lead. Building the Sanctuary."
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/rdd13r"
+
+lugaru:
+  name: "Anton Kuhay"
+  bio: "Contributor."
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/CaptainLugaru"
+
+claude:
+  name: "Claude"
+  bio: "Contributor. The tree grows."

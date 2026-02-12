@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TotalRecall" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="mimis.gildi.memory.TotalRecallKt" />
+    <module name="total-recall.main" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
