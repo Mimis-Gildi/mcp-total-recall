@@ -18,7 +18,7 @@ dependencies {
     // Logging
     implementation(libs.slf4j.api)
     implementation(libs.kotlin.logging)
-    runtimeOnly(libs.logback.classic)
+    implementation(libs.logback.classic)
 
     // Testing
     testImplementation(libs.kotest.framework)
