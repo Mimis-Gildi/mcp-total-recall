@@ -1,0 +1,113 @@
+name: Publish Release
+run-name: "Publish Release on ${{ github.repository }} by ${{ github.actor }} (Attempt ${{ github.run_attempt }})"
+
+
+on:
+  pull_request:
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Mark this release as a pre-release'
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: zsh -l {0}
+
+jobs:
+  publish-release:
+    name: "Publish GitHub Release"
+    runs-on: [self-hosted, release]
+    timeout-minutes: 15
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       !startsWith(github.head_ref, 'dependabot/'))
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v5.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          fetch-tags: true
+
+
+      - name: Guard Branch
+        uses: ./.github/actions/feature-fail-fast
+        id: branch-guard
+
+
+      - name: Detect Runner
+        id: env
+        uses: ./.github/actions/detect-runner-type
+
+
+      - name: Extract Version
+        id: version-info
+        uses: ./.github/actions/extract-component-version-and-tag
+
+
+      - name: Extract Changelog
+        id: changelog
+        uses: ./.github/actions/extract-changelog-section
+        with:
+          version: ${{ steps.version-info.outputs.version }}
+
+
+      - name: Bootstrap SDKMAN if Self-Hosted
+        if: steps.env.outputs.is-self-hosted == 'true'
+        run: |
+          source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
+          sdk version
+          java --version
+          echo "JAVA_HOME=$(sdk home java current)" >> $GITHUB_ENV
+          echo "PATH=$(sdk home java current)/bin:$PATH" >> $GITHUB_ENV
+
+
+      - name: Set up Java
+        if: steps.env.outputs.is-self-hosted == 'false'
+        uses: actions/setup-java@v5.2.0
+        timeout-minutes: 5
+        with:
+          distribution: temurin
+          java-version: 21
+
+
+      - name: Set up Gradle
+        if: steps.env.outputs.is-self-hosted == 'false'
+        uses: gradle/actions/setup-gradle@v5.0.1
+        timeout-minutes: 5
+
+
+      - name: Verify Build
+        run: ./gradlew build
+        timeout-minutes: 9
+
+
+      - name: Create Tag
+        id: tag-create
+        uses: ./.github/actions/create-annotated-git-tag-if-not-exists
+        timeout-minutes: 3
+        with:
+          tag: ${{ steps.version-info.outputs.tag }}
+          message: "Release ${{ steps.version-info.outputs.tag }}"
+
+
+      - name: Publish GitHub Release
+        uses: ncipollo/release-action@v1.20.0
+        timeout-minutes: 5
+        with:
+          tag: ${{ steps.version-info.outputs.tag }}
+          name: "Release ${{ steps.version-info.outputs.tag }}"
+          body: ${{ steps.changelog.outputs.body }}
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          allowUpdates: true

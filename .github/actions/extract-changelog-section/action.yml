@@ -1,0 +1,78 @@
+name: Extract Changelog Section
+description: >
+  Extracts the release notes section for a given version from CHANGELOG.md.
+  Parses Keep a Changelog format: pulls content between ## [version] and the
+  next ## [ header (or EOF). Fails in strict mode if the section is missing.
+
+author: "VK (rdd13r), Claude"
+branding:
+  icon: "file-text"
+  color: "green"
+
+inputs:
+  version:
+    description: "The version to extract (e.g., 0.1.0)"
+    required: true
+  file:
+    description: "Path to the changelog file"
+    required: false
+    default: "CHANGELOG.md"
+  strict:
+    description: "Fail if the version section is not found or empty"
+    required: false
+    default: "true"
+
+outputs:
+  body:
+    description: "The extracted changelog section content"
+    value: ${{ steps.extract.outputs.body }}
+  found:
+    description: "true if the version section was found"
+    value: ${{ steps.extract.outputs.found }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Extract changelog section for version
+      id: extract
+      shell: zsh -l {0}
+      run: |
+        FILE="${{ inputs.file }}"
+        VERSION="${{ inputs.version }}"
+        STRICT="${{ inputs.strict }}"
+
+        if [[ ! -f "$FILE" ]]; then
+          echo "::error title=Missing Changelog::$FILE not found"
+          exit 1
+        fi
+
+        # Extract content between ## [VERSION] header and next ## [ header or EOF.
+        # Skips the header line itself so the release body has no redundant title.
+        BODY=$(awk -v ver="$VERSION" '
+          /^## \[/ {
+            if (found) exit
+            if (index($0, "[" ver "]")) { found=1; next }
+          }
+          found { print }
+        ' "$FILE")
+
+        if [[ -z "${BODY// /}" ]]; then
+          echo "found=false" >> $GITHUB_OUTPUT
+
+          if [[ "$STRICT" == "true" ]]; then
+            echo "::error title=Release Blocked::No changelog entry for version $VERSION in $FILE. Update the changelog before releasing."
+            exit 2
+          else
+            echo "::warning title=Empty Changelog Section::No content found for version $VERSION in $FILE"
+          fi
+        else
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "::notice title=Changelog Section Found::Extracted release notes for $VERSION"
+        fi
+
+        {
+          echo 'body<<EOF_CHANGELOG'
+          echo "$BODY"
+          echo 'EOF_CHANGELOG'
+        } >> $GITHUB_OUTPUT

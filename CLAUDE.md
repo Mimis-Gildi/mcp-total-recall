@@ -19,6 +19,26 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
+## Current State (0.1.0)
+
+**Foundation only.** Build skeleton, governance, infrastructure. No runtime functionality.
+
+What exists:
+- Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
+- Programmatic logback configuration (Kotlin, no XML)
+- Hello-world entry point and two test specs
+- Full governance file set
+- GitHub templates, labels, dependabot
+- Yggdrasil project board (#6)
+- Jekyll site scaffold (empty)
+
+What does NOT exist yet:
+- MCP server or protocol handling
+- Memory model or backing services
+- Container images (approach TBD -- not Dockerfile)
+- CI/CD build and test workflow (publish workflow exists, runs build as gate)
+- Internal docs directory
+
 ## Build Commands
 
 ```zsh
@@ -26,24 +46,48 @@ See `README.md` for full lineage and architectural rationale.
 ./gradlew test        # Run tests
 ```
 
-## Tech Stack
+## Tech Stack (Target)
+
+Current dependencies are minimal (logging and test framework only).
+The full stack below is the target architecture, not what's implemented today.
 
 - **Runtime:** Kotlin on JVM (Java 21)
-- **Framework:** Ktor
-- **Protocol:** Model Context Protocol (MCP)
-- **Transport:** `stdio` (primary)
-- **Backing Service:** Redis (reference implementation)
-- **Testing:** Kotest, Testcontainers
+- **Framework:** Ktor (not yet added)
+- **Protocol:** Model Context Protocol (MCP) (not yet added)
+- **Transport:** `stdio` (primary) (not yet implemented)
+- **Backing Service:** Redis (reference implementation) (not yet added)
+- **Testing:** Kotest (in place), Testcontainers (not yet added)
 - **Build:** Gradle (Kotlin DSL)
 - **Tooling:** SDK Manager (`.sdkmanrc`) for version management
+
+## Naming Convention
+
+| Concept | Value |
+|---------|-------|
+| Group (Gradle) | `memory.gildi.mimis` |
+| Package (source) | `mimis.gildi.memory` |
+| Artifact | `total-recall` |
+| Entry point | `mimis.gildi.memory.TotalRecallKt` |
+
+Packages use forward domain order; groups use reversed. This is Java convention.
 
 ## Key Configuration Files
 
 | File | Purpose |
 |------|---------|
 | `build.gradle.kts` | Gradle build configuration |
+| `gradle.properties` | Group, version, JVM settings |
 | `gradle/libs.versions.toml` | Version catalog for dependencies |
 | `.sdkmanrc` | SDK Manager tool versions |
+| `.editorconfig` | Editor formatting rules |
+
+## Logging
+
+Logback is configured programmatically in `Logging.kt` (no XML). Top-level logger
+is named `rootLog` (public val, distinctive name to avoid confusion with class loggers).
+
+**Critical future constraint:** When stdio transport is active, stdout IS the MCP
+protocol channel. All logging must go to stderr at that point.
 
 ## Before Starting ANY Task
 
