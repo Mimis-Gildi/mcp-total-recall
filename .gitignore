@@ -109,7 +109,7 @@ ipython_config.py
 #   git rm -r .ipynb_checkpoints/
 
 
-### Project Local Teamplate
+### Project Local Template
 # Stuff very much specific to this project
-# .. and stuff
+.claude/settings.local.json
 

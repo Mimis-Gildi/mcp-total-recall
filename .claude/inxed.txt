@@ -1,0 +1,4 @@
+IMPORTANT: `settings.local.json`
+
+If you use `mcp__gmail*` and want your Claude picking up your correspondence on the project - set permissions in local.
+If you want to run your local tems under Claude Opus 4.6 (`"mcp__a2a__*`) - MUST RESTRICT RESPONSE to 24k tokens, at most!
