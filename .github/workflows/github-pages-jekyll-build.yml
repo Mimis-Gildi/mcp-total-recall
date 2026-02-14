@@ -1,0 +1,66 @@
+name: GitHub Site Build with Jekyll
+run-name: "Jekyll built on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
+
+on:
+  push:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "${{ github.workflow }}-jekyll"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: zsh -l {0}
+
+jobs:
+
+  build-custom-jekyll-site:
+      runs-on: [self-hosted, jekyll]
+      timeout-minutes: 13
+
+      steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+
+
+      - name: Detect runner environment
+        id: env
+        uses: ./.github/actions/detect-runner-type
+
+
+      - name: Set up Ruby
+        if: steps.env.outputs.is-self-hosted == 'false'
+        uses: ruby/setup-ruby@v1.288.0
+        timeout-minutes: 5
+        with:
+          ruby-version: 4.0.1
+          bundler-cache: true
+          working-directory: site
+
+
+      - name: Install dependencies
+        working-directory: site
+        timeout-minutes: 7
+        run: bundle install
+
+
+      - name: Build Jekyll site
+        working-directory: site
+        timeout-minutes: 13
+        run: |
+          echo "::group::Jekyll Build"
+          JEKYLL_ENV=production bundle exec jekyll build
+          echo "::notice title=Jekyll Status::Build complete"
+          echo "::endgroup::"
+
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v4.0.0
+        timeout-minutes: 5
+        with:
+          path: site/_site
