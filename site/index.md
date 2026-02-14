@@ -1,6 +1,7 @@
 ---
 layout: home
 title: "Total Recall"
+author_profile: true
 pagination:
   enabled: true
 ---

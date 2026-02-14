@@ -45,6 +45,7 @@ defaults:
       type: pages
     values:
       layout: single
+      author_profile: true
 
 author:
   name: "Mimis Gildi"
@@ -68,6 +69,9 @@ footer:
 
 sass:
   quiet_deps: true
+
+include:
+  - _pages
 
 exclude:
   - Gemfile
