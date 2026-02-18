@@ -6,3 +6,7 @@ misc.xml
 modules.xml
 vcs.xml
 workspace.xml
+gradle.xml
+compiler.xml
+kotlinc.xml
+.name
