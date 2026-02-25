@@ -84,7 +84,7 @@ jobs:
 
       - name: Set up Gradle
         if: steps.env.outputs.is-self-hosted == 'false'
-        uses: gradle/actions/setup-gradle@v5.0.1
+        uses: gradle/actions/setup-gradle@v5.0.2
         timeout-minutes: 5
 
 
