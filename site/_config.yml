@@ -7,6 +7,8 @@ description: "MCP server for identity persistence, episodic memory, working cont
 url: "https://mimis-gildi.github.io"
 baseurl: "/mcp-total-recall"
 repository: "Mimis-Gildi/mcp-total-recall"
+logo: "/assets/images/logo.jpg"
+og_image: "/assets/images/social.jpg"
 
 locale: "en-US"
 encoding: "utf-8"
@@ -49,6 +51,7 @@ defaults:
 
 author:
   name: "Mimis Gildi"
+  avatar: "/assets/images/logo.jpg"
   bio: "The tree grows."
   links:
     - label: "GitHub"
