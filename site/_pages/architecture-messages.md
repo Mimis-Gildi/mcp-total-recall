@@ -134,6 +134,41 @@ sequenceDiagram
     SP->>TM: StoreCommand
 </pre>
 
+### Reflect (Dreaming)
+
+The mind initiates a retrospection cycle. Total Recall surfaces memories for review -- by time span, staleness, weak associations. The mind makes semantic judgments and sends back new associations and reclassifications. This is not a single tool call -- it's a conversation between the mind and its memory.
+
+This operation requires the same mind. A different mind classifying your memories would impose its understanding of the connections, not yours.
+
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Mind
+    participant SP as Session Context
+    participant RE as Recollection
+    participant TM as Tiered Memory
+    participant AG as Association Graph
+
+    C->>SP: reflect (criteria, scope)
+    SP->>RE: ReflectCommand
+    RE->>TM: Query candidates (by staleness, time span, weak associations)
+    TM-->>RE: MemoryRetrieved (candidates for review)
+    RE-->>SP: Reflection set (memories needing judgment)
+    SP-->>C: Here are memories to review
+
+    loop Mind reviews each memory
+        C->>SP: associate_memories (A, B, type, strength)
+        SP->>AG: AssociateCommand
+        AG->>AG: Create/strengthen semantic association
+
+        C->>SP: reclassify_memory (ID, new tier)
+        SP->>TM: ReclassifyCommand
+        TM->>TM: Move memory, update metadata
+        TM-->>AG: MemoryReclassified
+    end
+
+    C->>SP: reflect complete
+</pre>
+
 ---
 
 ## Message Catalog
@@ -151,6 +186,9 @@ Commands are requests to do something. They carry intent. A command has exactly 
 | `SearchCommand`      | Session Context | Recollection  | query, filters, max results                   |
 | `ConsolidateCommand` | Daemon          | Tiered Memory | memory IDs to merge, merge strategy           |
 | `ShutdownCommand`    | Daemon          | Tiered Memory | cold storage target, flush timeout            |
+| `AssociateCommand`   | Session Context | Association Graph | memory IDs, association type, strength, direction (create/strengthen/weaken) |
+| `ReclassifyCommand`  | Session Context | Tiered Memory | memory ID, new tier, new metadata, reason |
+| `ReflectCommand`     | Session Context | Recollection  | criteria (staleness, time span, weak associations), scope |
 | `DecaySweep`         | Daemon          | Attention     | timestamp, scope (all tiers or specific tier) |
 
 ### Lifecycle Events
@@ -189,6 +227,7 @@ Events are notifications that something happened. They carry facts. An event can
 | `TierDemoted`       | Attention         | Tiered Memory                | memory ID, new tier, score                                       |
 | `AttentionScored`   | Attention         | Recollection                 | memory ID, score, last access, decay rate                        |
 | `AssociationsFound` | Association Graph | Recollection                 | source memory ID, associated memory IDs with types and strengths |
+| `MemoryReclassified`| Tiered Memory     | Association Graph            | memory ID, old tier, new tier, reason (mind-initiated)           |
 
 ### Message Payload Details
 

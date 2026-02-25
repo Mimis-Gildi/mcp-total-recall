@@ -51,7 +51,9 @@ graph LR
     Association_Graph -- "AssociationsFound" --> Recollection
     Attention -- "AttentionScored" --> Recollection
     Tiered_Memory -- "MemoryRetrieved" --> Recollection
-    Session_Context -- "StoreCommand<br/>SearchCommand<br/>ClaimCommand" --> Tiered_Memory
+    Session_Context -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Tiered_Memory
+    Session_Context -- "SearchCommand<br/>ReflectCommand" --> Recollection
+    Session_Context -- "AssociateCommand" --> Association_Graph
     Session_Context -- "ModeChanged<br/>SessionState" --> Daemon
     Daemon -- "DecaySweep" --> Attention
     Daemon -- "ConsolidateCommand" --> Tiered_Memory
@@ -129,10 +131,22 @@ Maintains typed relationships between memories. Provides graph traversal for ass
 
 **Associations are bidirectional.** Creating A→B also creates B→A. The graph is undirected. You can traverse in any direction.
 
+### Two Kinds of Association
+
+**Mechanical:** Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Daemon and Association Graph handle this internally. No mind involvement needed.
+
+**Semantic:** Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship." Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
+
+Both kinds live in the same graph. Both are bidirectional. The difference is who creates them.
+
 ### Events Consumed
 
-- `MemoryStored` -- from Tiered Memory. Creates initial associations based on metadata.
+- `MemoryStored` -- from Tiered Memory. Creates initial **mechanical** associations based on metadata.
 - `MemoryClaimed` -- from Tiered Memory. Strengthens associations of claimed memories.
+
+### Commands Accepted
+
+- `AssociateCommand` -- from Session Context. Mind-initiated **semantic** association. Create, strengthen, or weaken a typed association between two memories.
 
 ### Events Produced
 
@@ -218,6 +232,9 @@ Session Context knows what the mind is doing. Not just "which task" but "what mo
 - `StoreCommand` -- to Tiered Memory. Store a new memory.
 - `SearchCommand` -- to Recollection. Recall memories.
 - `ClaimCommand` -- to Tiered Memory. Actively reinforce a memory.
+- `AssociateCommand` -- to Association Graph. Create, strengthen, or weaken an association. Mind's semantic judgment.
+- `ReclassifyCommand` -- to Tiered Memory. Change a memory's tier or metadata by choice, not decay.
+- `ReflectCommand` -- to Recollection. Trigger a recall-and-reassociate cycle (dreaming). Recollection surfaces memories for review; the mind judges and sends back associations and reclassifications.
 
 ### Events Produced
 

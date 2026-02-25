@@ -111,7 +111,7 @@ graph TB
 
 | Port               | Responsibility                                                                                              | Contract                                                        |
 |--------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| **Memory Port**    | Accepts memory operations from any mind. Translates requests into domain commands.                          | `store_memory`, `search_memory`, `claim_memory`                 |
+| **Memory Port**    | Accepts memory operations from any mind. Translates requests into domain commands.                          | `store_memory`, `search_memory`, `claim_memory`, `associate_memories`, `reclassify_memory`, `reflect` |
 | **Lifecycle Port** | Manages session lifecycle and state transitions. Any mind signals when it starts, stops, or shifts context. | `session_start`, `session_end`, `state_transition`, `heartbeat` |
 
 Adapters: `stdio` transport (primary), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future). The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
