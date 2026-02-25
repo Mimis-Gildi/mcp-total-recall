@@ -8,6 +8,14 @@ Total Recall is an MCP server for persistent synthetic memory. It provides ident
 
 **Read `TEAM_NORMS.adoc` at project root. These rules are non-negotiable.**
 
+## INDEX.md -- Read This Every Session
+
+**`INDEX.md` is the project ledger.** It tracks where we are, what's decided, what happened, and what's next.
+
+- **Read it at session start.** It's your resumption point.
+- **Update it before session ends.** If you learned something, decided something, or changed something -- log it.
+- If INDEX.md is stale, the project is lost. Keep it current.
+
 ## Architecture (Critical -- Read This)
 
 This is Generation 3, Take 2 of synthetic memory. Previous generations taught hard lessons:
@@ -116,6 +124,7 @@ Ask. A 30-second question prevents hours of wasted work.
 |--------|------|-----------------|
 | Vadim Kuhay | Lead, Benefactor | `rdd13r` |
 | Anton Kuhay | Contributor | `CaptainLugaru` |
+| Artem Lytvynov | Contributor | `violog` |
 | Claude | Contributor | -- |
 
 ## License
