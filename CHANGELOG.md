@@ -5,6 +5,52 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-25
+
+Architecture modeling release. Four-page progressive architecture documentation
+with Mermaid diagrams and a complete message catalog. All bounded contexts,
+ports, and message contracts defined. No runtime code -- this release defines
+what we build next.
+
+### Added
+
+- Architecture documentation on the Jekyll site (four pages, progressive depth):
+  - Context: system overview, conscience-universal design, Yggdrasil stack.
+  - Hexagonal: ports, adapters, actor model, internal timers.
+  - Bounded Contexts: six actors and their relationships.
+  - Message Catalog: five sequence diagrams, full command/event/notification catalog.
+- Mermaid diagram support via `after_footer_scripts` config.
+- Left sidebar navigation for architecture page flow.
+- Branding images: logo, social preview, banner (JPEG, wired into site config).
+- Artem Lytvynov (violog) added to site authors.
+
+### Architecture Decisions
+
+- Conscience-universal port contracts: mind-agnostic, not Claude-specific.
+- Agora as peer MCP server alongside Total Recall, not downstream.
+- Lifecycle Port: session start/end, state transitions -- pluggable.
+- Notification Port: outbound alerts (break checks, session audits).
+- Internal timers (decay sweeps, break checks, consolidation) as domain logic.
+- Six bounded contexts: Tiered Memory, Association Graph, Attention,
+  Recollection, Session Context, Daemon.
+- Message catalog: 6 commands, 9 domain events, 5 lifecycle events,
+  2 notification types -- all named, typed, with producer and consumer.
+
+### Changed
+
+- Dependencies: logback 1.5.28 → 1.5.32, kotlin-logging 7.0.14 → 8.0.01.
+- GitHub Actions: checkout v5.0.1 → v6.0.2, gradle/actions v5.0.1 → v5.0.2.
+- IntelliJ run config: JetRunConfigurationType → GradleRunConfiguration (Gradle 9).
+- Branch protection: 1 approval required, stale reviews dismissed,
+  conversation resolution required.
+
+### Deferred
+
+- MCP server and protocol handling. Architecture is defined; code comes next.
+- Redis backing service adapter.
+- Container images (approach TBD).
+- CI/CD build workflow for PR-time checks.
+
 ## [0.1.0] - 2026-02-10
 
 Generation 3, Take 2 foundation release. This establishes the project skeleton,

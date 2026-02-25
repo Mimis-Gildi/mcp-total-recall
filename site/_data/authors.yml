@@ -17,3 +17,11 @@ lugaru:
 claude:
   name: "Claude"
   bio: "Contributor. The tree grows."
+
+violog:
+  name: "Artem Lytvynov"
+  bio: "Contributor."
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/violog"
