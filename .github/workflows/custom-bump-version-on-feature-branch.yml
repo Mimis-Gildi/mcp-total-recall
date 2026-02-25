@@ -109,7 +109,7 @@ jobs:
           fi
 
           echo "::notice title=Version Bumped::$VERSION -> $NEW_VERSION"
-          sed -i '' "s/^version=.*/version=$NEW_VERSION/" "$FILE"
+          sed -i "s/^version=.*/version=$NEW_VERSION/" "$FILE"
           echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
 
 
@@ -121,7 +121,7 @@ jobs:
 
           if [[ -f SECURITY.md ]]; then
             echo "::notice title=Security Policy Version Update::$OLD_VERSION -> $NEW_VERSION"
-            sed -i '' "s/v$OLD_VERSION/v$NEW_VERSION/g" SECURITY.md
+            sed -i "s/v$OLD_VERSION/v$NEW_VERSION/g" SECURITY.md
           else
             echo "::notice title=No SECURITY.md::Skipping version reference update"
           fi
