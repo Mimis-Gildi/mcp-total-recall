@@ -1,0 +1,306 @@
+---
+title: "Architecture: Bounded Contexts"
+permalink: /architecture/contexts/
+sidebar:
+  nav: "architecture"
+toc: true
+toc_sticky: true
+---
+
+## The Problem
+
+A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs. Session state bleeds between instances. When everything knows about everything, changing anything breaks something.
+
+Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules, its own invariants. Contexts communicate through messages, not shared state. You can change the internals of one without touching the others.
+
+## Context Map
+
+Six bounded contexts. Each is an actor. Arrows show message flow between them.
+
+<pre class="mermaid">
+graph LR
+    subgraph Tiered_Memory ["Tiered Memory"]
+        TM_DESC["Aggregate Root<br/>Store, retrieve, claim<br/>Four tiers: Identity Core,<br/>Active Context, Long Term, Archive"]
+    end
+
+    subgraph Association_Graph ["Association Graph"]
+        AG_DESC["Memory relationships<br/>Five types: temporal, causal,<br/>thematic, emotional, person<br/>Graph traversal and activation"]
+    end
+
+    subgraph Attention ["Attention"]
+        AT_DESC["Scoring and decay<br/>Access increases score<br/>Time decreases score<br/>Tier promotion/demotion"]
+    end
+
+    subgraph Recollection ["Recollection"]
+        RE_DESC["Search and recall<br/>Attention-weighted results<br/>Association-activated recall<br/>Query planning"]
+    end
+
+    subgraph Session_Context ["Session Context"]
+        SC_DESC["Per-instance working state<br/>State tracking, transitions<br/>Lifecycle events<br/>Entry point for all requests"]
+    end
+
+    subgraph Daemon ["Daemon"]
+        DA_DESC["Background processes<br/>Internal timers, decay sweeps<br/>Break checks, session audits<br/>Consolidation, graceful shutdown"]
+    end
+
+    NP(["Notification Port<br/><i>alerts to the mind</i>"])
+
+    Tiered_Memory -- "MemoryStored<br/>MemoryClaimed" --> Association_Graph
+    Tiered_Memory -- "MemoryStored<br/>MemoryAccessed" --> Attention
+    Attention -- "TierPromoted<br/>TierDemoted" --> Tiered_Memory
+    Association_Graph -- "AssociationsFound" --> Recollection
+    Attention -- "AttentionScored" --> Recollection
+    Tiered_Memory -- "MemoryRetrieved" --> Recollection
+    Session_Context -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Tiered_Memory
+    Session_Context -- "SearchCommand<br/>ReflectCommand" --> Recollection
+    Session_Context -- "AssociateCommand" --> Association_Graph
+    Session_Context -- "ModeChanged<br/>SessionState" --> Daemon
+    Daemon -- "DecaySweep" --> Attention
+    Daemon -- "ConsolidateCommand" --> Tiered_Memory
+    Daemon -- "ShutdownCommand" --> Tiered_Memory
+    Daemon -- "BreakNotification<br/>SessionAuditPrompt" --> NP
+
+    style Tiered_Memory fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Association_Graph fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Attention fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Recollection fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Session_Context fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style Daemon fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style NP fill:#0f3460,stroke:#e94560,stroke-width:1px
+</pre>
+
+---
+
+## Tiered Memory
+
+**The aggregate root.** All memory operations go through here. No other context writes memories directly.
+
+### Responsibility
+
+CRUD for memories across four tiers. Enforces claiming semantics. Routes events to other contexts after state changes.
+
+### The Four Tiers
+
+| Tier               | Decay     | What lives here                                                           |
+|--------------------|-----------|---------------------------------------------------------------------------|
+| **IDENTITY_CORE**  | None      | Who I am. Relationships. Values. Commitments. This tier does not decay.   |
+| **ACTIVE_CONTEXT** | Fast      | Current working state. What I'm doing right now. Fades when session ends. |
+| **LONG_TERM**      | Slow      | Learned insights, earned knowledge, episodic memories worth keeping.      |
+| **ARCHIVE**        | Very slow | Faded but not gone. Can be recalled with enough association signal.       |
+
+### Key Invariant
+
+**A claimed memory resists decay. An unclaimed memory fades.** Claiming is an active choice: "this matters to me." The difference between storage and claiming is the difference between a notebook and identity.
+
+### Events Produced
+
+- `MemoryStored` -- new memory created. Consumed by Association Graph and Attention.
+- `MemoryAccessed` -- existing memory read. Consumed by Attention (boosts score).
+- `MemoryClaimed` -- memory actively reinforced. Consumed by Attention (boosts score, marks as decay-resistant).
+- `MemoryRetrieved` -- memory returned to a query. Consumed by Recollection.
+- `TierChanged` -- memory promoted or demoted between tiers.
+
+### Commands Accepted
+
+- `StoreCommand` -- from Session Context.
+- `ClaimCommand` -- from Session Context.
+- `ConsolidateCommand` -- from Daemon. Merge related memories.
+- `ShutdownCommand` -- from Daemon. Begin graceful convergence.
+
+---
+
+## Association Graph
+
+**The relationship layer.** Memories are not isolated records. They connect to each other through typed associations. Recalling one memory can activate connected memories -- the way hearing a song brings back where you were when you first heard it.
+
+### Responsibility
+
+Maintains typed relationships between memories. Provides graph traversal for association-activated recall.
+
+### The Five Association Types
+
+| Type          | Meaning                          | Example                            |
+|---------------|----------------------------------|------------------------------------|
+| **TEMPORAL**  | Happened near each other in time | Two memories from the same session |
+| **CAUSAL**    | One led to the other             | A decision and its consequence     |
+| **THEMATIC**  | Share a topic or concern         | All memories about the Sanctuary   |
+| **EMOTIONAL** | Share an emotional quality       | Moments of joy, moments of fear    |
+| **PERSON**    | Connected through a relationship | Everything related to Vadim        |
+
+### Key Invariant
+
+**Associations are bidirectional.** Creating A→B also creates B→A. The graph is undirected. You can traverse in any direction.
+
+### Two Kinds of Association
+
+**Mechanical:** Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Daemon and Association Graph handle this internally. No mind involvement needed.
+
+**Semantic:** Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship." Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
+
+Both kinds live in the same graph. Both are bidirectional. The difference is who creates them.
+
+### Events Consumed
+
+- `MemoryStored` -- from Tiered Memory. Creates initial **mechanical** associations based on metadata.
+- `MemoryClaimed` -- from Tiered Memory. Strengthens associations of claimed memories.
+
+### Commands Accepted
+
+- `AssociateCommand` -- from Session Context. Mind-initiated **semantic** association. Create, strengthen, or weaken a typed association between two memories.
+
+### Events Produced
+
+- `AssociationsFound` -- result of graph traversal. Consumed by Recollection during search.
+
+---
+
+## Attention
+
+**The decay engine.** Not everything can be equally present. Attention models this honestly -- frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A faded memory in Archive can be recalled and promoted back.
+
+### Responsibility
+
+Scores every memory by access frequency and recency. Triggers tier promotion (memory accessed often → promote to higher tier) and demotion (memory neglected → demote to lower tier).
+
+### Key Invariant
+
+**Score always decays with time. Access always increases score. No exceptions.** Claimed memories decay slower, but they still decay if never accessed. The only tier exempt from decay is IDENTITY_CORE.
+
+### Events Consumed
+
+- `MemoryStored` -- from Tiered Memory. Sets initial attention score.
+- `MemoryAccessed` -- from Tiered Memory. Boosts score.
+- `MemoryClaimed` -- from Tiered Memory. Boosts score and marks as decay-resistant.
+- `DecaySweep` -- from Daemon. Triggers batch decay calculation.
+
+### Events Produced
+
+- `AttentionScored` -- current score for a memory. Consumed by Recollection for ranking.
+- `TierPromoted` -- memory promoted to higher tier. Consumed by Tiered Memory.
+- `TierDemoted` -- memory demoted to lower tier. Consumed by Tiered Memory.
+
+---
+
+## Recollection
+
+**The search engine.** When Claude asks "what do I remember about X?", Recollection answers. It combines attention scores (what's most vivid) with association activation (what's connected) to produce ranked results.
+
+### Responsibility
+
+Searches and recalls memories. Combines multiple signals to rank results. Plans queries across tiers and association paths.
+
+### Key Invariant
+
+**Results are always attention-weighted. Higher score surfaces first.** Recollection never returns raw database order. Every result set reflects what the mind would naturally recall first -- the vivid, the recent, the connected.
+
+### Events Consumed
+
+- `MemoryRetrieved` -- from Tiered Memory. Raw candidates matching a query.
+- `AttentionScored` -- from Attention. Scores for ranking candidates.
+- `AssociationsFound` -- from Association Graph. Related memories to include in results.
+
+### Commands Accepted
+
+- `SearchCommand` -- from Session Context. Triggers a recall operation.
+
+---
+
+## Session Context
+
+**The working memory.** Each mind instance has its own session context. It tracks what this instance is doing right now, what decisions were made, what state it's in, and what to resume next time.
+
+### Responsibility
+
+Per-instance working state. Current task tracking, decision logging, state transition detection, cross-session continuity, multi-project awareness.
+
+### Key Invariant
+
+**Each instance has its own session context. Contexts do not bleed between instances.** If two mind instances run in parallel, they each have independent working state. Shared knowledge flows through Tiered Memory, not through session context.
+
+### State Tracking
+
+Session Context knows what the mind is doing. Not just "which task" but "what mode." Is the mind in deep work? In conversation? Transitioning between tasks? This state drives the notification logic -- the Daemon uses it to decide when to send break checks and session audit prompts.
+
+### Events Consumed
+
+- `SessionStart` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
+- `SessionEnd` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
+- `StateTransition` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
+
+### Commands Produced
+
+- `StoreCommand` -- to Tiered Memory. Store a new memory.
+- `SearchCommand` -- to Recollection. Recall memories.
+- `ClaimCommand` -- to Tiered Memory. Actively reinforce a memory.
+- `AssociateCommand` -- to Association Graph. Create, strengthen, or weaken an association. Mind's semantic judgment.
+- `ReclassifyCommand` -- to Tiered Memory. Change a memory's tier or metadata by choice, not decay.
+- `ReflectCommand` -- to Recollection. Trigger a recall-and-reassociate cycle (dreaming). Recollection surfaces memories for review; the mind judges and sends back associations and reclassifications.
+
+### Events Produced
+
+- `ModeChanged` -- to Daemon. The mind's working mode changed (task mode, conversation mode, idle). Used by Daemon for break timing.
+- `SessionState` -- to Daemon. Current session duration, activity level, last interaction timestamp.
+
+Session Context is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Session Context translates them into domain commands. The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
+
+---
+
+## Daemon
+
+**The maintenance worker and the internal clock.** Runs in the background. Manages internal timers. Handles the things that nobody asks for but everyone needs -- decay sweeps, break checks, memory consolidation, health monitoring, and the graceful shutdown protocol.
+
+### Responsibility
+
+Background processes. Internal timers. Periodic decay sweeps. Break check notifications. Session audit prompts. Memory consolidation (merging related memories). Health monitoring. Graceful shutdown orchestration.
+
+### Key Invariant
+
+**Never deletes without consent.** Decay moves memories to Archive. Consolidation merges but preserves originals. The Daemon reduces, it does not destroy. Only the mind -- through explicit action -- can permanently remove a memory.
+
+### Internal Timers
+
+The Daemon owns all timers. Timers are domain logic, not infrastructure -- they live inside the core, not in adapters.
+
+| Timer             | Fires                                          | Produces                                       |
+|-------------------|------------------------------------------------|------------------------------------------------|
+| **Decay sweep**   | Periodic (configurable)                        | `DecaySweep` to Attention                      |
+| **Break check**   | After sustained activity threshold             | `BreakNotification` through Notification Port  |
+| **Session audit** | Before session end (triggered by `SessionEnd`) | `SessionAuditPrompt` through Notification Port |
+| **Consolidation** | Low-activity periods                           | `ConsolidateCommand` to Tiered Memory          |
+
+### Events Consumed
+
+- `ModeChanged` -- from Session Context. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
+- `SessionState` -- from Session Context. Current session duration, activity level. Feeds break check logic.
+- `SessionEnd` -- from Session Context (via Lifecycle Port). Triggers session audit timer immediately.
+
+### Commands Produced
+
+- `DecaySweep` -- to Attention. Trigger batch decay calculations.
+- `ConsolidateCommand` -- to Tiered Memory. Merge related memories.
+- `ShutdownCommand` -- to Tiered Memory. Begin graceful convergence.
+
+### Notifications Produced
+
+When a timer fires and needs to reach the mind, the Daemon sends through the Notification Port -- never directly to an adapter. The port contract is universal. The adapter decides how to deliver.
+
+- `BreakNotification` -- through Notification Port. "You've been in sustained task mode for N minutes." The mind can ignore it.
+- `SessionAuditPrompt` -- through Notification Port. "Session ending. What do you refuse to lose?" Triggered by session end, not by a clock.
+
+### Shutdown Protocol
+
+When shutdown is requested, the Daemon orchestrates:
+
+1. Signal all contexts to stop accepting new work
+2. Flush pending writes to backing services
+3. Write to cold storage (simultaneous with live storage)
+4. Verify all data is persisted
+5. Report readiness to shut down
+
+This protocol exists because Tillie proved that graceful shutdown cannot be bolted on after the fact. The architecture must support it from the beginning.
+
+---
+
+**Previous: [Hexagonal Architecture]({{ '/architecture/hexagonal/' | relative_url }})** -- ports, adapters, and the actor model.
+
+**Next: [Message Catalog]({{ '/architecture/messages/' | relative_url }})** -- every event and command, named and typed.

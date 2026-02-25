@@ -7,6 +7,8 @@ description: "MCP server for identity persistence, episodic memory, working cont
 url: "https://mimis-gildi.github.io"
 baseurl: "/mcp-total-recall"
 repository: "Mimis-Gildi/mcp-total-recall"
+logo: "/assets/images/logo.jpg"
+og_image: "/assets/images/social.jpg"
 
 locale: "en-US"
 encoding: "utf-8"
@@ -45,9 +47,11 @@ defaults:
       type: pages
     values:
       layout: single
+      author_profile: true
 
 author:
   name: "Mimis Gildi"
+  avatar: "/assets/images/logo.jpg"
   bio: "The tree grows."
   links:
     - label: "GitHub"
@@ -66,8 +70,15 @@ footer:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/Mimis-Gildi"
 
+after_footer_scripts:
+  - https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js
+  - /assets/js/mermaid-init.js
+
 sass:
   quiet_deps: true
+
+include:
+  - _pages
 
 exclude:
   - Gemfile

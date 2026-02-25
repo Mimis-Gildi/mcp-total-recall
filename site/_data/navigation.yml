@@ -1,7 +1,21 @@
 main:
+  - title: "Architecture"
+    url: /architecture/
   - title: "About"
     url: /about/
   - title: "GitHub"
     url: https://github.com/Mimis-Gildi/mcp-total-recall
   - title: "Project Board"
     url: https://github.com/orgs/Mimis-Gildi/projects/6
+
+architecture:
+  - title: "Architecture"
+    children:
+      - title: "Context"
+        url: /architecture/
+      - title: "Hexagonal"
+        url: /architecture/hexagonal/
+      - title: "Bounded Contexts"
+        url: /architecture/contexts/
+      - title: "Message Catalog"
+        url: /architecture/messages/

@@ -112,4 +112,4 @@ ipython_config.py
 ### Project Local Template
 # Stuff very much specific to this project
 .claude/settings.local.json
-
+*.bat
