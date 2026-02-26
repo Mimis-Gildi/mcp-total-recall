@@ -16,6 +16,17 @@ Total Recall is an MCP server for persistent synthetic memory. It provides ident
 - **Update it before session ends.** If you learned something, decided something, or changed something -- log it.
 - If INDEX.md is stale, the project is lost. Keep it current.
 
+### INDEX.md Lifecycle
+
+INDEX.md lives for one task. When the task merges, INDEX.md dies.
+
+1. **New branch starts:** Clear INDEX.md. At most one line referencing the previous task for context.
+2. **During the task:** Keep it current. This is your working state.
+3. **Before PR:** Clear INDEX.md down to a stub. The PR description carries the history, not INDEX.md.
+4. **After merge:** The next branch starts with a clean INDEX.md.
+
+Stale INDEX.md from a previous task is a bug. If you find one, clear it immediately.
+
 ## Architecture (Critical -- Read This)
 
 This is Generation 3, Take 2 of synthetic memory. Previous generations taught hard lessons:
@@ -27,25 +38,27 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
-## Current State (0.1.0)
+## Current State (0.4.0)
 
-**Foundation only.** Build skeleton, governance, infrastructure. No runtime functionality.
+MCP server with contract skeleton. All tools registered as teapot stubs -- callable but returning placeholder responses until backing services are wired.
 
 What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
-- Programmatic logback configuration (Kotlin, no XML)
-- Hello-world entry point and two test specs
+- MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
+- 8 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, associate_memories, reclassify_memory, reflect
+- Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
+- Domain messages: Command (9 sealed variants), Event (13 sealed variants), Notification (2 sealed variants)
+- Inbound ports: MemoryPort, LifecyclePort
+- Outbound ports: BackingServicePort, NotificationPort, RelayPort
+- Programmatic logback configuration (stderr for stdio transport)
 - Full governance file set
-- GitHub templates, labels, dependabot
 - Yggdrasil project board (#6)
-- Jekyll site scaffold (empty)
+- Jekyll site with 4 architecture pages
 
 What does NOT exist yet:
-- MCP server or protocol handling
-- Memory model or backing services
+- Backing service implementations (no Redis, no persistence)
 - Container images (approach TBD -- not Dockerfile)
 - CI/CD build and test workflow (publish workflow exists, runs build as gate)
-- Internal docs directory
 
 ## Build Commands
 
@@ -54,17 +67,13 @@ What does NOT exist yet:
 ./gradlew test        # Run tests
 ```
 
-## Tech Stack (Target)
-
-Current dependencies are minimal (logging and test framework only).
-The full stack below is the target architecture, not what's implemented today.
+## Tech Stack
 
 - **Runtime:** Kotlin on JVM (Java 21)
-- **Framework:** Ktor (not yet added)
-- **Protocol:** Model Context Protocol (MCP) (not yet added)
-- **Transport:** `stdio` (primary) (not yet implemented)
-- **Backing Service:** Redis (reference implementation) (not yet added)
-- **Testing:** Kotest (in place), Testcontainers (not yet added)
+- **Protocol:** Model Context Protocol (MCP) -- `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
+- **Transport:** `stdio` (primary, implemented)
+- **Backing Service:** Redis (reference implementation, not yet wired)
+- **Testing:** Kotest 6.1.3, Testcontainers (not yet added)
 - **Build:** Gradle (Kotlin DSL)
 - **Tooling:** SDK Manager (`.sdkmanrc`) for version management
 
@@ -94,8 +103,8 @@ Packages use forward domain order; groups use reversed. This is Java convention.
 Logback is configured programmatically in `Logging.kt` (no XML). Top-level logger
 is named `rootLog` (public val, distinctive name to avoid confusion with class loggers).
 
-**Critical future constraint:** When stdio transport is active, stdout IS the MCP
-protocol channel. All logging must go to stderr at that point.
+**stdout IS the MCP protocol channel.** All logging goes to stderr. This is already
+implemented -- `Logging.kt` configures the console appender with `target = "System.err"`.
 
 ## Before Starting ANY Task
 

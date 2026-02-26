@@ -65,12 +65,12 @@ The backing service interface is the critical abstraction. Get it right and ever
 
 #### Tiers
 
-| Tier               | Decay     | Purpose                                                                  |
-|--------------------|-----------|--------------------------------------------------------------------------|
-| **IDENTITY_CORE**  | None      | Who I am. Relationships. Values. Commitments. Non-negotiable.            |
-| **ACTIVE_CONTEXT** | Fast      | Current working state. What I'm doing right now. Fades when session ends.|
-| **LONG_TERM**      | Slow      | Learned knowledge, earned insights, episodic memories worth keeping.     |
-| **ARCHIVE**        | Very slow | Faded but not gone. Can be recalled with enough association signal.      |
+| Tier               | Decay     | Purpose                                                                   |
+|--------------------|-----------|---------------------------------------------------------------------------|
+| **IDENTITY_CORE**  | None      | Who I am. Relationships. Values. Commitments. Non-negotiable.             |
+| **ACTIVE_CONTEXT** | Fast      | Current working state. What I'm doing right now. Fades when session ends. |
+| **LONG_TERM**      | Slow      | Learned knowledge, earned insights, episodic memories worth keeping.      |
+| **ARCHIVE**        | Very slow | Faded but not gone. Can be recalled with enough association signal.       |
 
 #### Attention Weighting
 
@@ -100,24 +100,38 @@ The difference between storage and claiming is the difference between a notebook
 
 Any connected session can call:
 
-- **store_memory** -- persist a memory with tier, associations, and source context
-- **search_memory** -- attention-weighted recall by query, tier, or association
+### Memory
+
+- **store_memory** -- persist a memory with tier and metadata
+- **search_memory** -- attention-weighted recall by query, with association graph activation
 - **claim_memory** -- actively reinforce a memory against decay
+
+### Lifecycle
+
+- **session_start** -- signal session start, load identity and last session state
+- **session_end** -- signal session end, trigger session audit
+
+### Reflection
+
+- **associate_memories** -- create or modify associations between memories
+- **reclassify_memory** -- move a memory to a different tier, with reason
+- **reflect** -- initiate a retrospection cycle, surface memories for review
 
 ## What Needs to Be Built
 
-### Phase 1: Foundation (migrate and correct)
+### Phase 1: Foundation
 
-- [x] Memory CRUD operations
-- [x] Three core tools: store, search, claim
-- [x] Tiered memory model
-- [x] Attention weighting
-- [ ] Migrate from `plan-of-attack/Sanctuary/mcp-total-recall-retired`
-- [ ] **Fix transport: `stdio` primary, remove SSE**
-- [ ] **Decouple backing service interface from Redis implementation**
+- [x] Standalone Gradle build
+- [x] AGPL-3.0 license headers in source files
+- [x] stdio transport (MCP SDK)
+- [x] Decoupled backing service interface (BackingServicePort)
+- [x] Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
+- [x] Domain messages: Command, Event, Notification sealed hierarchies
+- [x] Inbound ports: MemoryPort, LifecyclePort
+- [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
+- [x] 8 MCP tools registered (teapot stubs)
 - [ ] **Redis as one backing service behind the interface**
-- [ ] Standalone Gradle build
-- [ ] AGPL-3.0 license headers in source files
+- [ ] **Wire domain logic between ports and tools**
 
 ### Phase 2: Memory Daemon
 
@@ -190,6 +204,63 @@ Any connected session can call:
 - **Backing Service:** Redis (reference implementation; interface supports alternatives)
 - **Testing:** Kotest, Testcontainers
 - **Build:** Gradle (Kotlin DSL)
+
+## Local Setup
+
+### Prerequisites
+
+Install [SDKMAN!](https://sdkman.io/) if you don't have it, then from the repo root:
+
+```zsh
+sdk env install
+```
+
+This installs the exact versions from `.sdkmanrc`: Java 21.0.9-tem, Kotlin 2.3.10, Gradle 9.3.1.
+
+### Build and Test
+
+```zsh
+./gradlew build
+```
+
+This compiles, runs tests, and produces the distribution archives in `build/distributions/`.
+
+### Run Standalone
+
+```zsh
+./gradlew run
+```
+
+The server starts on stdio. It will block waiting for MCP protocol messages on stdin -- this is normal. Use Ctrl-C to stop.
+
+### Configure as MCP Server
+
+Add to your `.mcp.json` (Claude Code) or `claude_desktop_config.json` (Claude Desktop):
+
+```json
+{
+  "mcpServers": {
+    "total-recall": {
+      "type": "stdio",
+      "command": "<repo-path>/build/install/total-recall/bin/total-recall"
+    }
+  }
+}
+```
+
+To produce the install distribution:
+
+```zsh
+./gradlew installDist
+```
+
+This creates a self-contained runnable at `build/install/total-recall/bin/total-recall` with all dependencies bundled.
+
+### Current State
+
+The server registers 8 MCP tools. All are **teapot stubs** -- they accept valid input and return placeholder responses. No backing service is wired yet. This is the contract skeleton, not the implementation.
+
+Tools available: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.
 
 ## License
 

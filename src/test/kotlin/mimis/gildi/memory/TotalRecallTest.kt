@@ -1,32 +1,17 @@
+/*
+ * Total Recall -- persistent memory for synthetic minds
+ * Copyright (C) 2025-2026 Mimis-Gildi
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 package mimis.gildi.memory
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotContain
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
+import io.kotest.matchers.shouldNotBe
 
 class TotalRecallTest : StringSpec({
 
-    "the tree grows" {
-        val originalOut = System.out
-        ByteArrayOutputStream().use { captured ->
-            System.setOut(PrintStream(captured))
-            main()
-            System.setOut(originalOut)
-            captured.toString() shouldContain "the tree grows"
-        }
-        rootLog.info { "Test completed: tree growth verified" }
-    }
-
-    "the tree has not grown yet" {
-        val originalOut = System.out
-        ByteArrayOutputStream().use { captured ->
-            System.setOut(PrintStream(captured))
-            main()
-            System.setOut(originalOut)
-            captured.toString() shouldNotContain "the tree grew"
-        }
-        rootLog.info { "Test completed: tree hasn't grown yet" }
+    "server creates without error" {
+        val server = createServer()
+        server shouldNotBe null
     }
 })

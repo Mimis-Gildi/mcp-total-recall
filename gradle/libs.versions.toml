@@ -2,6 +2,10 @@
 #noinspection UnusedVersionCatalogEntry
 kotlin = "2.3.10"
 
+# MCP
+mcp = "0.8.4"
+coroutines = "1.10.2"
+
 # Testing
 kotest = "6.1.3"
 
@@ -15,6 +19,12 @@ slf4j = "2.0.17"
 kotest = { id = "io.kotest", version.ref = "kotest" }
 
 [libraries]
+# MCP
+#noinspection UnusedVersionCatalogEntry
+mcp-server = { module = "io.modelcontextprotocol:kotlin-sdk-server", version.ref = "mcp" }
+#noinspection UnusedVersionCatalogEntry
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+
 # Logging
 #noinspection UnusedVersionCatalogEntry
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
