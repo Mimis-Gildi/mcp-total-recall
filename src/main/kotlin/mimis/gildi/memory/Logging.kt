@@ -1,3 +1,8 @@
+/*
+ * Total Recall -- persistent memory for synthetic minds
+ * Copyright (C) 2025-2026 Mimis-Gildi
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 package mimis.gildi.memory
 
 import ch.qos.logback.classic.Level
@@ -8,6 +13,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.ConsoleAppender
 import org.slf4j.LoggerFactory
 
+/**
+ * Configure logback programmatically. When running as an MCP server
+ * over stdio, stdout IS the protocol channel. All logging goes to stderr.
+ */
 fun configureLogging(level: Level = Level.INFO) {
 
     val context = LoggerFactory.getILoggerFactory() as LoggerContext
@@ -21,7 +30,8 @@ fun configureLogging(level: Level = Level.INFO) {
 
     val appender = ConsoleAppender<ILoggingEvent>().apply {
         this.context = context
-        name = "console"
+        name = "stderr"
+        target = "System.err"
         this.encoder = encoder
         start()
     }

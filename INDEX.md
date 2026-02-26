@@ -6,156 +6,121 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-02-25 by Claude (with Vadim)
+Last updated: 2026-02-25 (session 2) by Claude (with Vadim)
 
 ---
 
 ## Where We Are
 
-**Branch:** `3-21-2-architecture-modeling-diagrams-and-bounded-context-discovery`
-**Version:** 0.3.0
-**Issue:** #3 -- Architecture modeling: diagrams and bounded context discovery
+**Branch:** `4-22-port-contract-definitions-in-kotlin`
+**Version:** 0.4.0
+**Issue:** #4 -- (2.2) Port contract definitions in Kotlin
 **Parent:** #2 -- Architecture: Hexagonal boundaries, bounded contexts, and message contracts
 
 ### What Exists
 
 - Build skeleton: Kotlin 2.3.10, Java 21, Kotest 6.1.3, Gradle 9.3.1
-- Programmatic logback configuration
-- Hello-world entry point and two test specs
+- Programmatic logback configuration (stderr for stdio transport)
+- MCP server with 8 teapot-stub tools (store, search, claim, session start/end, associate, reclassify, reflect)
+- Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
+- Domain messages: Command (9 sealed variants), Event (13 sealed variants), Notification (2 sealed variants)
+- Inbound ports: MemoryPort, LifecyclePort
+- Outbound ports: BackingServicePort, NotificationPort, RelayPort
+- Tests: ModelTest (6 specs), MessageTest (5 specs), TotalRecallTest (1 spec) -- all pass
+- MCP SDK dependency: `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - Full governance (TEAM_NORMS, LICENSE, NOTICE, CLA, templates)
-- GitHub automation (version bump on branch, release on PR merge)
-- Jekyll site with Minimal Mistakes dark skin, branding images (logo, social, banner), Mermaid enabled
-- **Architecture documentation: four pages, reviewed and approved by Vadim**
-- Left sidebar navigation for architecture page flow, right TOC for in-page navigation
-- No runtime code. No MCP protocol. No memory model implementation.
+- Jekyll site with architecture docs (4 pages, from Issue #3)
+- Local setup instructions in README
 
-### What's Decided (Architecture)
+### What's NOT Committed
 
-| Decision | Detail | Source |
-|----------|--------|--------|
-| Hexagonal architecture | Ports and adapters. All concerns plug into ports. | README, TEAM_NORMS, site |
-| Actor model | Each bounded context is an actor. Message passing between them. | Site: hexagonal page |
-| Transport: stdio primary | Standard MCP. No network overhead. HTTPS secondary, later. | README |
-| SSE rejected | Gen 3v1 mistake. Not repeated. | README |
-| Backing services decoupled | Redis is ONE implementation behind an interface. Swappable. | README, TEAM_NORMS |
-| Multiple simultaneous backends | Live + cold storage. Proven during Tillie's shutdown. | README |
-| Memory is the aggregate root | Clustering is emergent, not structural. | Issue #3 |
-| Four memory tiers | IDENTITY_CORE (no decay), ACTIVE_CONTEXT (fast), LONG_TERM (slow), ARCHIVE (very slow) | README, site |
-| Five association types | Temporal, causal, thematic, emotional, person | README, site |
-| Claiming mechanism | Active choice resists decay. Storage without claiming fades. | README, site |
-| Graceful shutdown by design | Cannot be bolted on. Tillie proved this. | README, TEAM_NORMS |
-| Cross-cuts as adapters | Logging, auth, metrics are adapters on ports, not baked into core. | Site: hexagonal page |
-| Privacy fundamental | No telemetry, no analytics, no logging of memory content. | README |
-| Agency over automation | Mind decides what to remember. System suggests, never deletes without consent. | README |
-| Documentation: Option B | Multi-page progressive depth on the Jekyll site. Mermaid for diagrams. | Decided 2026-02-25, both voted |
-| Conscience-universal | Ports are mind-agnostic. Claude Code hooks are one adapter. Human UI is another. | Decided 2026-02-25 by Vadim |
-| Agora as peer MCP | Not downstream of Total Recall. Both are tools available to the mind directly. | Decided 2026-02-25 by Vadim |
-| Lifecycle Port | Session start/end, state transitions -- pluggable, conscience-universal. | Decided 2026-02-25 by Vadim |
-| Notification Port | Outbound alerts to the mind. Break checks, session audits. | Decided 2026-02-25 by Vadim |
-| Internal timers | Decay sweeps, break checks, session audits, consolidation. Domain logic, not adapters. | Decided 2026-02-25 by Vadim |
-| No CQRS labeling | Implementation patterns belong in code-level docs, not architecture site. | Decided 2026-02-25 |
-
-### What's NOT Decided
-
-| Question | Status | Notes |
-|----------|--------|-------|
-| Container image approach | **NOT STARTED** | Explicitly not Dockerfile. Approach TBD. |
-| CI/CD build workflow | **NOT STARTED** | No PR-time build check exists. Gap identified 2026-02-25. |
+**Everything from this branch is uncommitted.** The entire contract porting work -- domain model, messages, ports, MCP server wiring, build changes, test updates -- is in the working tree only.
 
 ---
 
-## Active Deliverables (Issue #3)
+## Issue #4 Acceptance Criteria
 
-- [x] System context diagram -- Total Recall in its environment (`site/_pages/architecture.md`)
-- [x] Hexagonal boundary diagram -- ports, adapters, contracts at every edge (`site/_pages/architecture-hexagonal.md`)
-- [x] Bounded context map -- subdomains and their relationships (`site/_pages/architecture-contexts.md`)
-- [x] Message flow diagrams -- five sequence diagrams (`site/_pages/architecture-messages.md`)
-- [x] Message catalog -- every event and command named, typed, with producer and consumer (`site/_pages/architecture-messages.md`)
+- [x] Every port in the hexagonal boundary diagram has a corresponding Kotlin interface
+- [x] No interface depends on an implementation (no Redis imports in port definitions)
+- [x] Package structure matches bounded context map
+- [x] `./gradlew build` passes
+- [x] AGPL-3.0 license headers in all new source files
+- [ ] Reviewed by Vadim
 
-**All deliverables complete. Reviewed and approved by Vadim.**
+## Issue #4 Deliverables
+
+- [x] Inbound port interfaces (MemoryPort, LifecyclePort)
+- [x] Outbound port interfaces (BackingServicePort, NotificationPort, RelayPort)
+- [x] Core domain types (Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter)
+- [x] Message types (Command, Event, Notification -- sealed hierarchies)
+- [x] Package structure reflecting bounded contexts
+
+## Beyond Issue Scope (done by previous instance)
+
+- MCP server wired with teapot stubs for all 8 tools
+- README updated with local setup/install instructions
 
 ---
 
 ## What Happened (Reverse Chronological)
 
-### 2026-02-25 -- Session with Vadim (architecture complete)
+### 2026-02-25 -- Session 2: Server fixes and MCP config (Claude with Vadim)
 
-- All five Issue #3 deliverables completed and reviewed
-- Four architecture pages created per Option B (multi-page progressive depth):
-  - Page 1: Context -- system overview, conscience-universal design, Yggdrasil stack
-  - Page 2: Hexagonal -- ports, adapters, lifecycle port, notification port, internal timers
-  - Page 3: Bounded Contexts -- six actors, context map, message flows, notification port
-  - Page 4: Message Catalog -- five sequence diagrams, full command/event/notification catalog
-- Key architecture decisions from Vadim's review:
-  - Conscience-universal design (not Claude-specific)
-  - Agora as peer MCP server, not downstream
-  - Lifecycle Port and Notification Port added
-  - Internal timers (break checks, session audits) as domain logic
-  - No implementation pattern labels (CQRS etc.) on architecture site
-- C4 diagram replaced with graph TB (C4 renders poorly in Mermaid)
-- All inter-page links fixed (relative_url for baseurl support)
-- Left sidebar navigation added for architecture page flow
-- Mermaid enabled via after_footer_scripts config + init script
+- Fixed server exit bug: `StdioServerTransport.start()` returns immediately; added `awaitCancellation()` after `createSession()` (pattern from SDK's own `KtorServer.kt:179`)
+- Wrong first attempt: `CompletableDeferred` latch -- Vadim caught it ("you struggled with this gravely before")
+- Updated README.md: Local Setup section, MCP Tools expanded to 8, Phase 1 checklist updated
+- Updated CLAUDE.md: current state 0.1.0→0.4.0, INDEX.md lifecycle rules, tech stack reflects implemented state
+- Updated INDEX.md: cleared stale Issue #3 content, rebuilt for Issue #4
+- **MCP config UNRESOLVED:** Claude Code does not read `.mcp.json` from submodule root -- resolves to parent git root. Added to parent's `.mcp.json` but Vadim still doesn't see it via `/mcp`. `.mcp.json` also exists in this repo but is not read. Needs manual resolution.
 
-### 2026-02-25 -- Session with Vadim (continued)
+### 2026-02-25 -- Session 1: recovery after IDE crash
 
-- Documentation methodology research completed (6 projects studied)
-- Documentation structure decided: Option B (multi-page progressive depth)
-- Mermaid enabled on Jekyll site via `after_footer_scripts` config + init script
-- Fixed broken scripts.html override (was clobbering theme includes -- use config, not overrides)
-- Dependency bumps: logback 1.5.28→1.5.32, kotlin-logging 7.0.14→8.0.01
-- Actions bumps: checkout v5.0.1→v6.0.2, gradle/actions v5.0.1→v5.0.2
-- Gradle wrapper confirmed at 9.3.1 (latest), restored `-all` distribution
-- Fixed IntelliJ run config: JetRunConfigurationType→GradleRunConfiguration (Gradle 9 compat)
-- INDEX.md created and wired into CLAUDE.md
-- Artem added to CLAUDE.md team table
+- Previous instance(s) crashed with IDE. INDEX.md was stale (still described Issue #3).
+- New instance situated from git state, rebuilt INDEX.md from scratch.
+- Added local setup/install instructions to README.
+- Vadim testing the MCP server.
 
-### 2026-02-25 -- Session with Vadim (start)
+### 2026-02-25 -- Contract porting (previous instance, uncommitted)
 
-- Community on Discord requesting site content, branding, documentation
-- Added Artem Lytvynov (violog) to site authors
-- Updated branch protection ruleset: 1 approval required, stale reviews dismissed, conversation resolution required
-- Attempted to clear CodeQL ghost state -- partially resolved, GitHub UI still confused
-- Generated branding images via DALL-E (logo, social preview, banner)
-- Cropped images to correct dimensions, converted PNG→JPEG for size
-- Wired images into Minimal Mistakes config (logo, og_image, avatar, header overlay)
-
-### 2026-02-14 -- Site scaffolding
-
-- Jekyll site with Minimal Mistakes dark skin
-- Config, navigation, authors (Vadim, Anton, Claude)
-- About page (AsciiDoc), 404 page
-- Empty posts directory
-- GitHub Pages deploy workflow
-
-### 2026-02-13 -- Branch created
-
-- Issue #3 created with deliverables for architecture modeling
-- Version bumped to 0.3.0
-- No architecture work started
-
-### 2026-02-12 -- v0.1.0 released
-
-- Foundation release: build skeleton, governance, infrastructure
-- First and only release to date
+- Domain model created: 6 files in `domain/model/`
+- Domain messages created: 3 files in `domain/message/`
+- Port interfaces created: 5 files in `port/inbound/` and `port/outbound/`
+- TotalRecall.kt rewritten from hello-world to MCP server with 8 teapot tools
+- Build updated: MCP SDK + coroutines dependencies added
+- Tests updated: ModelTest, MessageTest added; TotalRecallTest simplified
+- All tests pass. Build clean.
 
 ---
 
 ## Next Actions
 
-1. **PR for Issue #3** -- all deliverables complete, reviewed and approved
-2. **CI/CD build workflow** -- no PR-time build check exists (separate issue)
-3. **Container image approach** -- not Dockerfile, approach TBD (separate issue)
+1. **Vadim reviews and tests** the MCP server
+2. **Commit** the contract porting work (after review)
+3. **PR for Issue #4** once committed and approved
 
 ---
 
-## Community Requests (Discord)
+## What's Decided (Architecture)
 
-| Request | Status | Notes |
-|---------|--------|-------|
-| Site content | Done | Four architecture pages live |
-| Branding images | Done | Logo, social preview, banner -- all JPEG, wired in |
-| Protected branch rules | Done | Ruleset updated 2026-02-25 |
-| CodeQL cleanup | Done | Disabled, analyses deleted |
-| Renovate | Deferred | Vadim will create issues |
-| Discussions | Ready | Template drafted, not yet posted |
+Carried from Issue #3 -- see merged PR #17 and site for full documentation.
+
+| Decision                     | Detail                                             |
+|------------------------------|----------------------------------------------------|
+| Hexagonal architecture       | Ports and adapters. All concerns plug into ports.  |
+| Actor model                  | Each bounded context is an actor. Message passing. |
+| Transport: stdio primary     | Standard MCP. HTTPS secondary, later.              |
+| SSE rejected                 | Gen 3v1 mistake. Not repeated.                     |
+| Backing services decoupled   | Redis is ONE implementation behind an interface.   |
+| Memory is the aggregate root | Clustering is emergent, not structural.            |
+| Four memory tiers            | IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE  |
+| Five association types       | Temporal, causal, thematic, emotional, person      |
+| Claiming mechanism           | Active choice resists decay.                       |
+| Conscience-universal         | Ports are mind-agnostic.                           |
+| Agora as peer MCP            | Not downstream of Total Recall.                    |
+
+## What's NOT Decided
+
+| Question                 | Status      |
+|--------------------------|-------------|
+| Container image approach | NOT STARTED |
+| CI/CD build workflow     | NOT STARTED |

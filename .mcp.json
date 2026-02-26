@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "total-recall": {
+      "command": "./build/install/total-recall/bin/total-recall",
+      "args": []
+    }
+  }
+}

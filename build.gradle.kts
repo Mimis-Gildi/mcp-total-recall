@@ -15,6 +15,10 @@ kotlin {
 }
 
 dependencies {
+    // MCP
+    implementation(libs.mcp.server)
+    implementation(libs.coroutines.core)
+
     // Logging
     implementation(libs.slf4j.api)
     implementation(libs.kotlin.logging)
