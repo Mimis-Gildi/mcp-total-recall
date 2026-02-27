@@ -1,2 +1,7 @@
-sdkman-version=5.20.0
+sdkman-version=5.20.0|latest+bb56144
 sdkman-native=0.7.14
+asdf=0.18.0
+gem=3.7.2
+bundle=2.7.2
+conda=26.1.0
+mamba=2.3.3
