@@ -75,11 +75,15 @@ graph LR
 
 **The aggregate root.** All memory operations go through here. No other context writes memories directly.
 
+Domain types: `Memory`, `Tier` (enum) -- in `mimis.gildi.memory.domain.model`.
+
 ### Responsibility
 
 CRUD for memories across four tiers. Enforces claiming semantics. Routes events to other contexts after state changes.
 
 ### The Four Tiers
+
+Defined as `Tier` enum with decay semantics per variant.
 
 | Tier               | Decay     | What lives here                                                           |
 |--------------------|-----------|---------------------------------------------------------------------------|
@@ -113,11 +117,15 @@ CRUD for memories across four tiers. Enforces claiming semantics. Routes events 
 
 **The relationship layer.** Memories are not isolated records. They connect to each other through typed associations. Recalling one memory can activate connected memories -- the way hearing a song brings back where you were when you first heard it.
 
+Domain types: `Association`, `AssociationType` (enum) -- in `mimis.gildi.memory.domain.model`.
+
 ### Responsibility
 
 Maintains typed relationships between memories. Provides graph traversal for association-activated recall.
 
 ### The Five Association Types
+
+Defined as `AssociationType` enum.
 
 | Type          | Meaning                          | Example                            |
 |---------------|----------------------------------|------------------------------------|
@@ -158,6 +166,8 @@ Both kinds live in the same graph. Both are bidirectional. The difference is who
 
 **The decay engine.** Not everything can be equally present. Attention models this honestly -- frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A faded memory in Archive can be recalled and promoted back.
 
+Domain types: `AttentionScore` -- in `mimis.gildi.memory.domain.model`.
+
 ### Responsibility
 
 Scores every memory by access frequency and recency. Triggers tier promotion (memory accessed often → promote to higher tier) and demotion (memory neglected → demote to lower tier).
@@ -183,7 +193,9 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 ## Recollection
 
-**The search engine.** When Claude asks "what do I remember about X?", Recollection answers. It combines attention scores (what's most vivid) with association activation (what's connected) to produce ranked results.
+**The search engine.** When a mind asks "what do I remember about X?", Recollection answers. It combines attention scores (what's most vivid) with association activation (what's connected) to produce ranked results.
+
+Domain types: `SearchFilter` -- in `mimis.gildi.memory.domain.model`.
 
 ### Responsibility
 

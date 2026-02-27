@@ -256,6 +256,20 @@ To produce the install distribution:
 
 This creates a self-contained runnable at `build/install/total-recall/bin/total-recall` with all dependencies bundled.
 
+### Local Development Ports
+
+Yggdrasil projects use the TT (100-increment) convention for local dev port allocation. Each project gets a unique port to avoid collisions when running multiple sites simultaneously.
+
+| Project              | Main Port | LiveReload Port | Config Location    |
+|----------------------|-----------|-----------------|--------------------|
+| riddle-me-this       | 4000      | 35729           | `_config.yml`      |
+| **mcp-total-recall** | **4100**  | **35829**       | `site/_config.yml` |
+| Agora (future)       | 4200      | 35929           | TBD                |
+
+Ports are set in each project's `_config.yml` so no CLI flags are needed. The IntelliJ run configuration (`BundleBuildAndRunSite`) runs `bundle exec jekyll serve -wolIVt` from the `site/` directory -- the port comes from config.
+
+The 100-increment follows the established convention for instance separation within a service type range (4000 = Jekyll/general dev). This keeps port numbers recognizable across projects while avoiding collisions with registered services.
+
 ### Current State
 
 The server registers 8 MCP tools. All are **teapot stubs** -- they accept valid input and return placeholder responses. No backing service is wired yet. This is the contract skeleton, not the implementation.
