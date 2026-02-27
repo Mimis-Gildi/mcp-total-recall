@@ -175,9 +175,11 @@ sequenceDiagram
 
 Every message in the system. Named, typed, with producer and consumer.
 
+All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (9 sealed variants), `Event` (13 sealed variants), `Notification` (2 sealed variants).
+
 ### Commands
 
-Commands are requests to do something. They carry intent. A command has exactly one target.
+Commands are requests to do something. They carry intent. A command has exactly one target. Defined as `sealed interface Command`.
 
 | Command              | Producer        | Consumer      | Payload                                       |
 |----------------------|-----------------|---------------|-----------------------------------------------|
@@ -193,7 +195,7 @@ Commands are requests to do something. They carry intent. A command has exactly 
 
 ### Lifecycle Events
 
-Lifecycle events flow from the Lifecycle Port through Session Context. They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system.
+Lifecycle events flow from the Lifecycle Port through Session Context. They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system. Defined as part of `sealed interface Event`.
 
 | Event             | Producer        | Consumer(s)             | Payload                                                    |
 |-------------------|-----------------|-------------------------|------------------------------------------------------------|
@@ -205,16 +207,16 @@ Lifecycle events flow from the Lifecycle Port through Session Context. They are 
 
 ### Notifications
 
-Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal. The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc.
+Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal. The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `sealed interface Notification`.
 
 | Notification         | Producer | Consumer                 | Payload                                                |
 |----------------------|----------|--------------------------|--------------------------------------------------------|
 | `BreakNotification`  | Daemon   | Notification Port → Mind | minutes in task mode, suggestion                       |
 | `SessionAuditPrompt` | Daemon   | Notification Port → Mind | session duration, memories stored this session, prompt |
 
-### Events
+### Domain Events
 
-Events are notifications that something happened. They carry facts. An event can have multiple consumers.
+Events are notifications that something happened. They carry facts. An event can have multiple consumers. Defined as `sealed interface Event`.
 
 | Event               | Producer          | Consumer(s)                  | Payload                                                          |
 |---------------------|-------------------|------------------------------|------------------------------------------------------------------|

@@ -2,6 +2,8 @@
 layout: home
 title: "Total Recall"
 author_profile: true
+classes: wide
+permalink: /
 header:
   overlay_image: /assets/images/banner.jpg
   overlay_filter: 0.3

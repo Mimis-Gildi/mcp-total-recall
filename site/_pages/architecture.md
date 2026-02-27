@@ -70,20 +70,25 @@ graph TB
 
 ### What's Implemented vs. Planned
 
-| Component                                    | Status  |
-|----------------------------------------------|---------|
-| MCP server                                   | Not yet |
-| stdio transport                              | Not yet |
-| Streaming HTTPS transport                    | Future  |
-| Redis backing service                        | Not yet |
-| Cold storage backing service                 | Future  |
-| Agora (peer MCP server)                      | Future  |
-| Memory tools (store, search, claim)          | Not yet |
-| Lifecycle tools (session, state transitions) | Not yet |
-| Notification port (mind-directed alerts)     | Not yet |
-| Internal timers (break checks, decay sweeps) | Not yet |
+| Component                                    | Status                |
+|----------------------------------------------|-----------------------|
+| MCP server                                   | **Done** (0.4.0)      |
+| stdio transport                              | **Done**              |
+| Streaming HTTPS transport                    | Future                |
+| Domain model (Memory, Tier, Association, etc.)| **Done** (Kotlin)    |
+| Domain messages (Command, Event, Notification)| **Done** (sealed hierarchies) |
+| Inbound ports (MemoryPort, LifecyclePort)    | **Done** (interfaces) |
+| Outbound ports (BackingService, Notification, Relay) | **Done** (interfaces) |
+| Memory tools (store, search, claim)          | **Done** (teapot stubs) |
+| Lifecycle tools (session start/end)          | **Done** (teapot stubs) |
+| Reflection tools (associate, reclassify, reflect) | **Done** (teapot stubs) |
+| Redis backing service                        | Not yet               |
+| Cold storage backing service                 | Future                |
+| Agora (peer MCP server)                      | Future                |
+| Notification port (mind-directed alerts)     | Not yet               |
+| Internal timers (break checks, decay sweeps) | Not yet               |
 
-Everything above is designed for. Nothing is implemented. We are in architecture modeling.
+All contracts are defined in Kotlin. 8 MCP tools are registered and callable. Backing services are not yet wired -- tools return teapot stub responses.
 
 ---
 

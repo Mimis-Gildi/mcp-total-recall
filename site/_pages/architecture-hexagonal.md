@@ -109,22 +109,22 @@ graph TB
 
 ### Inbound Ports
 
-| Port               | Responsibility                                                                                              | Contract                                                        |
-|--------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| **Memory Port**    | Accepts memory operations from any mind. Translates requests into domain commands.                          | `store_memory`, `search_memory`, `claim_memory`, `associate_memories`, `reclassify_memory`, `reflect` |
-| **Lifecycle Port** | Manages session lifecycle and state transitions. Any mind signals when it starts, stops, or shifts context. | `session_start`, `session_end`, `state_transition`, `heartbeat` |
+| Port               | Kotlin Interface | Responsibility                                                                                              | Contract                                                        |
+|--------------------|------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| **Memory Port**    | `MemoryPort`     | Accepts memory operations from any mind. Translates requests into domain commands.                          | `store_memory`, `search_memory`, `claim_memory`, `associate_memories`, `reclassify_memory`, `reflect` |
+| **Lifecycle Port** | `LifecyclePort`  | Manages session lifecycle and state transitions. Any mind signals when it starts, stops, or shifts context. | `session_start`, `session_end`, `state_transition`, `heartbeat` |
 
-Adapters: `stdio` transport (primary), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future). The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
+Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future). The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
 
 ### Outbound Ports
 
-| Port                     | Responsibility                                                                                              | Contract                                   |
-|--------------------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------|
-| **Backing Service Port** | Persists and retrieves memories. The critical abstraction.                                                  | `persist`, `retrieve`, `query`, `delete`   |
-| **Notification Port**    | Sends alerts and reminders to the connected mind. Break reminders, state drift warnings, session summaries. | `notify`, `remind`, `alert`                |
-| **Relay Port**           | Sends and receives inter-instance messages.                                                                 | `send`, `receive`, `list_pending` (future) |
+| Port                     | Kotlin Interface       | Responsibility                                                                                              | Contract                                   |
+|--------------------------|------------------------|-------------------------------------------------------------------------------------------------------------|--------------------------------------------|
+| **Backing Service Port** | `BackingServicePort`   | Persists and retrieves memories. The critical abstraction.                                                  | `persist`, `retrieve`, `query`, `delete`   |
+| **Notification Port**    | `NotificationPort`     | Sends alerts and reminders to the connected mind. Break reminders, state drift warnings, session summaries. | `notify`, `remind`, `alert`                |
+| **Relay Port**           | `RelayPort`            | Sends and receives inter-instance messages.                                                                 | `send`, `receive`, `list_pending` (future) |
 
-Backing service adapters: Redis (reference), Cold Storage (future). Both can run simultaneously -- graceful shutdown depends on this.
+Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future). Both can run simultaneously -- graceful shutdown depends on this.
 
 Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans). The notification port is how Total Recall talks back -- not just responding to requests, but proactively alerting the mind. "You've been in task mode for 90 minutes." "Session ending -- what do you want to remember?"
 
