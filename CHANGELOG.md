@@ -5,6 +5,43 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-27
+
+Contract definitions release. Every port, message, and domain type from the
+architecture model (Issue #3) now exists as Kotlin code. MCP server runs on
+stdio with 8 teapot-stub tools. The design and the code agree.
+
+### Added
+
+- Domain model (6 types in `mimis.gildi.memory.domain.model`):
+  Memory, Tier, Association, AssociationType, AttentionScore, SearchFilter.
+- Domain messages (3 sealed hierarchies in `mimis.gildi.memory.domain.message`):
+  Command (9 variants), Event (13 variants), Notification (2 variants).
+- Inbound ports: MemoryPort, LifecyclePort.
+- Outbound ports: BackingServicePort, NotificationPort, RelayPort.
+- MCP server on stdio with 8 registered tools (teapot stubs):
+  store_memory, search_memory, claim_memory, session_start, session_end,
+  associate_memories, reclassify_memory, reflect.
+- Domain model and message tests (Kotest).
+- Site: announcement posts for Issues #3 and #4.
+- Site: favicon from circuit-tree logo.
+- Site: architecture pages updated to reference Kotlin types.
+- `.mcp.json` for local MCP server configuration.
+- IntelliJ run configuration for server testing.
+
+### Changed
+
+- Logging target: stdout → stderr (stdout is the MCP protocol channel).
+- MCP SDK dependency added: `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`.
+- Site: post ordering fix (documents-collection.html override).
+
+### Deferred
+
+- Redis backing service behind BackingServicePort.
+- Domain logic wiring between ports and tools.
+- Container images (approach TBD).
+- CI/CD build workflow for PR-time checks.
+
 ## [0.3.0] - 2026-02-25
 
 Architecture modeling release. Four-page progressive architecture documentation
