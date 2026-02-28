@@ -19,3 +19,7 @@ architecture:
         url: /architecture/contexts/
       - title: "Message Catalog"
         url: /architecture/messages/
+  - title: "Decisions"
+    children:
+      - title: "ADR-0001: Use ADRs"
+        url: /decisions/0001-architecture-decision-records/

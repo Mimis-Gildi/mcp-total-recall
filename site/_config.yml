@@ -27,6 +27,13 @@ plugins:
   - jekyll-include-cache
   - jekyll-sitemap
 
+collections:
+  adr:
+    output: true
+    permalink: /decisions/:name/
+    order:
+      - 0001-architecture-decision-records.adoc
+
 pagination:
   enabled: true
   per_page: 10
@@ -48,6 +55,17 @@ defaults:
     values:
       layout: single
       author_profile: true
+  - scope:
+      path: ""
+      type: adr
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      share: false
+      related: false
+      sidebar:
+        nav: architecture
 
 author:
   name: "Mimis Gildi"
