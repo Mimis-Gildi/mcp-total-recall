@@ -113,3 +113,7 @@ ipython_config.py
 # Stuff very much specific to this project
 .claude/settings.local.json
 *.bat
+
+### Jekyll local dev
+site/vendor/
+site/.bundle/
