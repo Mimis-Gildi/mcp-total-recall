@@ -40,4 +40,6 @@ jobs:
 
       - name: "Clean, Build, Test, Submit Dependencies"
         timeout-minutes: 5
-        run: source "$SDKMAN_DIR/bin/sdkman-init.sh" || gradle clean build test
+        run: |
+          source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
+          gradle clean build test
