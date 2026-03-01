@@ -36,6 +36,7 @@ collections:
       - 0002-hexagonal-architecture.adoc
       - 0003-stdio-as-primary-transport.adoc
       - 0004-resilient-storage-array.adoc
+      - 0005-memory-as-aggregate-root.adoc
 
 pagination:
   enabled: true

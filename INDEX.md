@@ -36,7 +36,7 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 - [x] ADR-0002: Hexagonal Architecture
 - [x] ADR-0003: stdio as Primary Transport
 - [x] ADR-0004: Resilient Storage Array
-- [ ] ADR-0005: Memory as aggregate root
+- [x] ADR-0005: Memory as Aggregate Root
 - [ ] ADR-0006: Events and commands as message types
 - [ ] ADR-0007: Human memory as reference model
 
@@ -52,7 +52,10 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 - Jekyll adr collection configured, sidebar nav wired, permalink /decisions/:name/
 - Converted entire site from Markdown to AsciiDoc (7 files: index, 4 architecture pages, 2 posts)
 - ADR-0002 written: Hexagonal Architecture (reviewed by Vadim)
-- Fixed "we were stupid" rhetoric across site -- experiments aren't failures, production is a different class
+- Fixed "we were stupid" rhetoric across site and README -- experiments aren't failures, production is a different class
+- ADR-0003 written: stdio as Primary Transport (reviewed by Vadim)
+- ADR-0004 written: Resilient Storage Array (reviewed by Vadim)
+- ADR-0005 written: Memory as Aggregate Root (reviewed by Vadim)
 
 ### 2026-02-27 -- Session start (Claude with Vadim)
 
