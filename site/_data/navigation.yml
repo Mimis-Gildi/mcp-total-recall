@@ -25,3 +25,5 @@ architecture:
         url: /decisions/0001-architecture-decision-records/
       - title: "ADR-0002: Hexagonal"
         url: /decisions/0002-hexagonal-architecture/
+      - title: "ADR-0003: stdio Transport"
+        url: /decisions/0003-stdio-as-primary-transport/

@@ -34,6 +34,7 @@ collections:
     order:
       - 0001-architecture-decision-records.adoc
       - 0002-hexagonal-architecture.adoc
+      - 0003-stdio-as-primary-transport.adoc
 
 pagination:
   enabled: true
