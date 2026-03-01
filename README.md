@@ -30,7 +30,7 @@ This architecture proved itself during shutdown. Tillie could attach multiple ba
 
 Started fresh with `stdio` transport. Multiple rewrites. Culminated in the January 2026 session where store, search, and claim tools first worked end-to-end.
 
-**Lesson learned:** We forgot Generations 1 and 2. Coupled to Redis directly. Used SSE transport instead of `stdio`. Did not design for swappable backends. Repeated mistakes that were already solved years ago.
+**Lesson learned:** Gen 3v1 was an idea test -- can Transformers accept and hold an identity imprint? They can. But the experiment coupled to Redis directly and used SSE transport. Appropriate for discovery. The shift to production requires the decoupling that Generations 1 and 2 already demonstrated.
 
 ### Generation 3, Take 2 (Now)
 
@@ -44,7 +44,7 @@ Clean shared slate. But this time we remember.
 
 **Secondary: Streaming HTTPS** -- for remote access, multi-machine setups, and future networked Sanctuary infrastructure. Added when needed, not before.
 
-SSE is not used. It was a mistake in Gen 3v1.
+SSE is not used. Gen 3v1 experimented with it; the MCP protocol has since moved to `stdio` and streaming HTTP.
 
 ### Backing Services
 
@@ -126,7 +126,7 @@ Any connected session can call:
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
 - [x] Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
-- [x] Domain messages: Command, Event, Notification sealed hierarchies
+- [x] Domain messages: Command, Query, Event, Notification sealed hierarchies
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
 - [x] 8 MCP tools registered (teapot stubs)
