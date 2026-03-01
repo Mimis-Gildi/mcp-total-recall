@@ -40,8 +40,4 @@ jobs:
 
       - name: "Clean, Build, Test, Submit Dependencies"
         timeout-minutes: 5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
-          gradle --init-script gradle/github-dependency-graph.init.gradle.kts clean build test
+        run: source "$SDKMAN_DIR/bin/sdkman-init.sh" || gradle clean build test
