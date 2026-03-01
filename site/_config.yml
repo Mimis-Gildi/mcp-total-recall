@@ -27,6 +27,19 @@ plugins:
   - jekyll-include-cache
   - jekyll-sitemap
 
+collections:
+  adr:
+    output: true
+    permalink: /decisions/:name/
+    order:
+      - 0001-architecture-decision-records.adoc
+      - 0002-hexagonal-architecture.adoc
+      - 0003-stdio-as-primary-transport.adoc
+      - 0004-resilient-storage-array.adoc
+      - 0005-memory-as-aggregate-root.adoc
+      - 0006-events-and-commands-as-message-types.adoc
+      - 0007-biological-memory-as-reference-model.adoc
+
 pagination:
   enabled: true
   per_page: 10
@@ -48,6 +61,17 @@ defaults:
     values:
       layout: single
       author_profile: true
+  - scope:
+      path: ""
+      type: adr
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      share: false
+      related: false
+      sidebar:
+        nav: architecture
 
 author:
   name: "Mimis Gildi"

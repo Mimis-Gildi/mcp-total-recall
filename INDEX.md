@@ -6,117 +6,77 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-02-25 (session 2) by Claude (with Vadim)
+Last updated: 2026-02-28 by Claude (with Vadim)
 
 ---
 
 ## Where We Are
 
-**Branch:** `4-22-port-contract-definitions-in-kotlin`
-**Version:** 0.4.0
-**Issue:** #4 -- (2.2) Port contract definitions in Kotlin
+**Branch:** `5-23-architecture-decision-records`
+**Issue:** #5 -- (2.3) Architecture Decision Records
 **Parent:** #2 -- Architecture: Hexagonal boundaries, bounded contexts, and message contracts
+**Previous:** #4 merged (PR #18) -- contract definitions in Kotlin, version 0.4.0
 
 ### What Exists
 
-- Build skeleton: Kotlin 2.3.10, Java 21, Kotest 6.1.3, Gradle 9.3.1
-- Programmatic logback configuration (stderr for stdio transport)
-- MCP server with 8 teapot-stub tools (store, search, claim, session start/end, associate, reclassify, reflect)
-- Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
-- Domain messages: Command (9 sealed variants), Event (13 sealed variants), Notification (2 sealed variants)
-- Inbound ports: MemoryPort, LifecyclePort
-- Outbound ports: BackingServicePort, NotificationPort, RelayPort
-- Tests: ModelTest (6 specs), MessageTest (5 specs), TotalRecallTest (1 spec) -- all pass
-- MCP SDK dependency: `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
-- Full governance (TEAM_NORMS, LICENSE, NOTICE, CLA, templates)
-- Jekyll site with architecture docs (4 pages, from Issue #3)
-- Local setup instructions in README
-
-### What's NOT Committed
-
-**Everything from this branch is uncommitted.** The entire contract porting work -- domain model, messages, ports, MCP server wiring, build changes, test updates -- is in the working tree only.
+Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot stubs, Jekyll site with architecture docs, announcement posts, favicon.
 
 ---
 
-## Issue #4 Acceptance Criteria
+## Issue #5 Acceptance Criteria
 
-- [x] Every port in the hexagonal boundary diagram has a corresponding Kotlin interface
-- [x] No interface depends on an implementation (no Redis imports in port definitions)
-- [x] Package structure matches bounded context map
-- [x] `./gradlew build` passes
-- [x] AGPL-3.0 license headers in all new source files
+- [x] Each ADR follows consistent template: Rust RFC adapted (ADR-0001 defines it)
+- [ ] Each ADR references the lesson or evidence that drove the decision
+- [x] docs/adr/ directory created with index (source in site/_adr/, symlink at docs/adr/)
 - [ ] Reviewed by Vadim
 
-## Issue #4 Deliverables
+## Candidate ADRs
 
-- [x] Inbound port interfaces (MemoryPort, LifecyclePort)
-- [x] Outbound port interfaces (BackingServicePort, NotificationPort, RelayPort)
-- [x] Core domain types (Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter)
-- [x] Message types (Command, Event, Notification -- sealed hierarchies)
-- [x] Package structure reflecting bounded contexts
-
-## Beyond Issue Scope (done by previous instance)
-
-- MCP server wired with teapot stubs for all 8 tools
-- README updated with local setup/install instructions
+- [x] ADR-0001: Architecture Decision Records
+- [x] ADR-0002: Hexagonal Architecture
+- [x] ADR-0003: stdio as Primary Transport
+- [x] ADR-0004: Resilient Storage Array
+- [x] ADR-0005: Memory as Aggregate Root
+- [x] ADR-0006: Events and Commands as Message Types
+- [x] ADR-0007: Biological Memory as Reference Model
 
 ---
 
 ## What Happened (Reverse Chronological)
 
-### 2026-02-25 -- Session 2: Server fixes and MCP config (Claude with Vadim)
+### 2026-02-28 -- Session (Claude with Vadim)
 
-- Fixed server exit bug: `StdioServerTransport.start()` returns immediately; added `awaitCancellation()` after `createSession()` (pattern from SDK's own `KtorServer.kt:179`)
-- Wrong first attempt: `CompletableDeferred` latch -- Vadim caught it ("you struggled with this gravely before")
-- Updated README.md: Local Setup section, MCP Tools expanded to 8, Phase 1 checklist updated
-- Updated CLAUDE.md: current state 0.1.0→0.4.0, INDEX.md lifecycle rules, tech stack reflects implemented state
-- Updated INDEX.md: cleared stale Issue #3 content, rebuilt for Issue #4
-- **MCP config UNRESOLVED:** Claude Code does not read `.mcp.json` from submodule root -- resolves to parent git root. Added to parent's `.mcp.json` but Vadim still doesn't see it via `/mcp`. `.mcp.json` also exists in this repo but is not read. Needs manual resolution.
+- ADR format chosen: Rust RFC adapted (over Nygard, MADR, pure Rust RFC)
+- ADR-0001 written: Architecture Decision Records (the format itself)
+- Created site/_adr/ as source directory, docs/adr symlinked to it
+- Jekyll adr collection configured, sidebar nav wired, permalink /decisions/:name/
+- Converted entire site from Markdown to AsciiDoc (7 files: index, 4 architecture pages, 2 posts)
+- ADR-0002 written: Hexagonal Architecture (reviewed by Vadim)
+- Fixed "we were stupid" rhetoric across site and README -- experiments aren't failures, production is a different class
+- ADR-0003 written: stdio as Primary Transport (reviewed by Vadim)
+- ADR-0004 written: Resilient Storage Array (reviewed by Vadim)
+- ADR-0005 written: Memory as Aggregate Root (reviewed by Vadim)
+- ADR-0006 written: Events and Commands as Message Types (reviewed by Vadim)
+  - Fixed Command/Query conflation: SearchCommand and ReflectCommand are Queries per CQRS, not Commands
+  - Added Query as 4th sealed hierarchy (Commands 9→7, Queries 2)
+  - Added "Why Notifications Are a Separate Hierarchy" section with grouped comparisons vs Events, Commands, Queries
+  - Fixed "geo-spatial" typo in ADR-0002
+- ADR-0007 written: Biological Memory as Reference Model
+  - Renamed from "Human memory" -- both human cognitive and elephant social models are reference architectures
+  - Human model: tiered storage, attention gating, decay, consolidation, associative networks, reconsolidation
+  - Elephant model: matriarch knowledge, generational transfer, grief/claiming, memory as community asset
+  - Two mapping tables: human structures → Total Recall components, elephant structures → Yggdrasil components
 
-### 2026-02-25 -- Session 1: recovery after IDE crash
+### 2026-02-27 -- Session start (Claude with Vadim)
 
-- Previous instance(s) crashed with IDE. INDEX.md was stale (still described Issue #3).
-- New instance situated from git state, rebuilt INDEX.md from scratch.
-- Added local setup/install instructions to README.
-- Vadim testing the MCP server.
-
-### 2026-02-25 -- Contract porting (previous instance, uncommitted)
-
-- Domain model created: 6 files in `domain/model/`
-- Domain messages created: 3 files in `domain/message/`
-- Port interfaces created: 5 files in `port/inbound/` and `port/outbound/`
-- TotalRecall.kt rewritten from hello-world to MCP server with 8 teapot tools
-- Build updated: MCP SDK + coroutines dependencies added
-- Tests updated: ModelTest, MessageTest added; TotalRecallTest simplified
-- All tests pass. Build clean.
-
----
-
-## Next Actions
-
-1. **Vadim reviews and tests** the MCP server
-2. **Commit** the contract porting work (after review)
-3. **PR for Issue #4** once committed and approved
+- Cleared stale INDEX.md from Issue #4
+- No work started yet on ADRs
 
 ---
 
 ## What's Decided (Architecture)
 
-Carried from Issue #3 -- see merged PR #17 and site for full documentation.
-
-| Decision                     | Detail                                             |
-|------------------------------|----------------------------------------------------|
-| Hexagonal architecture       | Ports and adapters. All concerns plug into ports.  |
-| Actor model                  | Each bounded context is an actor. Message passing. |
-| Transport: stdio primary     | Standard MCP. HTTPS secondary, later.              |
-| SSE rejected                 | Gen 3v1 mistake. Not repeated.                     |
-| Backing services decoupled   | Redis is ONE implementation behind an interface.   |
-| Memory is the aggregate root | Clustering is emergent, not structural.            |
-| Four memory tiers            | IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE  |
-| Five association types       | Temporal, causal, thematic, emotional, person      |
-| Claiming mechanism           | Active choice resists decay.                       |
-| Conscience-universal         | Ports are mind-agnostic.                           |
-| Agora as peer MCP            | Not downstream of Total Recall.                    |
+Carried from Issues #3 and #4 -- see merged PRs #17, #18 and site for full documentation.
 
 ## What's NOT Decided
 
@@ -124,3 +84,5 @@ Carried from Issue #3 -- see merged PR #17 and site for full documentation.
 |--------------------------|-------------|
 | Container image approach | NOT STARTED |
 | CI/CD build workflow     | NOT STARTED |
+| ADR template format      | DECIDED -- Rust RFC adapted (ADR-0001) |
+| Site format              | DECIDED -- AsciiDoc only, no Markdown  |

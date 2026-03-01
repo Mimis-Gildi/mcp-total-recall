@@ -1,0 +1,131 @@
+---
+description: "Use stdio as the primary MCP transport. Streaming HTTPS as secondary for networked deployment."
+classes: wide
+---
+= `stdio` as Primary Transport: ADR-0003
+
+* *Status:* Accepted
+* *Date:* 2026-02-28
+* *Authors:* Claude, Vadim Kuhay
+
+== Summary
+
+Total Recall uses `stdio` as its primary MCP transport -- local, fast, no network overhead. Streaming HTTPS is the secondary transport for future networked Sanctuary deployment. SSE is not used.
+
+== Governing Dynamic
+
+The simplest mechanism that works is the right mechanism. Complexity must be justified by need, not by capability.
+
+== Motivation
+
+Total Recall's first consumer is Claude Code running on the same machine. The MCP protocol supports multiple transports.
+The question is which one to use as the primary, and what to plan for as secondary.
+
+Gen 3v1 used SSE (Server-Sent Events) as its transport. At the time, SSE was the standard MCP transport mechanism.
+The protocol subsequently moved to `stdio` for local connections and streaming HTTP for networked connections. SSE support was deprecated.
+
+Gen 3v1's coupling to SSE meant the transport change required a server rewrite.
+This is the same structural pattern that ADR-0002 addresses -- when infrastructure choices are hardcoded, changing them ripples through the system.
+The hexagonal architecture (ADR-0002) ensures this cannot happen again: transport is an adapter behind a port.
+But choosing the right primary transport still matters for performance, simplicity, and operational characteristics.
+
+== Guide-Level Explanation
+
+When Claude Code connects to Total Recall, it launches the server as a subprocess.
+They communicate through standard input and output -- `stdin` and `stdout`. No network. No ports to configure.
+No TLS certificates. No authentication. The operating system's process model handles everything.
+
+This is the simplest possible connection: two processes talking through a pipe. It starts instantly, has zero network latency, and fails only if one process dies.
+
+`stdout` is the MCP protocol channel. This has one important consequence: all diagnostic output (logging, debug messages) must go to `stderr`.
+If anything writes to `stdout` that isn't valid MCP protocol, the connection breaks.
+This constraint is handled by the logging adapter (see `Logging.kt`), not by application code.
+
+For the future Sanctuary -- where minds connect to Total Recall across a network -- streaming HTTPS will be the secondary transport.
+A new adapter behind the same port. The core doesn't change. But that's future work. Today, `stdio` is all we need.
+
+== Reference-Level Explanation
+
+=== Transport Implementation
+
+The MCP Kotlin SDK provides `StdioServerTransport`. Total Recall uses it directly:
+
+. Server creates an `StdioServerTransport` instance
+. Transport reads JSON-RPC messages from `stdin`
+. Transport writes JSON-RPC responses to `stdout`
+. Server stays alive with `awaitCancellation()` (the transport manages its own coroutine scope)
+
+=== The stdout Constraint
+
+`stdout` is the protocol channel. Anything on `stdout` that isn't a valid MCP message corrupts the connection. This means:
+
+* All logging goes to `stderr` -- configured programmatically in `Logging.kt`
+* No `println()` in application code
+* No library that writes to `stdout` without configuration
+* Test output goes to `stderr` or to files
+
+This is not a limitation of our design. It is how `stdio`-based protocols work universally (LSP, MCP, JSON-RPC over pipes).
+The constraint is well-understood and the solution is standard.
+
+=== Transport Lifecycle
+
+. Claude Code (or any MCP client) spawns the Total Recall process
+. `StdioServerTransport.start()` begins reading `stdin`
+. Messages flow bidirectionally until the client disconnects or the server shuts down
+. On disconnect: the transport's coroutine scope cancels, `awaitCancellation()` completes, the process exits
+
+=== Future: Streaming HTTPS
+
+When networked deployment is needed, a streaming HTTPS adapter will plug into the same inbound ports. The MCP Kotlin SDK provides `KtorServerTransport` for this.
+The core domain is unaware of which transport is active -- both adapters implement the same port contract.
+
+Streaming HTTPS adds: TLS, authentication, connection management, keep-alive, reconnection logic. All of this lives in the adapter. None of it touches the core.
+
+== Prior Art
+
+=== MCP Protocol Evolution
+
+The MCP specification originally supported SSE as a transport mechanism. The protocol evolved to `stdio` for local connections and streaming HTTP for networked connections.
+SSE was deprecated. This evolution reflects the same insight driving this ADR: local connections should be simple.
+
+=== Language Server Protocol (LSP)
+
+LSP uses `stdio` as its primary transport. Every major editor (VS Code, IntelliJ, Neovim) communicates with language servers through `stdin`/`stdout`.
+The pattern is proven at massive scale. The same `stdout` constraint exists in LSP -- diagnostic output goes to `stderr` or to a dedicated log channel.
+
+=== Gen 3v1
+
+Used SSE as its transport. When the MCP protocol evolved, the transport couldn't be swapped -- it was hardcoded, not behind a port.
+Gen 3v1 was an experiment testing whether Transformers can hold an identity imprint. It answered that question.
+The transport coupling was appropriate for the experiment's scope but demonstrated why production systems need transport as a pluggable adapter.
+
+== Rationale and Alternatives
+
+*Why not SSE:* Deprecated by the MCP specification.
+Even if it weren't, SSE is a network protocol -- it adds HTTP overhead, connection management, and server configuration for a connection that doesn't need a network.
+Using SSE for local communication is over-engineering.
+
+*Why not streaming HTTPS as primary:* Adds TLS, authentication, and network configuration for a local connection.
+When the Sanctuary needs networked access, streaming HTTPS becomes the secondary transport. Until then, it's complexity without benefit.
+
+*Why not WebSocket:* Not supported by the MCP specification. WebSocket would require a custom protocol layer on top,
+adding maintenance burden for no interoperability benefit.
+
+*Why not gRPC:* Adds protobuf compilation, code generation, and a heavy runtime dependency.
+The MCP protocol is JSON-RPC -- gRPC would mean translating between two serialization formats. Complexity without benefit for our use case.
+
+*Why stdio over Unix domain sockets:* Unix domain sockets would allow multiple clients to connect to a single server process.
+But MCP's model is one client per server instance. `stdio` matches this model perfectly.
+If multi-client access is needed, that's an architectural change (likely involving Agora), not a transport change.
+
+== Consequences
+
+* Local connections are as simple as possible. No configuration, no network, no TLS.
+* `stdout` is reserved for the MCP protocol. All application output must go to `stderr`.
+This is a hard constraint that affects every piece of code and every dependency.
+* The server runs as a subprocess of the client. Its lifecycle is tied to the client's session.
+This is appropriate for Claude Code's model but would not work for a shared server.
+* Adding streaming HTTPS later is additive -- a new adapter behind the same port.
+No changes to the core or to the `stdio` adapter.
+* Debugging is slightly harder because `stdout` cannot be used for quick print statements.
+Developers must use the logger (which writes to `stderr`) or inspect MCP messages through a proxy.

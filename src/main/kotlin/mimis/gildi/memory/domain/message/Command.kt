@@ -13,8 +13,8 @@ import java.time.Instant
 import java.util.UUID
 
 /**
- * Commands are requests to do something. They carry intent.
- * A command has exactly one target.
+ * Commands are requests to change state. They carry intent.
+ * A command has exactly one target. May be accepted, rejected, or ignored.
  */
 sealed interface Command
 
@@ -47,21 +47,6 @@ data class ConsolidateCommand(
 data class ShutdownCommand(
     val coldStorageTarget: String,
     val flushTimeout: Long
-) : Command
-
-// -- Recollection commands --
-
-data class SearchCommand(
-    val query: String,
-    val filters: Map<String, String> = emptyMap(),
-    val maxResults: Int = 10,
-    val includeAssociations: Boolean = true,
-    val sessionId: String
-) : Command
-
-data class ReflectCommand(
-    val criteria: Map<String, String>,
-    val scope: String
 ) : Command
 
 // -- Association Graph commands --
