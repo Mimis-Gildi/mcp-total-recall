@@ -38,12 +38,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: "Bootstrap SDKMAN environment"
-        run: source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
-        timeout-minutes: 3
-
       - name: "Build and test"
-        run: gradle clean build test
+        run: |
+          source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
+          gradle clean build test
         timeout-minutes: 10
 
   submit-dependencies:
