@@ -1,0 +1,92 @@
+{
+  // Total Recall -- dependency management by Renovate
+  // https://docs.renovatebot.com/configuration-options/
+
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+  ],
+
+  timezone: 'America/New_York',
+  assignees: [
+    'rdd13r',
+  ],
+
+  branchPrefix: 'renovate/',
+
+  schedule: [
+    'every weekday',
+  ],
+
+  labels: [
+    'dependencies',
+    'renovate',
+  ],
+
+  // -- Grouping rules --
+  packageRules: [
+    {
+      description: 'Kotlin and Coroutines together',
+      matchManagers: ['gradle'],
+      matchPackagePatterns: [
+        '^org\\.jetbrains\\.kotlin',
+        '^org\\.jetbrains\\.kotlinx:kotlinx-coroutines',
+      ],
+      groupName: 'Kotlin Updates',
+      automerge: true,
+    },
+    {
+      description: 'MCP SDK',
+      matchManagers: ['gradle'],
+      matchPackagePatterns: [
+        '^io\\.modelcontextprotocol',
+      ],
+      groupName: 'MCP SDK Updates',
+      automerge: true,
+    },
+    {
+      description: 'Kotest framework',
+      matchManagers: ['gradle'],
+      matchPackagePatterns: [
+        '^io\\.kotest',
+      ],
+      groupName: 'Kotest Updates',
+      automerge: true,
+    },
+    {
+      description: 'Logging stack (SLF4J, Logback, kotlin-logging)',
+      matchManagers: ['gradle'],
+      matchPackagePatterns: [
+        '^org\\.slf4j',
+        '^ch\\.qos\\.logback',
+        '^io\\.github\\.oshai:kotlin-logging',
+      ],
+      groupName: 'Logging Updates',
+      automerge: true,
+    },
+    {
+      description: 'Gradle wrapper',
+      matchManagers: ['gradle-wrapper'],
+      groupName: 'Gradle Wrapper',
+      automerge: true,
+    },
+    {
+      description: 'GitHub Actions',
+      matchManagers: ['github-actions'],
+      groupName: 'GitHub Actions Updates',
+      automerge: true,
+    },
+    {
+      description: 'Bundler / Jekyll (monthly, less churn)',
+      matchManagers: ['bundler'],
+      groupName: 'Bundler Updates',
+      automerge: true,
+      schedule: ['monthly'],
+    },
+  ],
+
+  dependencyDashboard: true,
+  prHourlyLimit: 5,
+  prConcurrentLimit: 10,
+  automerge: true,
+}
