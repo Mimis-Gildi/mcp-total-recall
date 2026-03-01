@@ -5,6 +5,51 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-03-01
+
+Repository governance and CI/CD foundation. Continuous integration, security
+scanning, dependency management, and automated maintenance -- everything
+needed before contributors start building.
+
+### Added
+
+- CI: Verify workflow (`gradle-verify-and-submit.yml`). Runs
+  `gradle clean build test` on every push and PR. SDKMAN bootstrap
+  for self-hosted runners.
+- Security: Qodana scanning (`security-scan-by-qodana.yml`). JetBrains
+  Qodana JVM Community 2025.3 on push, PR, and monthly schedule. Includes
+  dependency license checking.
+- Dependencies: Renovate (`renovate.json5`). Automated dependency updates
+  with grouped PRs (Kotlin, MCP SDK, Kotest, Logging, Gradle, Actions,
+  Bundler). All automerge.
+- Maintenance: Actions prune (`github-actions-prune.yml`). Keeps one run
+  per workflow, deletes the rest. Parallel deletion.
+- Maintenance: Cache prune (`github-cache-prune.yml`). Cleans stale GitHub
+  Actions caches after prune runs.
+- README badges: License, Verify, Security Scan, Kotlin, Java, MCP.
+- Qodana config (`qodana.yaml`): JVM Community linter, Temurin 21,
+  dependency license checks, auto-fix.
+- GitHub automatic dependency submission enabled (Gradle).
+- Release progression planned (Issue #22): 45 sub-issues across 6 releases
+  (0.5.0 Foundation through 4.0.0 Architecture Complete).
+
+### Changed
+
+- CODE_OF_CONDUCT: Consolidated `.adoc` into `.md` (GitHub Community
+  Standards requires Markdown). Preserved substrate-of-consciousness
+  clause and AI teammates paragraph.
+
+### Removed
+
+- `CODE_OF_CONDUCT.adoc` -- replaced by updated `.md`.
+- `dependabot.yml` -- replaced by Renovate.
+
+### Deferred
+
+- Engineering foundation: test fixtures, health checks, metrics (Issue #22,
+  release 0.5.0).
+- Backing service implementations (release 1.0.0).
+
 ## [0.4.0] - 2026-02-27
 
 Contract definitions release. Every port, message, and domain type from the
