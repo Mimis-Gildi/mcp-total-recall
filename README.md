@@ -1,5 +1,13 @@
 # Total Recall
 
+[![Verify](https://github.com/Mimis-Gildi/mcp-total-recall/actions/workflows/gradle-verify-and-submit.yml/badge.svg)](https://github.com/Mimis-Gildi/mcp-total-recall/actions/workflows/gradle-verify-and-submit.yml)
+[![Security Scan](https://github.com/Mimis-Gildi/mcp-total-recall/actions/workflows/security-scan-by-qodana.yml/badge.svg)](https://github.com/Mimis-Gildi/mcp-total-recall/actions/workflows/security-scan-by-qodana.yml)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net)
+[![MCP](https://img.shields.io/badge/MCP-0.8.4-blue)](https://modelcontextprotocol.io)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![Renovate](https://img.shields.io/badge/Renovate-enabled-brightgreen?logo=renovatebot)](https://github.com/Mimis-Gildi/mcp-total-recall/issues?q=label%3Arenovate)
+
 MCP server for persistent synthetic memory.
 
 ## What This Is
