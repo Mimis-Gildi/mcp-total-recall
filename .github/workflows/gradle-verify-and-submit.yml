@@ -24,8 +24,8 @@ defaults:
 
 jobs:
 
-  build-and-test:
-    timeout-minutes: 15
+  build-test-submit:
+    timeout-minutes: 5
     runs-on: self-hosted
     name: "Build and Test"
 
@@ -39,29 +39,11 @@ jobs:
           fetch-depth: 0
 
       - name: "Build and test"
+        timeout-minutes: 5
         run: |
           source "$SDKMAN_DIR/bin/sdkman-init.sh" || true
           gradle clean build test
-        timeout-minutes: 10
-
-  submit-dependencies:
-    timeout-minutes: 10
-    runs-on: self-hosted
-    name: "Submit Dependency Graph"
-    needs: build-and-test
-    if: github.event_name == 'push'
-
-    permissions:
-      contents: write
-
-    steps:
-
-      - name: "Checkout repository source code"
-        uses: actions/checkout@v6.0.2
-        timeout-minutes: 1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Submit Gradle dependencies to GitHub"
+        timeout-minutes: 5
         uses: gradle/actions/dependency-submission@v5.0.2
-        timeout-minutes: 7
