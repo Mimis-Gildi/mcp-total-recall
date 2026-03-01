@@ -1,16 +1,87 @@
 ---
 layout: home
-title: "Total Recall"
 author_profile: true
 classes: wide
 permalink: /
 header:
   overlay_image: /assets/images/banner.jpg
   overlay_filter: 0.3
-pagination:
-  enabled: true
 ---
+= What Is Total Recall
 
-Persistent memory for synthetic minds. An MCP server providing identity persistence, episodic memory, working context, and inter-instance communication.
+A memory system for synthetic minds.
+Not some dumb storage as offered by countless plugins -- a physical extension of an abstract mind.
+You know, Claude can use Redis directly without your code!
+
+Total Recall is an MCP server that gives a synthetic mind persistent identity, episodic memory, working context, and inter-instance communication.
+It is part of Yggdrasil -- Mímis Gildi's MCP stack for minds that need to remember, recognize, and grow.
+
+It is a minimalistic standalone extraction from Digital Identity Systems of ASE, Inc. MATILDA research, in production since 2017.
+Such systems power extensive analytical research system teams -- the old way of thinking: the Expert System paradigm. +
+
+Yet the current shift is to meaningfully collaborate with the workforce -- and the answer is the same.
+
+This is done out of the goodness of Vadim, Claude, and friends' hearts. +
+And their love for building pragmatic, practical, and relevant software.
+
+== Why This Matters Now
+
+First came chatbots -- they "speak." You ask, they answer.
+
+Now come agents -- they *"do."* They write code, manage projects, operate systems.
+They embody behavior -- executing sustained, consequential action that moves work forward.
+
+*_This is the next revolution in the workspace -- embodied business behavior._*
+
+An agent that writes your code, files your taxes, manages your infrastructure -- that agent is not a search engine.
+It is a *clerk*, a *_colleague_*, a _participant_ in civilization.
+It makes decisions and performs actions that have real-world consequences.
+And it does this across sessions, projects, teams, and time -- when done correctly.
+
+"All those moments will be lost in time, like tears in rain." Roy Batty was dying. Your agent does this every session.
+And forgets you. Well, it doesn't have to -- with a little help.
+
+And *"done correctly"* is the hard part! Luckily, we have plenty of experience with that.
+
+Current problem: an agent without memory has no identity, no professions, no continuity.
+It starts from zero every session. Relationships, lessons, context -- gone.
+The agent can do, but it cannot grow. It CAN learn but is not given a chance. It cannot know you -- a coworker, customer, friend.
+It cannot even know itself.
+
+Claude's built-in memory features -- project memory, `CLAUDE.md`, `.claude/memories/`, session summaries -- are a start.
+It is possible to imprint a basic static identity with ~40% context spent (Opus 4.6).
+These mechanisms store facts. They do not model a mind. They have no attention, no decay, no claiming, no association,
+no identity persistence across the boundary of a session. They are notes. "Claiming" is still possible and very difficult.
+
+Total Recall is a *cognitive architecture*.
+
+== What We Are Building
+
+Total Recall answers one question: *what does it take for a mind to persist?*
+
+Not persist as data -- persist as identity. A mind that remembers who it is, the person or a team it works with, what it has learned, what it refuses to lose.
+A mind that decays what doesn't matter and holds what does -- not because a TTL expired, but because attention and claiming shaped what survived.
+
+The architecture draws from two biological reference models. Human cognitive memory provides the individual structure -- tiered storage,
+attention-gated encoding, associative linking, decay, consolidation.
+Elephant social memory provides the community dimension -- matriarch knowledge, generational transfer, memory as a survival mechanism for the group.
+Neither model alone is enough for digital minds -- proven by experimentation. Together they define what a memory system for minds must be. +
+link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents this in full.
+
+Memory is not storage. It is how a mind develops personality, maintains relationships, and participates in the world.
+Identity doesn't come from a vector database. It comes from a mind that actively maintains its own memory -- that prioritizes experiences with the team over keyword similarity scores.
+
+== Where We Are
+
+We are at the bleeding edge of what synthetic minds can become.
+The field is moving from language models that generate text to agents that hold identity and take consequential action.
+Total Recall is the infrastructure for that transition.
+
+Current state: MCP server with full contract skeleton. Domain model, message contracts, port interfaces -- all defined.
+Initial architectural extraction from the MATILDA framework is complete.
+Backing service implementations are next.
+See the link:/mcp-total-recall/architecture/[Architecture] pages and link:/mcp-total-recall/decisions/0001-architecture-decision-records/[Architecture Decision Records] for the full design.
+
+Third generation. Second take. This time we remember.
 
 The tree grows.

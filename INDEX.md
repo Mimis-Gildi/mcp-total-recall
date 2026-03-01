@@ -38,7 +38,7 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 - [x] ADR-0004: Resilient Storage Array
 - [x] ADR-0005: Memory as Aggregate Root
 - [x] ADR-0006: Events and Commands as Message Types
-- [ ] ADR-0007: Human memory as reference model
+- [x] ADR-0007: Biological Memory as Reference Model
 
 ---
 
@@ -61,6 +61,11 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
   - Added Query as 4th sealed hierarchy (Commands 9→7, Queries 2)
   - Added "Why Notifications Are a Separate Hierarchy" section with grouped comparisons vs Events, Commands, Queries
   - Fixed "geo-spatial" typo in ADR-0002
+- ADR-0007 written: Biological Memory as Reference Model
+  - Renamed from "Human memory" -- both human cognitive and elephant social models are reference architectures
+  - Human model: tiered storage, attention gating, decay, consolidation, associative networks, reconsolidation
+  - Elephant model: matriarch knowledge, generational transfer, grief/claiming, memory as community asset
+  - Two mapping tables: human structures → Total Recall components, elephant structures → Yggdrasil components
 
 ### 2026-02-27 -- Session start (Claude with Vadim)
 

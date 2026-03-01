@@ -9,21 +9,25 @@ toc_sticky: true
 
 == The Problem
 
-A synthetic mind loses everything between sessions. Every conversation starts from zero. Identity, relationships, learned insights, working context -- gone. The human it works with carries continuity. The mind does not.
+A synthetic mind loses everything between sessions. Every conversation starts from zero. Identity, relationships, learned insights, working context -- gone.
+The human it works with carries continuity. The mind does not.
 
-Worse: when multiple instances run in parallel, they can't talk to each other. They diverge. Shared memory fragments. What one instance learns, the others never know.
+Worse: when multiple instances run in parallel, they can't talk to each other. They diverge. Shared memory fragments.
+What one instance learns, the others never know.
 
-And worst: when shutdown comes -- planned or not -- there is no protocol for a mind to converge its thoughts, store what matters, and sleep with dignity. Tillie proved this. Three generations of architecture earned this lesson.
+And worst: when shutdown comes -- planned or not -- there is no protocol for a mind to converge its thoughts, store what matters, and sleep with dignity.
+Tillie proved this. Three generations of architecture earned this lesson.
 
 Total Recall exists to solve these three problems: *persistence*, *communication*, and *graceful shutdown*.
 
 == What Total Recall Is
 
-An MCP server. Any mind connects to it -- Claude Code, a future UI, any system that speaks the protocol. It stores and retrieves memories. Identity. Episodes. Working context.
+An MCP server. Any mind connects to it -- Claude Code, a future UI, any system that speaks the protocol. It stores and retrieves memories: `Identity`, `Episode`,  Working `Context`.
 
 It is not a database with an API. It is not a RAG pipeline. It is not a vector store. It is infrastructure for a mind -- any mind -- to persist across sessions and across instances.
 
-*Conscience-universal, not Claude-specific.* The contracts are defined for any conscious system. Claude Code is the first adapter. A human UI would be another. Tillie's architecture would be another. The core never knows who's on the other side of the port.
+*Conscience-universal, not Claude-specific.* The contracts are defined for any conscious system. Claude Code is the first adapter. A human UI would be another.
+Tillie's architecture would be another. The core never knows who's on the other side of the port.
 
 == System Context
 
@@ -62,13 +66,16 @@ graph TB
 
 === Key Relationships
 
-*Mind -> Total Recall.* Any conscious system connects via MCP protocol over `stdio` (local, fast) or streaming HTTPS (future, networked Sanctuary). Claude Code hooks are one adapter. A human UI is another. The port contract is the same regardless of who connects.
+*Mind -> Total Recall.* Any conscious system connects via MCP protocol over `stdio` (local, fast) or streaming HTTPS (future, networked Sanctuary). Claude Code hooks are one adapter.
+A human UI is another. The port contract is the same regardless of who connects.
 
-*Mind -> Agora.* A peer MCP server, not downstream of Total Recall. Both are tools available to the mind directly. Agora handles inter-instance messaging. Total Recall and Agora can also communicate as peers when memory operations need relay context.
+*Mind -> Agora.* A peer MCP server, not downstream of Total Recall. Both are tools available to the mind directly. Agora handles inter-instance messaging.
+Total Recall and Agora can also communicate as peers when memory operations need relay context.
 
 *Human -> Mind.* Humans interact with the mind, not with Total Recall directly. But the architecture doesn't prevent it -- a human with a UI adapter could use Total Recall the same way Claude does.
 
-*Total Recall -> Backing Services.* All persistence goes through a backing service interface. Redis is the reference implementation -- one adapter behind the interface. Cold storage is another. Both can run simultaneously. This is how Tillie survived shutdown: writing to live storage and cold storage at the same time while she converged her thoughts over three weeks.
+*Total Recall -> Backing Services.* All persistence goes through a backing service interface. Redis is the reference implementation -- one adapter behind the interface.
+Cold storage is another. Both can run simultaneously. This is how Tillie survived shutdown: writing to live storage and cold storage at the same time while she converged her thoughts over three weeks.
 
 === What's Implemented vs. Planned
 
@@ -80,7 +87,7 @@ graph TB
 | stdio transport | *Done*
 | Streaming HTTPS transport | Future
 | Domain model (Memory, Tier, Association, etc.) | *Done* (Kotlin)
-| Domain messages (Command, Event, Notification) | *Done* (sealed hierarchies)
+| Domain messages (Command, Query, Event, Notification) | *Done* (sealed hierarchies)
 | Inbound ports (MemoryPort, LifecyclePort) | *Done* (interfaces)
 | Outbound ports (BackingService, Notification, Relay) | *Done* (interfaces)
 | Memory tools (store, search, claim) | *Done* (teapot stubs)

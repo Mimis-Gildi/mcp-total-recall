@@ -25,11 +25,12 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *AttentionScore* -- score, last access, decay rate, claimed flag.
 * *SearchFilter* -- tier, time range, tags, association type constraints.
 
-=== Domain Messages (3 sealed hierarchies)
+=== Domain Messages (4 sealed hierarchies)
 
 `mimis.gildi.memory.domain.message` -- every message from the catalog, now type-safe:
 
-* *Command* -- 9 sealed variants. `StoreCommand`, `ClaimCommand`, `SearchCommand`, `AssociateCommand`, `ReclassifyCommand`, `ReflectCommand`, `ConsolidateCommand`, `ShutdownCommand`, `DecaySweep`.
+* *Command* -- 7 sealed variants. `StoreCommand`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ConsolidateCommand`, `ShutdownCommand`, `DecaySweep`.
+* *Query* -- 2 sealed variants. `SearchQuery`, `ReflectQuery`.
 * *Event* -- 13 sealed variants. Every state change in the system is a named, typed event.
 * *Notification* -- 2 sealed variants. `BreakNotification`, `SessionAuditPrompt`.
 
@@ -48,13 +49,15 @@ Outbound (`mimis.gildi.memory.port.outbound`):
 
 === MCP Server (8 tools)
 
-The server runs on stdio and registers all 8 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses. The contract skeleton is complete; backing services are not yet wired.
+The server runs on stdio and registers all 8 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
+The contract skeleton is complete; backing services are not yet wired.
 
 Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.
 
 == What This Means
 
-The design and the code now agree. Every port in the hexagonal diagram has a Kotlin interface. Every message in the catalog has a sealed class. Every tool in the MCP server maps to a domain command. No interface depends on an implementation -- no Redis imports in port definitions.
+The design and the code now agree. Every port in the hexagonal diagram has a Kotlin interface. Every message in the catalog has a sealed class.
+Every tool in the MCP server maps to a domain command. No interface depends on an implementation -- no Redis imports in port definitions.
 
 == What's Next
 

@@ -17,7 +17,8 @@ The lesson, earned across generations: *if any layer depends on the internals of
 
 == Hexagonal Architecture
 
-Total Recall uses ports and adapters. The core domain knows nothing about transport, nothing about persistence, nothing about who connects. It speaks through ports -- defined interfaces. Adapters plug into ports and handle the specifics.
+Total Recall uses ports and adapters. The core domain knows nothing about transport, nothing about persistence, nothing about who connects.
+It speaks through ports -- defined interfaces. Adapters plug into ports and handle the specifics.
 
 This means:
 
@@ -112,7 +113,7 @@ graph TB
 
 === Inbound Ports
 
-[cols="1,1,3,2", options="header"]
+[cols="1,1,3,2",options="header"]
 |===
 | Port | Kotlin Interface | Responsibility | Contract
 
@@ -127,11 +128,12 @@ graph TB
 | `session_start`, `session_end`, `state_transition`, `heartbeat`
 |===
 
-Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future). The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
+Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future).
+The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
 
 === Outbound Ports
 
-[cols="1,1,3,2", options="header"]
+[cols="1,1,3,2",options="header"]
 |===
 | Port | Kotlin Interface | Responsibility | Contract
 
@@ -151,9 +153,12 @@ Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (prim
 | `send`, `receive`, `list_pending` (future)
 |===
 
-Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future). Both can run simultaneously -- graceful shutdown depends on this.
+Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).
+Both can run simultaneously -- graceful shutdown depends on this.
 
-Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans). The notification port is how Total Recall talks back -- not just responding to requests, but proactively alerting the mind. "You've been in task mode for 90 minutes." "Session ending -- what do you want to remember?"
+Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans). T
+he notification port is how Total Recall talks back -- not just responding to requests, but proactively alerting the mind. "You've been in task mode for 90 minutes."
+"Session ending -- what do you want to remember?"
 
 Relay adapters: Agora (future). A peer MCP server that the mind also connects to directly.
 
@@ -161,7 +166,7 @@ Relay adapters: Agora (future). A peer MCP server that the mind also connects to
 
 The Daemon actor manages internal timers that drive self-checks. These are not adapters -- they live inside the core because they are domain logic, not infrastructure.
 
-[cols="1,2,3", options="header"]
+[cols="1,2,3",options="header"]
 |===
 | Timer | Fires | Purpose
 
@@ -182,11 +187,12 @@ The Daemon actor manages internal timers that drive self-checks. These are not a
 | Merge related memories, strengthen associations
 |===
 
-Timers produce internal commands consumed by actors. When a timer needs to reach the mind (break check, session audit), the actor sends through the Notification Port -- never directly to a specific adapter.
+Timers produce internal commands consumed by actors. When a timer needs to reach the mind (break check, session audit),
+the actor sends through the Notification Port -- never directly to a specific adapter.
 
 === Cross-Cut Adapters
 
-[cols="1,2,3", options="header"]
+[cols="1,2,3",options="header"]
 |===
 | Adapter | Concern | Constraint
 
@@ -207,7 +213,8 @@ Cross-cuts attach to the core as adapters. They never live inside the domain. Th
 
 == Actor Model
 
-Inside the hexagon, the core domain uses the actor model. Each bounded context is an actor with its own state. Actors communicate through messages -- commands and events. No shared mutable state.
+Inside the hexagon, the core domain uses the actor model. Each bounded context is an actor with its own state.
+Actors communicate through messages -- commands, queries, events, and notifications. No shared mutable state.
 
 Why actors:
 

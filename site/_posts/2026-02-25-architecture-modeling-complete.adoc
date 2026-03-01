@@ -19,13 +19,14 @@ Four architecture pages now document the system design:
 * *link:/mcp-total-recall/architecture/[System Context]* -- what Total Recall is, who connects, how it fits into Yggdrasil
 * *link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- ports and adapters, the actor model, cross-cut concerns
 * *link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]* -- six actors (Tiered Memory, Association Graph, Attention, Recollection, Session Context, Daemon) and their message flows
-* *link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, event, and notification named and typed
+* *link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification named and typed
 
-All diagrams are live Mermaid -- rendered in the browser, not static images. Sequence diagrams trace the full path through the domain for store, search, claim, decay sweep, session lifecycle, and reflect operations.
+All diagrams are live Mermaid -- rendered in the browser, not static images.
+Sequence diagrams trace the full path through the domain for store, search, claim, decay sweep, session lifecycle, and reflect operations.
 
 == Key Decisions
 
-[cols="1,3", options="header"]
+[cols="1,3",options="header"]
 |===
 | Decision | Rationale
 

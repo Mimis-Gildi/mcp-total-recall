@@ -175,7 +175,7 @@ Full payload details are documented on the link:/mcp-total-recall/architecture/m
 === Akka / Actor Model (Hewitt, 1973)
 
 Actors communicate exclusively through messages. No shared state. Each actor processes messages sequentially. This is the theoretical foundation.
-Total Recall's bounded contexts are actors, and their messages are the commands and events defined here.
+Total Recall's bounded contexts are actors, and their messages are the commands, queries, events, and notifications defined here.
 Vadim's prior work with Akka-Kotlin Actor model architectures (call center bots, 2022) directly informs this choice.
 
 === Domain-Driven Design (Evans, 2003)

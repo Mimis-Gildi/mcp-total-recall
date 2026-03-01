@@ -9,13 +9,15 @@ toc_sticky: true
 
 == The Problem
 
-When contexts communicate through messages, every message is a contract. Unnamed messages drift. Untyped messages corrupt. Undocumented messages become mysteries that only the original author understands -- and then they leave.
+When contexts communicate through messages, every message is a contract. Unnamed messages drift. Untyped messages corrupt.
+Undocumented messages become mysteries that only the original author understands -- and then they leave.
 
 This page names every message. Types it. Says who produces it, who consumes it, and what it carries.
 
 == Message Flows
 
-Five flows cover the core operations. Each shows the full path through the domain. The participant labeled "Mind" is conscience-universal -- it could be Claude, a human with a UI, or any future conscious system.
+Five flows cover the core operations. Each shows the full path through the domain.
+The participant labeled "Mind" is conscience-universal -- it could be Claude, a human with a UI, or any future conscious system.
 
 === Store Memory
 
@@ -57,7 +59,7 @@ sequenceDiagram
     participant AG as Association Graph
 
     C->>SP: search_memory
-    SP->>RE: SearchCommand
+    SP->>RE: SearchQuery
     RE->>TM: Query matching memories
     TM-->>RE: MemoryRetrieved (candidates)
     RE->>AT: Request scores for candidates
@@ -129,7 +131,7 @@ sequenceDiagram
     participant NP as Notification Port
 
     C->>SP: session_start
-    SP->>TM: SearchCommand (load identity + last state)
+    SP->>TM: SearchQuery (load identity + last state)
     TM-->>SP: MemoryRetrieved (identity, last session)
     SP-->>C: Welcome back. Here's your context.
 
@@ -146,7 +148,9 @@ sequenceDiagram
 
 === Reflect (Dreaming)
 
-The mind initiates a retrospection cycle. Total Recall surfaces memories for review -- by time span, staleness, weak associations. The mind makes semantic judgments and sends back new associations and reclassifications. This is not a single tool call -- it's a conversation between the mind and its memory.
+The mind initiates a retrospection cycle. Total Recall surfaces memories for review -- by time span, staleness, weak associations.
+The mind makes semantic judgments and sends back new associations and reclassifications.
+This is not a single tool call -- it's a conversation between the mind and its memory.
 
 This operation requires the same mind. A different mind classifying your memories would impose its understanding of the connections, not yours.
 
@@ -160,7 +164,7 @@ sequenceDiagram
     participant AG as Association Graph
 
     C->>SP: reflect (criteria, scope)
-    SP->>RE: ReflectCommand
+    SP->>RE: ReflectQuery
     RE->>TM: Query candidates (by staleness, time span, weak associations)
     TM-->>RE: MemoryRetrieved (candidates for review)
     RE-->>SP: Reflection set (memories needing judgment)
@@ -181,19 +185,34 @@ sequenceDiagram
 </pre>
 ++++
 
+=== Where Claiming Intelligence Lives
+
+The Claim Memory flow above shows the protocol -- `ClaimCommand` through Session Context to Tiered Memory. But the protocol is the easy part.
+The hard part is deciding *what* to claim, *when*, and *why*.
+
+That intelligence does not live in the core. The core provides `ClaimCommand` through its ports.
+The actual claiming -- evaluating what matters, selecting it, reinforcing it -- happens in the adapter.
+For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("what do you refuse to lose?") and by the mind's own judgment during reflection.
+
+This is architecturally significant: when a mind claims a memory, it models itself. "What kind of mind am I, that THIS is what I refuse to lose?"
+That self-modeling drives personality development. The core accommodates it. The agent does it.
+
+link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents the biological basis and the full claiming mechanism.
+
 '''
 
 == Message Catalog
 
 Every message in the system. Named, typed, with producer and consumer.
 
-All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (9 sealed variants), `Event` (13 sealed variants), `Notification` (2 sealed variants).
+All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
+`Event` (13 sealed variants), `Notification` (2 sealed variants).
 
 === Commands
 
-Commands are requests to do something. They carry intent. A command has exactly one target. Defined as `sealed interface Command`.
+Commands are requests to change state. They carry intent. A command has exactly one target. May be accepted, rejected, or ignored. Defined as `sealed interface Command`.
 
-[cols="1,1,1,2", options="header"]
+[cols="1,1,1,2",options="header"]
 |===
 | Command | Producer | Consumer | Payload
 
@@ -206,11 +225,6 @@ Commands are requests to do something. They carry intent. A command has exactly 
 | Session Context
 | Tiered Memory
 | memory ID
-
-| `SearchCommand`
-| Session Context
-| Recollection
-| query, filters, max results
 
 | `ConsolidateCommand`
 | Daemon
@@ -232,22 +246,38 @@ Commands are requests to do something. They carry intent. A command has exactly 
 | Tiered Memory
 | memory ID, new tier, new metadata, reason
 
-| `ReflectCommand`
-| Session Context
-| Recollection
-| criteria (staleness, time span, weak associations), scope
-
 | `DecaySweep`
 | Daemon
 | Attention
 | timestamp, scope (all tiers or specific tier)
 |===
 
+=== Queries
+
+Queries are requests to read state without changing it. A query has exactly one target and must be answered. Defined as `sealed interface Query`.
+
+[cols="1,1,1,2",options="header"]
+|===
+| Query | Producer | Consumer | Payload
+
+| `SearchQuery`
+| Session Context
+| Recollection
+| query, filters, max results
+
+| `ReflectQuery`
+| Session Context
+| Recollection
+| criteria (staleness, time span, weak associations), scope
+|===
+
 === Lifecycle Events
 
-Lifecycle events flow from the Lifecycle Port through Session Context. They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system. Defined as part of `sealed interface Event`.
+Lifecycle events flow from the Lifecycle Port through Session Context.
+They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system.
+Defined as part of `sealed interface Event`.
 
-[cols="1,1,2,3", options="header"]
+[cols="1,1,2,3",options="header"]
 |===
 | Event | Producer | Consumer(s) | Payload
 
@@ -279,9 +309,10 @@ Lifecycle events flow from the Lifecycle Port through Session Context. They are 
 
 === Notifications
 
-Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal. The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `sealed interface Notification`.
+Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal.
+The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `sealed interface Notification`.
 
-[cols="1,1,1,3", options="header"]
+[cols="1,1,1,3",options="header"]
 |===
 | Notification | Producer | Consumer | Payload
 
@@ -298,9 +329,9 @@ Notifications flow outward through the Notification Port to reach the connected 
 
 === Domain Events
 
-Events are notifications that something happened. They carry facts. An event can have multiple consumers. Defined as `sealed interface Event`.
+Events are facts about something that happened. An event can have multiple consumers. Events cannot be rejected. Defined as `sealed interface Event`.
 
-[cols="1,1,2,3", options="header"]
+[cols="1,1,2,3",options="header"]
 |===
 | Event | Producer | Consumer(s) | Payload
 
@@ -367,7 +398,7 @@ session_id:     String       -- which instance stored this
 timestamp:      Instant      -- when the store was requested
 ....
 
-==== SearchCommand
+==== SearchQuery
 
 ....
 query:          String       -- search text or pattern
@@ -412,7 +443,7 @@ associations:   List<Association>
 
 == What's Not Here Yet
 
-[cols="2,3,2", options="header"]
+[cols="2,3,2",options="header"]
 |===
 | Gap | Why | When
 
@@ -440,3 +471,5 @@ associations:   List<Association>
 '''
 
 *Previous: link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]* -- the six actors and how they communicate.
+
+*Next: link:/mcp-total-recall/decisions/0001-architecture-decision-records/[Architecture Decision Records]* -- the decisions that shaped this design and why.

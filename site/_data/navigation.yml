@@ -33,3 +33,5 @@ architecture:
         url: /decisions/0005-memory-as-aggregate-root/
       - title: "ADR-0006: Messages"
         url: /decisions/0006-events-and-commands-as-message-types/
+      - title: "ADR-0007: Bio Memory"
+        url: /decisions/0007-biological-memory-as-reference-model/

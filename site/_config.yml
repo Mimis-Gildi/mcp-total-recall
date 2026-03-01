@@ -38,6 +38,7 @@ collections:
       - 0004-resilient-storage-array.adoc
       - 0005-memory-as-aggregate-root.adoc
       - 0006-events-and-commands-as-message-types.adoc
+      - 0007-biological-memory-as-reference-model.adoc
 
 pagination:
   enabled: true

@@ -126,7 +126,7 @@ Any connected session can call:
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
 - [x] Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
-- [x] Domain messages: Command, Event, Notification sealed hierarchies
+- [x] Domain messages: Command, Query, Event, Notification sealed hierarchies
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
 - [x] 8 MCP tools registered (teapot stubs)

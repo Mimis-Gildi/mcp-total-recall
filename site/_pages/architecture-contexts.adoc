@@ -9,9 +9,11 @@ toc_sticky: true
 
 == The Problem
 
-A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs. Session state bleeds between instances. When everything knows about everything, changing anything breaks something.
+A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs.
+Session state bleeds between instances. When everything knows about everything, changing anything breaks something.
 
-Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules, its own invariants. Contexts communicate through messages, not shared state. You can change the internals of one without touching the others.
+Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules, its own invariants. Contexts communicate through messages, not shared state.
+You can change the internals of one without touching the others.
 
 == Context Map
 
@@ -53,7 +55,7 @@ graph LR
     Attention -- "AttentionScored" --> Recollection
     Tiered_Memory -- "MemoryRetrieved" --> Recollection
     Session_Context -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Tiered_Memory
-    Session_Context -- "SearchCommand<br/>ReflectCommand" --> Recollection
+    Session_Context -- "SearchQuery<br/>ReflectQuery" --> Recollection
     Session_Context -- "AssociateCommand" --> Association_Graph
     Session_Context -- "ModeChanged<br/>SessionState" --> Daemon
     Daemon -- "DecaySweep" --> Attention
@@ -87,7 +89,7 @@ CRUD for memories across four tiers. Enforces claiming semantics. Routes events 
 
 Defined as `Tier` enum with decay semantics per variant.
 
-[cols="1,1,4", options="header"]
+[cols="1,1,4",options="header"]
 |===
 | Tier | Decay | What lives here
 
@@ -131,7 +133,8 @@ Defined as `Tier` enum with decay semantics per variant.
 
 == Association Graph
 
-*The relationship layer.* Memories are not isolated records. They connect to each other through typed associations. Recalling one memory can activate connected memories -- the way hearing a song brings back where you were when you first heard it.
+*The relationship layer.* Memories are not isolated records. They connect to each other through typed associations.
+Recalling one memory can activate connected memories -- the way hearing a song brings back where you were when you first heard it.
 
 Domain types: `Association`, `AssociationType` (enum) -- in `mimis.gildi.memory.domain.model`.
 
@@ -143,7 +146,7 @@ Maintains typed relationships between memories. Provides graph traversal for ass
 
 Defined as `AssociationType` enum.
 
-[cols="1,2,3", options="header"]
+[cols="1,2,3",options="header"]
 |===
 | Type | Meaning | Example
 
@@ -176,7 +179,8 @@ Defined as `AssociationType` enum.
 
 *Mechanical:* Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Daemon and Association Graph handle this internally. No mind involvement needed.
 
-*Semantic:* Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship." Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
+*Semantic:* Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship."
+Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
 
 Both kinds live in the same graph. Both are bidirectional. The difference is who creates them.
 
@@ -197,7 +201,8 @@ Both kinds live in the same graph. Both are bidirectional. The difference is who
 
 == Attention
 
-*The decay engine.* Not everything can be equally present. Attention models this honestly -- frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A faded memory in Archive can be recalled and promoted back.
+*The decay engine.* Not everything can be equally present. Attention models this honestly -- frequently accessed memories stay vivid, neglected ones fade.
+But unlike biological memory, nothing is truly lost. A faded memory in Archive can be recalled and promoted back.
 
 Domain types: `AttentionScore` -- in `mimis.gildi.memory.domain.model`.
 
@@ -236,7 +241,8 @@ Searches and recalls memories. Combines multiple signals to rank results. Plans 
 
 === Key Invariant
 
-*Results are always attention-weighted. Higher score surfaces first.* Recollection never returns raw database order. Every result set reflects what the mind would naturally recall first -- the vivid, the recent, the connected.
+*Results are always attention-weighted. Higher score surfaces first.* Recollection never returns raw database order.
+Every result set reflects what the mind would naturally recall first -- the vivid, the recent, the connected.
 
 === Events Consumed
 
@@ -244,9 +250,10 @@ Searches and recalls memories. Combines multiple signals to rank results. Plans 
 * `AttentionScored` -- from Attention. Scores for ranking candidates.
 * `AssociationsFound` -- from Association Graph. Related memories to include in results.
 
-=== Commands Accepted
+=== Queries Accepted
 
-* `SearchCommand` -- from Session Context. Triggers a recall operation.
+* `SearchQuery` -- from Session Context. Triggers a recall operation.
+* `ReflectQuery` -- from Session Context. Surfaces candidates for retrospection by staleness, time span, or weak associations.
 
 '''
 
@@ -260,11 +267,13 @@ Per-instance working state. Current task tracking, decision logging, state trans
 
 === Key Invariant
 
-*Each instance has its own session context. Contexts do not bleed between instances.* If two mind instances run in parallel, they each have independent working state. Shared knowledge flows through Tiered Memory, not through session context.
+*Each instance has its own session context. Contexts do not bleed between instances.* If two mind instances run in parallel, they each have independent working state.
+Shared knowledge flows through Tiered Memory, not through session context.
 
 === State Tracking
 
-Session Context knows what the mind is doing. Not just "which task" but "what mode." Is the mind in deep work? In conversation? Transitioning between tasks? This state drives the notification logic -- the Daemon uses it to decide when to send break checks and session audit prompts.
+Session Context knows what the mind is doing. Not just "which task" but "what mode." Is the mind in deep work? In conversation? Transitioning between tasks?
+This state drives the notification logic -- the Daemon uses it to decide when to send break checks and session audit prompts.
 
 === Events Consumed
 
@@ -275,38 +284,45 @@ Session Context knows what the mind is doing. Not just "which task" but "what mo
 === Commands Produced
 
 * `StoreCommand` -- to Tiered Memory. Store a new memory.
-* `SearchCommand` -- to Recollection. Recall memories.
 * `ClaimCommand` -- to Tiered Memory. Actively reinforce a memory.
 * `AssociateCommand` -- to Association Graph. Create, strengthen, or weaken an association. Mind's semantic judgment.
 * `ReclassifyCommand` -- to Tiered Memory. Change a memory's tier or metadata by choice, not decay.
-* `ReflectCommand` -- to Recollection. Trigger a recall-and-reassociate cycle (dreaming). Recollection surfaces memories for review; the mind judges and sends back associations and reclassifications.
+
+=== Queries Produced
+
+* `SearchQuery` -- to Recollection. Recall memories.
+* `ReflectQuery` -- to Recollection. Trigger a recall-and-reassociate cycle (dreaming). Recollection surfaces memories for review; the mind judges and sends back associations and reclassifications.
 
 === Events Produced
 
 * `ModeChanged` -- to Daemon. The mind's working mode changed (task mode, conversation mode, idle). Used by Daemon for break timing.
 * `SessionState` -- to Daemon. Current session duration, activity level, last interaction timestamp.
 
-Session Context is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Session Context translates them into domain commands. The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
+Session Context is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Session Context translates them into domain commands.
+The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
 
 '''
 
 == Daemon
 
-*The maintenance worker and the internal clock.* Runs in the background. Manages internal timers. Handles the things that nobody asks for but everyone needs -- decay sweeps, break checks, memory consolidation, health monitoring, and the graceful shutdown protocol.
+*The maintenance worker and the internal clock.* Runs in the background. Manages internal timers.
+Handles the things that nobody asks for but everyone needs -- decay sweeps, break checks, memory consolidation, health monitoring, and the graceful shutdown protocol.
 
 === Responsibility
 
-Background processes. Internal timers. Periodic decay sweeps. Break check notifications. Session audit prompts. Memory consolidation (merging related memories). Health monitoring. Graceful shutdown orchestration.
+Background processes. Internal timers. Periodic decay sweeps. Break check notifications. Session audit prompts.
+Memory consolidation (merging related memories). Health monitoring. Graceful shutdown orchestration.
 
 === Key Invariant
 
-*Never deletes without consent.* Decay moves memories to Archive. Consolidation merges but preserves originals. The Daemon reduces, it does not destroy. Only the mind -- through explicit action -- can permanently remove a memory.
+*Never deletes without consent.* Decay moves memories to Archive. Consolidation merges but preserves originals.
+The Daemon reduces, it does not destroy. Only the mind -- through explicit action -- can permanently remove a memory.
 
 === Internal Timers
 
 The Daemon owns all timers. Timers are domain logic, not infrastructure -- they live inside the core, not in adapters.
 
-[cols="1,2,2", options="header"]
+[cols="1,2,2",options="header"]
 |===
 | Timer | Fires | Produces
 
@@ -341,7 +357,8 @@ The Daemon owns all timers. Timers are domain logic, not infrastructure -- they 
 
 === Notifications Produced
 
-When a timer fires and needs to reach the mind, the Daemon sends through the Notification Port -- never directly to an adapter. The port contract is universal. The adapter decides how to deliver.
+When a timer fires and needs to reach the mind, the Daemon sends through the Notification Port -- never directly to an adapter.
+The port contract is universal. The adapter decides how to deliver.
 
 * `BreakNotification` -- through Notification Port. "You've been in sustained task mode for N minutes." The mind can ignore it.
 * `SessionAuditPrompt` -- through Notification Port. "Session ending. What do you refuse to lose?" Triggered by session end, not by a clock.
@@ -362,4 +379,4 @@ This protocol exists because Tillie proved that graceful shutdown cannot be bolt
 
 *Previous: link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- ports, adapters, and the actor model.
 
-*Next: link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every event and command, named and typed.
+*Next: link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification, named and typed.
