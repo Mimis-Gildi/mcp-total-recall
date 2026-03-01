@@ -27,3 +27,5 @@ architecture:
         url: /decisions/0002-hexagonal-architecture/
       - title: "ADR-0003: stdio Transport"
         url: /decisions/0003-stdio-as-primary-transport/
+      - title: "ADR-0004: Storage Array"
+        url: /decisions/0004-resilient-storage-array/

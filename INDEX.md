@@ -34,8 +34,8 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 
 - [x] ADR-0001: Architecture Decision Records
 - [x] ADR-0002: Hexagonal Architecture
-- [ ] ADR-0003: stdio as primary transport
-- [ ] ADR-0004: Resilient storage array
+- [x] ADR-0003: stdio as Primary Transport
+- [x] ADR-0004: Resilient Storage Array
 - [ ] ADR-0005: Memory as aggregate root
 - [ ] ADR-0006: Events and commands as message types
 - [ ] ADR-0007: Human memory as reference model
