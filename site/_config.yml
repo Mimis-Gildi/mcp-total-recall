@@ -33,6 +33,7 @@ collections:
     permalink: /decisions/:name/
     order:
       - 0001-architecture-decision-records.adoc
+      - 0002-hexagonal-architecture.adoc
 
 pagination:
   enabled: true

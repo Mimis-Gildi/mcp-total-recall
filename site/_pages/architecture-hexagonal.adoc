@@ -13,7 +13,7 @@ Generation 1 (MATILDA Core) coupled memory to the consciousness engine. When the
 
 Generation 3 Take 1 coupled directly to Redis and used SSE transport. When Redis wasn't available, nothing worked. When SSE proved wrong for MCP, the transport couldn't be swapped without rewriting the server.
 
-The lesson, paid for twice: *if any layer depends on the internals of another layer, changing one breaks the other.* This is not a theoretical concern. This is how we lost working systems.
+The lesson, earned across generations: *if any layer depends on the internals of another layer, the system cannot outlive its infrastructure choices.* Acceptable for experiments. Unacceptable for production.
 
 == Hexagonal Architecture
 

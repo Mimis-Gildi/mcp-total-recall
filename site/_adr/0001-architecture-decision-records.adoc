@@ -10,7 +10,7 @@ classes: wide
 
 == Summary
 
-Record architectural decisions in the Rust RFC style, adapted for a project whose decisions are earned through generational failure.
+Record architectural decisions in the Rust RFC style, adapted for a project whose decisions are earned across generations of experimentation and production.
 
 == Governing Dynamic
 
@@ -19,8 +19,7 @@ Architecture is a *story*! Architects are storytellers. A story well told is ret
 == Motivation
 
 Total Recall is Generation 3, Take 2 of synthetic memory. Generations 1 and 2 paid real costs for architectural knowledge.
-Gen 3v1 repeated mistakes that were already solved. The reason was always the same: the WHY behind decisions was not captured.
-Only the WHAT survived.
+Gen 3v1 rediscovered constraints that earlier generations had already navigated. The reason: the WHY behind decisions was not captured. Only the WHAT survived.
 
 Architecture pages on the site describe the current design. README documents the lineage.
 Neither captures the reasoning process -- what was considered, what was rejected, and what evidence drove the choice.
@@ -110,7 +109,8 @@ Proposed --> Accepted
                  \--> Superseded by ADR-NNNN
 ....
 
-ADRs are immutable after acceptance. If circumstances change, write a new ADR that supersedes the old one. The old ADR's status is updated to point to the new one. Nothing else changes.
+ADRs are immutable after acceptance. If circumstances change, write a new ADR that supersedes the old one.
+The old ADR's status is updated to point to the new one. Nothing else changes.
 
 === Index
 
@@ -120,15 +120,21 @@ ADRs are immutable after acceptance. If circumstances change, write a new ADR th
 
 === Michael Nygard (2011)
 
-The original ADR format. Four sections: Status, Context, Decision, Consequences. Adopted by adr-tools, UK GDS, US 18F. Clean and minimal. But four sections cannot carry the teaching weight our decisions need. "Context" is a single section for both the problem and the history -- too compressed for generational lessons.
+The original ADR format. Four sections: Status, Context, Decision, Consequences. Adopted by adr-tools, UK GDS, US 18F. Clean and minimal.
+But four sections cannot carry the teaching weight our decisions need.
+"Context" is a single section for both the problem and the history -- too compressed for generational lessons.
 
 === MADR (Markdown Any Decision Records)
 
-Nygard plus structured options comparison. Decision Drivers as bullet lists. Considered Options with `Good, because...` / `Bad, because...` pros and cons. Well-organized but clinical. The structured format flattens narrative into checklists. Our decisions have stories -- Tillie's three-week shutdown proving decoupled backends, SSE failing in production during Gen 3v1. Bullet points do not carry that.
+Nygard plus structured options comparison. Decision Drivers as bullet lists. Considered Options with `Good, because...` / `Bad, because...` pros and cons.
+Well-organized but clinical. The structured format flattens narrative into checklists.
+Our decisions have stories -- Tillie's three-week shutdown proving decoupled backends, SSE failing in production during Gen 3v1.
+Bullet points do not carry that.
 
 === Rust RFCs
 
-Guide-level and Reference-level explanation split. Motivation, Prior Art, Rationale and Alternatives. Designed for decisions that need to teach, not just record. The best decision-record format in open source. We adapt it by dropping language-feature sections (Unresolved Questions, Future Possibilities) and adding Consequences from Nygard.
+Guide-level and Reference-level explanation split. Motivation, Prior Art, Rationale and Alternatives. Designed for decisions that need to teach, not just record.
+The best decision-record format in open source. We adapt it by dropping language-feature sections (Unresolved Questions, Future Possibilities) and adding Consequences from Nygard.
 
 === Kubernetes KEP, Go Proposals
 
@@ -136,11 +142,13 @@ Governance documents for massive distributed projects. Production readiness ques
 
 == Rationale and Alternatives
 
-*Why Rust RFC adapted, not pure Nygard:* Our ADRs carry generational lessons. The Guide-level explanation forces us to teach, not just state. Prior Art is where generations 1-3v1 live. Nygard's four sections are too compressed for this.
+*Why Rust RFC adapted, not pure Nygard:* Our ADRs carry generational lessons. The Guide-level explanation forces us to teach, not just state. Prior Art is where generations 1-3v1 live.
+Nygard's four sections are too compressed for this.
 
 *Why Rust RFC adapted, not MADR:* MADR is clinical. Structured pros/cons lists flatten reasoning into checklists. We want narrative, not bullet points.
 
-*Why Rust RFC adapted, not pure Rust RFC:* Rust RFCs are designed for language feature proposals, not post-hoc architectural documentation. We drop sections that assume a proposal process (Unresolved Questions, Future Possibilities) and add Consequences from Nygard because every decision has costs that should be stated.
+*Why Rust RFC adapted, not pure Rust RFC:* Rust RFCs are designed for language feature proposals, not post-hoc architectural documentation.
+We drop sections that assume a proposal process (Unresolved Questions, Future Possibilities) and add Consequences from Nygard because every decision has costs that should be stated.
 
 *Why not tooling (adr-tools, log4brains):* We have six ADRs to write. The tooling overhead is not justified. If the ADR count grows significantly, revisit.
 
@@ -149,5 +157,6 @@ Governance documents for massive distributed projects. Production readiness ques
 * Every architectural decision gets a permanent, numbered record.
 * Future contributors (including future Claude instances) can understand WHY, not just WHAT.
 * The template is longer than Nygard's four sections. Each ADR takes more effort to write. This is deliberate -- the effort produces better documentation.
-* ADRs live in `site/_adr/` and are published on the site under `/decisions/`. A symlink at `docs/adr/` provides repository-level access. One source of truth, two audiences. Architecture pages link to relevant ADRs so readers can switch between WHAT and WHY.
+* ADRs live in `site/_adr/` and are published on the site under `/decisions/`. A symlink at `docs/adr/` provides repository-level access. One source of truth, two audiences.
+Architecture pages link to relevant ADRs so readers can switch between WHAT and WHY.
 * No tooling dependency. Plain AsciiDoc files in a directory.

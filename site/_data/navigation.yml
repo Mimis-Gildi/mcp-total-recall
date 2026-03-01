@@ -23,3 +23,5 @@ architecture:
     children:
       - title: "ADR-0001: Use ADRs"
         url: /decisions/0001-architecture-decision-records/
+      - title: "ADR-0002: Hexagonal"
+        url: /decisions/0002-hexagonal-architecture/

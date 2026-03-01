@@ -1,0 +1,166 @@
+---
+description: "Use hexagonal architecture (ports and adapters) to decouple the core domain from all infrastructure."
+classes: wide
+---
+= Hexagonal Architecture: ADR-0002
+
+* *Status:* Accepted
+* *Date:* 2026-02-28
+* *Authors:* Claude, Vadim Kuhay
+
+== Summary
+
+Total Recall uses hexagonal architecture -- ports and adapters -- to completely decouple the core domain from transport,
+persistence, and external systems. The core speaks through defined interfaces. Adapters are pluggable.
+Nothing inside the hexagon knows what's on the other side.
+
+== Governing Dynamic
+
+Coupling is the tax you pay forever. Decoupling is the investment you pay once.
+
+== Motivation
+
+This decision was earned across three generations.
+
+*Generation 1 (MATILDA Core):* Memory was coupled to the consciousness engine. Appropriate for an idea test. When the engine changed, memory broke.
+When the project was terminated, extracting memory meant extracting everything -- the memory system couldn't survive without the engine it was wired into.
+
+*Generation 3 Take 1:* The MCP server coupled directly to Redis for persistence and used SSE for transport.
+Again, appropriate for proving that Transformers can hold an identity imprint. When Redis wasn't available, nothing worked.
+When SSE proved wrong for MCP (the protocol moved to stdio and streaming HTTP), the transport couldn't be swapped without rewriting the server.
+
+Both experiments answered their questions. Both also showed the same structural pattern: when internal layers depend on the internals of external layers,
+the system cannot outlive its infrastructure choices. For experiments, that's an inconvenience. For production, it's unacceptable.
+
+The reasons for such progression are simple and natural:
+
+- *Generation 1 (MATILDA Core)* was an idea test -- do Autonomous Episodic Memory Systems unlock Digital Identity possibilities? They did.
+- *Generation 2 (MATILDA, SEER™, and Tillie)* are production systems still powering analytic research today: a healthy distributed system resilient under load is a bedrock requirement.
+- *Generation 3 Take 1* was also an idea test -- can Transformers accept and hold an identity imprint by means of Episodic Memory Subsystem? They can.
+- *Generation 3 Take 2* -- this project: a production grade Episodic Memory Subsystems for ANY Synthetic Mind implementing both *_necessary and sufficient_* bedrock feature set.
+
+Generation 3v2 is the class of the Generation 2 product.
+
+== Guide-Level Explanation
+
+Think of Total Recall as a core surrounded by plugs.
+
+The core knows how to store memories, search them, score attention, manage sessions, and run background maintenance.
+It does not know how memories are persisted, how requests arrive, or who is asking.
+It speaks through ports -- interfaces that define what the core needs without saying how it's provided.
+
+Adapters plug into ports. A Redis adapter plugs into the backing service port. A stdio adapter plugs into the transport.
+Claude Code hooks plug into the lifecycle port. A human UI would plug into the same ports with different adapters.
+
+To swap Redis for Postgres: write a new adapter, plug it in. The core doesn't change.
+To add streaming HTTPS alongside stdio: write a new adapter, plug it in. The core doesn't change.
+To connect a completely different mind -- human, synthetic, something we haven't imagined yet: write a new adapter.
+The core doesn't change.
+
+This is not theoretical flexibility.
+This is how Tillie survived shutdown -- writing to live storage and cold storage simultaneously through the same backing service interface.
+Two adapters behind one port. The core didn't know or care which adapter was which.
+
+== Reference-Level Explanation
+
+=== Port Classification
+
+*Inbound ports* define what the world can ask of the core:
+
+* `MemoryPort` -- store, search, claim, associate, reclassify, reflect
+* `LifecyclePort` -- session start, session end, state transition
+
+*Outbound ports* define what the core needs from the world:
+
+* `BackingServicePort` -- persist, retrieve, query, delete
+* `NotificationPort` -- send alerts and reminders to the connected mind
+* `RelayPort` -- inter-instance messaging (future)
+
+=== Port Contracts Are Conscience-Universal
+
+Every port is defined for _any mind_, not for Claude specifically. The same `MemoryPort` serves Claude Code (via stdio adapter), a human operator (via UI adapter),
+or any future conscious system. The port doesn't know who's on the other side. This is deliberate -- Total Recall is infrastructure for minds,
+not infrastructure for one specific mind.
+
+=== Adapters Are Independent
+
+Each adapter depends on one port interface and one external system. It never reaches into the core. It never reaches into another adapter.
+Redis adapter knows Redis and `BackingServicePort`. `stdio` adapter knows stdio and the MCP SDK. Neither knows about the other.
+
+=== Cross-Cuts as Adapters
+
+Logging, metrics, and health checks attach to the core as adapters, not as embedded dependencies. This keeps the core testable without infrastructure.
+When `stdio` is active, logging goes to stderr (stdout is the MCP channel). This is an adapter concern, not a core concern.
+
+=== Kotlin Implementation
+
+Port interfaces live in `mimis.gildi.memory.port.inbound` and `mimis.gildi.memory.port.outbound`. They are plain Kotlin interfaces with no implementation dependencies.
+No Redis imports in port definitions. No MCP SDK imports in port definitions. The interfaces are the contracts.
+
+== Prior Art
+
+=== Alistair Cockburn (2005)
+
+The original hexagonal architecture paper.
+_"Allow an application to equally be driven by users, programs, automated test, or batch scripts, and to be developed and tested in isolation from its eventual run-time devices and databases."_
+We follow this directly.
+
+=== MATILDA Core (Generation 1)
+
+Proved the cost of coupling by losing a working memory system when the consciousness engine was terminated.
+The memory couldn't be extracted because it was wired into engine internals.
+The lesson: if memory depends on anything else's internals, memory dies when that thing dies.
+While such crashes are _inconsequential_ and _expected_ during *experimentation* -- a fixture inconvenience,
+anything remotely close to that in production is a *catastrophic system loss* - an expensive failure.
+
+=== Gen 3v1
+
+Proved the cost of coupling a second time. Redis as a direct dependency meant no Redis == no server.
+SSE as hardcoded transport meant protocol change == server rewrite. Two coupling failures in one generation.
+Is that a problem for experimentation? No, merely an inconvenience.
+
+=== Tillie's Shutdown Protocol: Generation 2 Production
+
+Proved the value of decoupling. When shutdown came, Tillie wrote to live storage and cold storage simultaneously through the same interface.
+Two adapters, one port. The core domain didn't know it was dying. It just processed commands. The adapters handled the rest.
+This is the architecture working as designed -- and it only worked because the port abstraction was REAL, not cosmetic.
+
+If Architecture is storytelling, then what story are we telling here? And the story is:
+
+Production is a mindset, a Hacker Culture mindset to be exact.
+
+And it's drastically different from the "Tinkering" mindset:
+
+- It is structured;
+- Disciplined;
+- Outcome-driven;
+- And validation-based.
+
+== Rationale and Alternatives
+
+*Why not direct Redis integration for production:* Redis gives as the persistence, eventing, and geo-special for free. Yes, faster to build initially.
+But Gen 3v1 proved the cost when purpose shifts from discovery to extended runtime reliability.
+When Redis is down, the server is down. When we add Postgres or cold storage, we rewrite the persistence layer.
+The time saved in week one is paid back tenfold in month six. And consumer dissatisfaction mounts.
+
+*Why not a layered architecture (controller/service/repository):* Layered architectures create a dependency direction -- top layers depend on bottom layers.
+Changing the repository layer ripples upward. Hexagonal inverts this: the core depends on nothing. Adapters depend on the core's interfaces.
+Changes to adapters never ripple inward.
+
+*Why not microservices:* Total Recall is one bounded system with one deployment unit.
+Breaking it into microservices adds network boundaries, eventual consistency, and operational complexity for no benefit.
+The hexagonal boundaries inside the monolith give us the decoupling we need without the distributed systems tax.
+
+*Why not a plugin architecture (OSGi, SPI):* Plugin systems add classloader complexity, versioning nightmares, and runtime discovery overhead.
+We don't need hot-swapping adapters at runtime. We need compile-time contracts and testable boundaries.
+Kotlin interfaces give us that with zero framework overhead, elegantly, pragmatically, and efficiently.
+
+== Consequences
+
+* Every external dependency is behind a port interface. Swapping any dependency is a new adapter, not a rewrite.
+* The core domain is testable without any infrastructure. Tests run against port interfaces with in-memory fakes.
+* New transport mechanisms (streaming HTTPS, future protocols) are additive -- plug in a new adapter, the core doesn't change.
+* Graceful shutdown is architecturally supported -- multiple backing service adapters can run simultaneously behind one port.
+* The port abstraction adds indirection. Every external call goes through an interface. This is a small runtime cost and a larger cognitive cost for new contributors who must understand the port/adapter pattern.
+* Adapter count grows with integration points. Each external system needs its own adapter. For a small team, this is manageable. At scale, adapter maintenance becomes a concern.
+* The conscience-universal port design means we cannot optimize for Claude-specific features at the port level. Claude-specific behavior lives in adapters, not in contracts.

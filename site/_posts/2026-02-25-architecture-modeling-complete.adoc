@@ -30,7 +30,7 @@ All diagrams are live Mermaid -- rendered in the browser, not static images. Seq
 | Decision | Rationale
 
 | Hexagonal architecture
-| Generations 1 and 3v1 failed from coupling. Ports and adapters prevent this.
+| Generations 1 and 3v1 showed coupling limits during experimentation. Production requires ports and adapters.
 
 | Actor model internally
 | Isolation, message passing, no shared mutable state. Each bounded context owns its data.
@@ -42,7 +42,7 @@ All diagrams are live Mermaid -- rendered in the browser, not static images. Seq
 | Contracts are defined for any mind, not Claude specifically.
 
 | SSE rejected
-| Gen 3v1 mistake. stdio primary, streaming HTTPS secondary.
+| Gen 3v1 experimented with SSE. Production uses stdio primary, streaming HTTPS secondary.
 |===
 
 == What's Next
