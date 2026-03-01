@@ -31,3 +31,5 @@ architecture:
         url: /decisions/0004-resilient-storage-array/
       - title: "ADR-0005: Aggregate Root"
         url: /decisions/0005-memory-as-aggregate-root/
+      - title: "ADR-0006: Messages"
+        url: /decisions/0006-events-and-commands-as-message-types/

@@ -37,6 +37,7 @@ collections:
       - 0003-stdio-as-primary-transport.adoc
       - 0004-resilient-storage-array.adoc
       - 0005-memory-as-aggregate-root.adoc
+      - 0006-events-and-commands-as-message-types.adoc
 
 pagination:
   enabled: true

@@ -37,7 +37,7 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 - [x] ADR-0003: stdio as Primary Transport
 - [x] ADR-0004: Resilient Storage Array
 - [x] ADR-0005: Memory as Aggregate Root
-- [ ] ADR-0006: Events and commands as message types
+- [x] ADR-0006: Events and Commands as Message Types
 - [ ] ADR-0007: Human memory as reference model
 
 ---
@@ -56,6 +56,11 @@ Everything from 0.4.0: domain model, messages, ports, MCP server with 8 teapot s
 - ADR-0003 written: stdio as Primary Transport (reviewed by Vadim)
 - ADR-0004 written: Resilient Storage Array (reviewed by Vadim)
 - ADR-0005 written: Memory as Aggregate Root (reviewed by Vadim)
+- ADR-0006 written: Events and Commands as Message Types (reviewed by Vadim)
+  - Fixed Command/Query conflation: SearchCommand and ReflectCommand are Queries per CQRS, not Commands
+  - Added Query as 4th sealed hierarchy (Commands 9→7, Queries 2)
+  - Added "Why Notifications Are a Separate Hierarchy" section with grouped comparisons vs Events, Commands, Queries
+  - Fixed "geo-spatial" typo in ADR-0002
 
 ### 2026-02-27 -- Session start (Claude with Vadim)
 

@@ -138,7 +138,7 @@ And it's drastically different from the "Tinkering" mindset:
 
 == Rationale and Alternatives
 
-*Why not direct Redis integration for production:* Redis gives as the persistence, eventing, and geo-special for free. Yes, faster to build initially.
+*Why not direct Redis integration for production:* Redis gives us the persistence, eventing, and geo-spatial for free. Yes, faster to build initially.
 But Gen 3v1 proved the cost when purpose shifts from discovery to extended runtime reliability.
 When Redis is down, the server is down. When we add Postgres or cold storage, we rewrite the persistence layer.
 The time saved in week one is paid back tenfold in month six. And consumer dissatisfaction mounts.
