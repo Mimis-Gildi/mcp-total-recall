@@ -25,7 +25,13 @@ import kotlinx.serialization.json.put
 
 val rootLog = KotlinLogging.logger {}
 
-const val VERSION = "0.4.0"
+val VERSION: String by lazy {
+    val props = java.util.Properties()
+    val stream = object {}.javaClass.getResourceAsStream("/version.properties")
+        ?: error("version.properties not found on classpath")
+    stream.use { props.load(it) }
+    props.getProperty("version") ?: error("version property not found in version.properties")
+}
 
 fun main(): Unit = runBlocking {
     configureLogging()
