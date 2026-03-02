@@ -8,7 +8,7 @@ package mimis.gildi.memory.domain.model
 import java.time.Instant
 import java.util.UUID
 
-data class AttentionScore(
+data class SalienceScore(
     val memoryId: UUID,
     val score: Double,
     val lastAccessed: Instant,

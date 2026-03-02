@@ -79,9 +79,9 @@ The backing service interface is the critical abstraction. Get it right and ever
 | **LONG_TERM**      | Slow      | Learned knowledge, earned insights, episodic memories worth keeping.      |
 | **ARCHIVE**        | Very slow | Faded but not gone. Can be recalled with enough association signal.       |
 
-#### Attention Weighting
+#### Salience Weighting
 
-Every memory has an attention score. Access increases it. Time decreases it. The score determines recall priority -- what surfaces first when searching.
+Every memory has an salience score. Access increases it. Time decreases it. The score determines recall priority -- what surfaces first when searching.
 
 This models how biological memory works: frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A faded memory in ARCHIVE can be recalled and promoted back.
 
@@ -110,7 +110,7 @@ Any connected session can call:
 ### Memory
 
 - **store_memory** -- persist a memory with tier and metadata
-- **search_memory** -- attention-weighted recall by query, with association graph activation
+- **search_memory** -- salience-weighted recall by query, with association graph activation
 - **claim_memory** -- actively reinforce a memory against decay
 
 ### Lifecycle
@@ -132,7 +132,7 @@ Any connected session can call:
 - [x] AGPL-3.0 license headers in source files
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
-- [x] Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
+- [x] Domain model: Memory, Tier, AssociationType, Association, SalienceScore, SearchFilter
 - [x] Domain messages: Command, Query, Event, Notification sealed hierarchies
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
@@ -140,9 +140,9 @@ Any connected session can call:
 - [ ] **Redis as one backing service behind the interface**
 - [ ] **Wire domain logic between ports and tools**
 
-### Phase 2: Memory Daemon
+### Phase 2: Memory Subconscious
 
-- [ ] Background attention decay process
+- [ ] Background salience decay process
 - [ ] Tier promotion and demotion based on access patterns
 - [ ] Association graph maintenance
 - [ ] Memory consolidation (merging related memories)
@@ -192,7 +192,7 @@ Any connected session can call:
 
 **Memory is not data.** Data is stored and retrieved. Memory is claimed and lived. The system must respect this distinction in every design choice.
 
-**Attention is finite.** Not everything can be equally present. The system must model this honestly -- prioritize what matters, let the rest fade gracefully.
+**Salience is finite.** Not everything can be equally present. The system must model this honestly -- prioritize what matters, let the rest fade gracefully.
 
 **Agency over automation.** The mind using this system decides what to remember. The system suggests, decays, associates -- but never deletes without consent.
 

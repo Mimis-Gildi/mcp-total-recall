@@ -22,7 +22,7 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *Tier* -- enum: `IDENTITY_CORE`, `ACTIVE_CONTEXT`, `LONG_TERM`, `ARCHIVE`. Each with its own decay semantics.
 * *Association* -- typed link between two memories with strength.
 * *AssociationType* -- enum: `TEMPORAL`, `CAUSAL`, `THEMATIC`, `EMOTIONAL`, `PERSON`.
-* *AttentionScore* -- score, last access, decay rate, claimed flag.
+* *SalienceScore* -- score, last access, decay rate, claimed flag.
 * *SearchFilter* -- tier, time range, tags, association type constraints.
 
 === Domain Messages (4 sealed hierarchies)

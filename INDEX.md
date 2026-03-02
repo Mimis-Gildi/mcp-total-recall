@@ -69,12 +69,12 @@ Decomposition-driven, each section is a separate view:
 - [x] **B)** What is an Adapter? (Active Structure, references Port)
 - [x] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
 - [x] **D)** What hexagon sides do we have?
-- [x] **E1)** Tiered Memory -- the aggregate root
-- [ ] **E2)** Attention -- the scoring engine
-- [ ] **E3)** Association Graph -- the relationship layer
-- [ ] **E4)** Recollection -- the read-only assembler
-- [ ] **E5)** Session Context -- the entry point
-- [ ] **E6)** Daemon -- the maintenance worker
+- [x] **E1)** Hippocampus -- the aggregate root
+- [ ] **E2)** Salience -- the scoring engine
+- [ ] **E3)** Synapse -- the relationship layer
+- [ ] **E4)** Recall -- the read-only assembler
+- [ ] **E5)** Cortex -- the entry point
+- [ ] **E6)** Subconscious -- the maintenance worker
 
 By then we have working examples from gap resolution to accelerate design writing.
 
@@ -99,7 +99,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design B -- "What is an Adapter?": waitress (inbound) and cook (outbound), MCP tool handler and Redis adapter examples, verbs belong on adapters not ports
 - [x] Design C -- "What is an ACL?": convenience construct, not a class. Adapter + Port + Adapter = full translation path. Contract lives in core domain (the SDK). Babel fish is wrong metaphor (hides boundary). Five ACLs in Total Recall, none built as ACLs.
 - [x] Design D -- "Hexagon Sides": five faces enumerated (2 inbound, 3 outbound). 17 object shapes crossing. Every port's contract, adapters, and inside/outside handlers named.
-- [x] Design E1 -- "Tiered Memory": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. Association storage question deferred to E3.
+- [x] Design E1 -- "Hippocampus": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. Association storage question deferred to E3.
 
 ---
 
@@ -137,17 +137,17 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
 **D. Hexagon Sides** -- DONE. Five faces (2 inbound, 3 outbound), 17 object shapes, all adapters named.
 
-**E1. Tiered Memory** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Session Context, Daemon, Attention). Six events to four consumers. Claiming = active identity choice vs passive storage. Association storage ownership deferred to E3.
+**E1. Hippocampus** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Cortex, Subconscious, Salience). Six events to four consumers. Claiming = active identity choice vs passive storage. Association storage ownership deferred to E3.
 
-**E2. Attention** -- TODO. The scoring engine. Key insight: Attention computes, it doesn't store. Sends tier change events back to Tiered Memory.
+**E2. Salience** -- TODO. The scoring engine. Key insight: Salience computes, it doesn't store. Sends tier change events back to Hippocampus.
 
-**E3. Association Graph** -- TODO. Open question: own storage or part of Memory aggregate?
+**E3. Synapse** -- TODO. Open question: own storage or part of Memory aggregate?
 
-**E4. Recollection** -- TODO. Read-only assembler. Assembles from three sources at query time. No storage.
+**E4. Recall** -- TODO. Read-only assembler. Assembles from three sources at query time. No storage.
 
-**E5. Session Context** -- TODO. Entry point. Working state flows through ACTIVE_CONTEXT tier via Tiered Memory.
+**E5. Cortex** -- TODO. Entry point. Working state flows through ACTIVE_CONTEXT tier via Hippocampus.
 
-**E6. Daemon** -- TODO. Maintenance worker. Runtime timer state, writes through Tiered Memory via commands.
+**E6. Subconscious** -- TODO. Maintenance worker. Runtime timer state, writes through Hippocampus via commands.
 
 ---
 
@@ -159,7 +159,7 @@ ADR-0004 and architecture-hexagonal.adoc say: `persist, retrieve, query, delete`
 Code (BackingServicePort.kt) says: `save, findById, search, delete, update`.
 Three names don't match. Code has extra `update` not in ADR.
 
-**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is a Passive Structure (Design A) -- it defines the shape of what crosses, not what the adapter does with it. `save`, `findById`, `search` are adapter verbs (Design B), not port contract. BackingServicePort should define the object shape that crosses, not the CRUD operations. Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Tiered Memory actually goes to storage. Attention computes, Association Graph TBD, others don't persist. Resolution will come from the detailed design pass (E1-E6).
+**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is a Passive Structure (Design A) -- it defines the shape of what crosses, not what the adapter does with it. `save`, `findById`, `search` are adapter verbs (Design B), not port contract. BackingServicePort should define the object shape that crosses, not the CRUD operations. Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Hippocampus actually goes to storage. Salience computes, Synapse TBD, others don't persist. Resolution will come from the detailed design pass (E1-E6).
 
 ### D-Audit-2. NotificationPort operation names (Significant)
 
@@ -180,22 +180,22 @@ Architecture-messages page has the correct full list.
 
 ### D-Audit-5. SearchQuery routing in ADR-0006 (Significant)
 
-ADR-0006 line 115 says SearchQuery goes to Tiered Memory.
-Architecture-contexts page correctly routes it to Recollection.
+ADR-0006 line 115 says SearchQuery goes to Hippocampus.
+Architecture-contexts page correctly routes it to Recall.
 
 ### D-Audit-6. ReflectQuery routing in ADR-0006 (Significant)
 
-ADR-0006 line 115 says ReflectQuery goes to Association Graph.
-Architecture-contexts page correctly routes it to Recollection.
+ADR-0006 line 115 says ReflectQuery goes to Synapse.
+Architecture-contexts page correctly routes it to Recall.
 
 ### D-Audit-7. "Five actors" should be six (Moderate)
 
 Architecture-hexagonal.adoc line 226 says "five actors."
-There are six bounded contexts -- Recollection missing from hexagonal diagram.
+There are six bounded contexts -- Recall missing from hexagonal diagram.
 
-### D-Audit-8. Tiered Memory command list incomplete in contexts page (Minor)
+### D-Audit-8. Hippocampus command list incomplete in contexts page (Minor)
 
-Architecture-contexts.adoc omits `ReclassifyCommand`, `TierPromoted`, `TierDemoted` from Tiered Memory's "Commands Accepted" text. ADR-0005 includes them. Mermaid diagram shows `ReclassifyCommand`.
+Architecture-contexts.adoc omits `ReclassifyCommand`, `TierPromoted`, `TierDemoted` from Hippocampus's "Commands Accepted" text. ADR-0005 includes them. Mermaid diagram shows `ReclassifyCommand`.
 
 ### D-Audit-9. "Governing Dynamic" not in ADR template (Minor)
 
@@ -243,9 +243,9 @@ At least 6 fields use `String` where finite valid values exist:
 
 `LifecyclePort.heartbeat()` exists. No `HeartbeatReceived` event in the Event hierarchy.
 
-### C-Audit-8. AttentionScored duplicates AttentionScore fields
+### C-Audit-8. SalienceScored duplicates SalienceScore fields
 
-Event `AttentionScored` has the same fields as model `AttentionScore`. Maintenance risk if either changes independently. Could reference the model type directly.
+Event `SalienceScored` has the same fields as model `SalienceScore`. Maintenance risk if either changes independently. Could reference the model type directly.
 
 ### C-Audit-9. Refactoring pass still pending
 

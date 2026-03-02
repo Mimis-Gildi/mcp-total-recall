@@ -78,7 +78,7 @@ A mind calls `store_memory` through the MCP protocol. The call arrives as JSON: 
 
 The MCP tool handler listens. It translates. It takes the JSON arguments and assembles the object shape the MemoryPort accepts: content, metadata, suggested tier, session ID. It places that object on the counter.
 
-The handler does not know what happens inside the domain. It does not know about attention scoring, association triggers, or tier rules. It does not follow the object into the kitchen. Its job ends at the counter.
+The handler does not know what happens inside the domain. It does not know about salience scoring, association triggers, or tier rules. It does not follow the object into the kitchen. Its job ends at the counter.
 
 A different transport adapter -- streaming HTTPS, a human UI, a future protocol -- works the same MemoryPort.
 Different outside language (HTTP headers instead of JSON-RPC, form fields instead of tool arguments), same object shape on the counter. The adapter is replaceable. The port stays the same.
@@ -97,7 +97,7 @@ Every one of those is a verb. Active Structure behavior. None of it belongs on t
 
 The Redis adapter is the cook on the storage side.
 
-Tiered Memory finishes processing a `StoreCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, attention score. The domain is done. It walks away.
+Hippocampus finishes processing a `StoreCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, salience score. The domain is done. It walks away.
 
 The Redis adapter picks up the `Memory` object. It translates. It thinks in *storage language*: which Redis data structure? `HSET` for the memory fields.
 What key pattern? `memory:\{id\}`. What TTL? Tier-dependent. What serialization? JSON. It takes the port's object and turns it into Redis operations.

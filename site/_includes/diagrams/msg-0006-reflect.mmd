@@ -1,26 +1,26 @@
 sequenceDiagram
     participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AG as Association Graph
+    participant CX as Cortex
+    participant RC as Recall
+    participant HP as Hippocampus
+    participant SY as Synapse
 
-    C->>SP: reflect (criteria, scope)
-    SP->>RE: ReflectQuery
-    RE->>TM: Query candidates (by staleness, time span, weak associations)
-    TM-->>RE: MemoryRetrieved (candidates for review)
-    RE-->>SP: Reflection set (memories needing judgment)
-    SP-->>C: Here are memories to review
+    C->>CX: reflect (criteria, scope)
+    CX->>RC: ReflectQuery
+    RC->>HP: Query candidates (by staleness, time span, weak associations)
+    HP-->>RC: MemoryRetrieved (candidates for review)
+    RC-->>CX: Reflection set (memories needing judgment)
+    CX-->>C: Here are memories to review
 
     loop Mind reviews each memory
-        C->>SP: associate_memories (A, B, type, strength)
-        SP->>AG: AssociateCommand
-        AG->>AG: Create/strengthen semantic association
+        C->>CX: associate_memories (A, B, type, strength)
+        CX->>SY: AssociateCommand
+        SY->>SY: Create/strengthen semantic association
 
-        C->>SP: reclassify_memory (ID, new tier)
-        SP->>TM: ReclassifyCommand
-        TM->>TM: Move memory, update metadata
-        TM-->>AG: MemoryReclassified
+        C->>CX: reclassify_memory (ID, new tier)
+        CX->>HP: ReclassifyCommand
+        HP->>HP: Move memory, update metadata
+        HP-->>SY: MemoryReclassified
     end
 
-    C->>SP: reflect complete
+    C->>CX: reflect complete

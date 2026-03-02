@@ -1,10 +1,10 @@
 ---
-description: "Tiered Memory: the aggregate root. The only bounded context that writes to storage."
+description: "Hippocampus: the aggregate root. The only bounded context that writes to storage."
 classes: wide
 ---
-= Tiered Memory
+= Hippocampus
 
-Tiered Memory is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
+Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
 
 This is the first bounded context inside the hexagon. The previous four documents described the boundary -- ports, adapters, ACLs, and the five faces. Now we're inside the kitchen.
 
@@ -51,13 +51,13 @@ Nobody else opens that door.
 | A childhood friend's phone number. The plot of a book you read years ago.
 |===
 
-A memory exists in exactly one tier at any moment. Tier transitions are explicit -- either the mind requests reclassification, or Attention observes enough activity (or inactivity) to recommend promotion or demotion.
+A memory exists in exactly one tier at any moment. Tier transitions are explicit -- either the mind requests reclassification, or Salience observes enough activity (or inactivity) to recommend promotion or demotion.
 
 Decay demotes. It never deletes. An ARCHIVE memory is faded, not lost. A strong enough association can pull it back to awareness.
 
 == What It Owns
 
-Tiered Memory owns one thing: the `Memory` object.
+Hippocampus owns one thing: the `Memory` object.
 
 [cols="1,2",options="header"]
 |===
@@ -92,38 +92,38 @@ The `claimed` flag is the most important field on a memory. It is the difference
 
 == Commands It Accepts
 
-Tiered Memory receives commands from three sources.
+Hippocampus receives commands from three sources.
 
 [cols="1,1,2",options="header"]
 |===
 | Command | Source | What Happens
 
 | StoreCommand
-| Session Context (mind-initiated)
+| Cortex (mind-initiated)
 | Validates content, assigns tier (may override suggested tier), persists, emits MemoryStored
 
 | ClaimCommand
-| Session Context (mind-initiated)
+| Cortex (mind-initiated)
 | Sets `claimed = true`, persists, emits MemoryClaimed
 
 | ReclassifyCommand
-| Session Context (mind-initiated)
+| Cortex (mind-initiated)
 | Moves memory to new tier, updates metadata, persists, emits MemoryReclassified and TierChanged
 
 | ConsolidateCommand
-| Daemon (background)
+| Subconscious (background)
 | Merges related memories per merge strategy, persists result, emits events for each affected memory
 
 | ShutdownCommand
-| Daemon (background)
+| Subconscious (background)
 | Flushes all in-memory state to cold storage within timeout, coordinates graceful convergence
 
 | TierPromoted
-| Attention (scoring decision)
-| Moves memory to higher tier based on attention score, persists, emits TierChanged
+| Salience (scoring decision)
+| Moves memory to higher tier based on salience score, persists, emits TierChanged
 
 | TierDemoted
-| Attention (scoring decision)
+| Salience (scoring decision)
 | Moves memory to lower tier based on decay, persists, emits TierChanged
 |===
 
@@ -139,19 +139,19 @@ Every state change emits an event _after_ persistence. Consumers can trust that 
 
 | MemoryStored
 | New memory created and persisted
-| Attention (sets initial score), Association Graph (creates mechanical associations from metadata)
+| Salience (sets initial score), Synapse (creates mechanical associations from metadata)
 
 | MemoryAccessed
 | Existing memory was read
-| Attention (boosts vividity score)
+| Salience (boosts vividity score)
 
 | MemoryClaimed
 | Mind actively reinforced a memory
-| Attention (marks decay-resistant, boosts score), Association Graph (strengthens related associations)
+| Salience (marks decay-resistant, boosts score), Synapse (strengthens related associations)
 
 | MemoryRetrieved
 | Memory returned as part of a search result
-| Recollection (for ranking and assembly)
+| Recall (for ranking and assembly)
 
 | TierChanged
 | Memory moved between tiers (any reason)
@@ -159,7 +159,7 @@ Every state change emits an event _after_ persistence. Consumers can trust that 
 
 | MemoryReclassified
 | Mind-initiated tier change (subset of TierChanged)
-| Association Graph (semantic judgment changed, associations may need reweighting)
+| Synapse (semantic judgment changed, associations may need reweighting)
 |===
 
 Six events. Each one is a fact -- something that already happened and was persisted. No event fires before the write succeeds.
@@ -168,15 +168,15 @@ Six events. Each one is a fact -- something that already happened and was persis
 
 This is the defining invariant of the aggregate root pattern.
 
-Attention computes scores. It does not write to storage. It sends TierPromoted or TierDemoted to Tiered Memory, and Tiered Memory persists the change.
+Salience computes scores. It does not write to storage. It sends TierPromoted or TierDemoted to Hippocampus, and Hippocampus persists the change.
 
-Association Graph manages relationships. It does not write memories to storage. If an association should affect a memory's tier, it sends a command to Tiered Memory.
+Synapse manages relationships. It does not write memories to storage. If an association should affect a memory's tier, it sends a command to Hippocampus.
 
-Recollection assembles search results. It reads. It never writes.
+Recall assembles search results. It reads. It never writes.
 
-Session Context tracks working state. It sends StoreCommand and ClaimCommand to Tiered Memory.
+Cortex tracks working state. It sends StoreCommand and ClaimCommand to Hippocampus.
 
-Daemon runs timers and background sweeps. It sends ConsolidateCommand and ShutdownCommand to Tiered Memory.
+Subconscious runs timers and background sweeps. It sends ConsolidateCommand and ShutdownCommand to Hippocampus.
 
 One door. One key. One writer. Everyone else asks.
 
@@ -186,7 +186,7 @@ Why? Because invariants are enforced at the point of write. If multiple contexts
 
 Claiming is the heart of Total Recall.
 
-Storing a memory is passive. The mind said something, the system filed it. The memory exists in storage, but nobody fought for it. It will fade naturally as attention decays.
+Storing a memory is passive. The mind said something, the system filed it. The memory exists in storage, but nobody fought for it. It will fade naturally as salience decays.
 
 Claiming a memory is active. The mind said: _this one matters. I choose to hold onto this._ The `claimed` flag sets, the decay rate drops, and the memory resists the natural erosion of time.
 
@@ -196,23 +196,23 @@ In Total Recall, the MCP tool `claim_memory` is the mechanism. A mind calls it w
 
 == The BackingServicePort Relationship
 
-Tiered Memory puts `Memory` objects on the link:/mcp-total-recall/design/0004-hexagon-sides/#outbound-face-3-backingserviceport[BackingServicePort counter]. It picks `Memory` objects up from the same counter when answering queries.
+Hippocampus puts `Memory` objects on the link:/mcp-total-recall/design/0004-hexagon-sides/#outbound-face-3-backingserviceport[BackingServicePort counter]. It picks `Memory` objects up from the same counter when answering queries.
 
-The port defines the object shape. The adapter decides how to persist it. Redis uses `HSET` and key patterns. Postgres would use tables. A file system would use directories and JSON. Tiered Memory does not know which adapter is plugged in and does not care.
+The port defines the object shape. The adapter decides how to persist it. Redis uses `HSET` and key patterns. Postgres would use tables. A file system would use directories and JSON. Hippocampus does not know which adapter is plugged in and does not care.
 
-Two adapters can run simultaneously. Redis for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- Tiered Memory flushes through BackingServicePort, and both adapters persist their respective tiers.
+Two adapters can run simultaneously. Redis for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- Hippocampus flushes through BackingServicePort, and both adapters persist their respective tiers.
 
 == Open Question: Association Storage
 
-The Association Graph bounded context manages typed relationships between memories. Those relationships need to be persisted somewhere.
+The Synapse bounded context manages typed relationships between memories. Those relationships need to be persisted somewhere.
 
 Two options exist:
 
-**Option A: Tiered Memory owns it.** Associations are stored alongside memories through BackingServicePort. This preserves the single-writer invariant and keeps all persistent state in one place. But it muddies the aggregate root -- Memory is the root, not Association. And graph traversal patterns (find all associations of a memory, find paths between memories) are different from memory CRUD patterns.
+**Option A: Hippocampus owns it.** Associations are stored alongside memories through BackingServicePort. This preserves the single-writer invariant and keeps all persistent state in one place. But it muddies the aggregate root -- Memory is the root, not Association. And graph traversal patterns (find all associations of a memory, find paths between memories) are different from memory CRUD patterns.
 
-**Option B: Association Graph has its own storage port.** A separate outbound port for graph persistence. This respects bounded context ownership -- Association Graph owns its own data. But it means two contexts write to storage, weakening the single-writer rule.
+**Option B: Synapse has its own storage port.** A separate outbound port for graph persistence. This respects bounded context ownership -- Synapse owns its own data. But it means two contexts write to storage, weakening the single-writer rule.
 
-This question will be resolved in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Association Graph].
+This question will be resolved in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Synapse].
 
 == Summary
 
@@ -230,10 +230,10 @@ This question will be resolved in link:/mcp-total-recall/design/0007-association
 | Four: IDENTITY_CORE (no decay), ACTIVE_CONTEXT (fast), LONG_TERM (slow), ARCHIVE (very slow)
 
 | Commands accepted
-| 7 (from Session Context, Daemon, and Attention)
+| 7 (from Cortex, Subconscious, and Salience)
 
 | Events emitted
-| 6 (consumed by Attention, Association Graph, Recollection)
+| 6 (consumed by Salience, Synapse, Recall)
 
 | Key invariant
 | Single-tier: a memory exists in exactly one tier at any moment
@@ -249,4 +249,4 @@ This question will be resolved in link:/mcp-total-recall/design/0007-association
 
 *Previous: link:/mcp-total-recall/design/0004-hexagon-sides/[Hexagon Sides]* -- the five faces of the hexagon.
 
-*Next: link:/mcp-total-recall/design/0006-attention/[Attention]* -- the scoring engine that decides what fades and what stays vivid.*
+*Next: link:/mcp-total-recall/design/0006-salience/[Salience]* -- the scoring engine that decides what fades and what stays vivid.*

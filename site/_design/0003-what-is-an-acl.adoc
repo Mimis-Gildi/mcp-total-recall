@@ -91,7 +91,7 @@ The MCP Tool Handler does not know about `StoreCommand`. The domain handler does
 The full path of persisting a memory:
 
 ....
-Tiered Memory (cook -- Active Structure)
+Hippocampus (cook -- Active Structure)
   finishes: processing StoreCommand
   translates: domain state into port object (Memory with tier, content, metadata, score)
   places on counter
@@ -136,17 +136,17 @@ An ACL is not a Babel fish. The Babel fish hides the boundary. The ACL makes the
 | Inbound Lifecycle
 | Lifecycle Hook Handler
 | LifecyclePort (instance_id, reason, context)
-| Session Context Handler
+| Cortex Handler
 
 | Outbound Storage
 | Redis Adapter
 | BackingServicePort (Memory object)
-| Tiered Memory
+| Hippocampus
 
 | Outbound Notification
 | MCP Notification Adapter
 | NotificationPort (Notification object)
-| Daemon
+| Subconscious
 
 | Outbound Relay (future)
 | Agora Adapter

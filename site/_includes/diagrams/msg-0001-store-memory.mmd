@@ -1,16 +1,16 @@
 sequenceDiagram
     participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
+    participant CX as Cortex
+    participant HP as Hippocampus
+    participant SL as Salience
+    participant SY as Synapse
 
-    C->>SP: store_memory
-    SP->>TM: StoreCommand
-    TM->>TM: Validate, assign tier, persist
-    TM-->>AT: MemoryStored
-    TM-->>AG: MemoryStored
-    AT->>AT: Set initial attention score
-    AG->>AG: Create associations from metadata
-    TM-->>SP: Acknowledgment
-    SP-->>C: MCP tool response
+    C->>CX: store_memory
+    CX->>HP: StoreCommand
+    HP->>HP: Validate, assign tier, persist
+    HP-->>SL: MemoryStored
+    HP-->>SY: MemoryStored
+    SL->>SL: Set initial salience score
+    SY->>SY: Create associations from metadata
+    HP-->>CX: Acknowledgment
+    CX-->>C: MCP tool response

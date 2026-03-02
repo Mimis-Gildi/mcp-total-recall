@@ -35,7 +35,7 @@ A mind stores a new memory. The memory gets persisted, scored, and connected to 
 
 === Search Memory
 
-A mind searches for memories. Results come back ranked by attention score, with association-activated memories included.
+A mind searches for memories. Results come back ranked by salience score, with association-activated memories included.
 
 ++++
 <div id="MSG-0002">
@@ -48,7 +48,7 @@ A mind searches for memories. Results come back ranked by attention score, with 
 
 === Claim Memory
 
-A mind claims a memory -- actively reinforcing it. This boosts its attention score and makes it resist decay.
+A mind claims a memory -- actively reinforcing it. This boosts its salience score and makes it resist decay.
 
 ++++
 <div id="MSG-0003">
@@ -61,7 +61,7 @@ A mind claims a memory -- actively reinforcing it. This boosts its attention sco
 
 === Decay Sweep
 
-The Daemon triggers a periodic decay sweep. Attention recalculates scores. Memories that fall below tier thresholds get demoted.
+The Subconscious triggers a periodic decay sweep. Salience recalculates scores. Memories that fall below tier thresholds get demoted.
 
 ++++
 <div id="MSG-0004">
@@ -74,7 +74,7 @@ The Daemon triggers a periodic decay sweep. Attention recalculates scores. Memor
 
 === Session Lifecycle
 
-A mind connects and disconnects. On connect, Session Context loads identity and last session state. On disconnect, the Daemon triggers a session audit through the Notification Port.
+A mind connects and disconnects. On connect, Cortex loads identity and last session state. On disconnect, the Subconscious triggers a session audit through the Notification Port.
 
 ++++
 <div id="MSG-0005">
@@ -104,7 +104,7 @@ This operation requires the same mind. A different mind classifying your memorie
 
 === Where Claiming Intelligence Lives
 
-The Claim Memory flow above shows the protocol -- `ClaimCommand` through Session Context to Tiered Memory. But the protocol is the easy part.
+The Claim Memory flow above shows the protocol -- `ClaimCommand` through Cortex to Hippocampus. But the protocol is the easy part.
 The hard part is deciding *what* to claim, *when*, and *why*.
 
 That intelligence does not live in the core. The core provides `ClaimCommand` through its ports.
@@ -134,38 +134,38 @@ Commands are requests to change state. They carry intent. A command has exactly 
 | Command | Producer | Consumer | Payload
 
 | `StoreCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | content, metadata, suggested tier
 
 | `ClaimCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | memory ID
 
 | `ConsolidateCommand`
-| Daemon
-| Tiered Memory
+| Subconscious
+| Hippocampus
 | memory IDs to merge, merge strategy
 
 | `ShutdownCommand`
-| Daemon
-| Tiered Memory
+| Subconscious
+| Hippocampus
 | cold storage target, flush timeout
 
 | `AssociateCommand`
-| Session Context
-| Association Graph
+| Cortex
+| Synapse
 | memory IDs, association type, strength, direction (create/strengthen/weaken)
 
 | `ReclassifyCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | memory ID, new tier, new metadata, reason
 
 | `DecaySweep`
-| Daemon
-| Attention
+| Subconscious
+| Salience
 | timestamp, scope (all tiers or specific tier)
 |===
 
@@ -178,19 +178,19 @@ Queries are requests to read state without changing it. A query has exactly one 
 | Query | Producer | Consumer | Payload
 
 | `SearchQuery`
-| Session Context
-| Recollection
+| Cortex
+| Recall
 | query, filters, max results
 
 | `ReflectQuery`
-| Session Context
-| Recollection
+| Cortex
+| Recall
 | criteria (staleness, time span, weak associations), scope
 |===
 
 === Lifecycle Events
 
-Lifecycle events flow from the Lifecycle Port through Session Context.
+Lifecycle events flow from the Lifecycle Port through Cortex.
 They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system.
 Defined as part of `sealed interface Event`.
 
@@ -200,27 +200,27 @@ Defined as part of `sealed interface Event`.
 
 | `SessionStart`
 | Lifecycle Port
-| Session Context
+| Cortex
 | instance ID, mind type, resumption data
 
 | `SessionEnd`
 | Lifecycle Port
-| Session Context, Daemon
+| Cortex, Subconscious
 | instance ID, reason (explicit, timeout, crash)
 
 | `StateTransition`
 | Lifecycle Port
-| Session Context
+| Cortex
 | instance ID, old state, new state, context
 
 | `ModeChanged`
-| Session Context
-| Daemon
+| Cortex
+| Subconscious
 | instance ID, old mode, new mode (task, conversation, idle)
 
 | `SessionState`
-| Session Context
-| Daemon
+| Cortex
+| Subconscious
 | instance ID, duration, activity level, last interaction
 |===
 
@@ -234,12 +234,12 @@ The adapter decides delivery -- MCP server notification for Claude, push notific
 | Notification | Producer | Consumer | Payload
 
 | `BreakNotification`
-| Daemon
+| Subconscious
 | Notification Port -> Mind
 | minutes in task mode, suggestion
 
 | `SessionAuditPrompt`
-| Daemon
+| Subconscious
 | Notification Port -> Mind
 | session duration, memories stored this session, prompt
 |===
@@ -253,53 +253,53 @@ Events are facts about something that happened. An event can have multiple consu
 | Event | Producer | Consumer(s) | Payload
 
 | `MemoryStored`
-| Tiered Memory
-| Attention, Association Graph
+| Hippocampus
+| Salience, Synapse
 | memory ID, content, metadata, tier
 
 | `MemoryAccessed`
-| Tiered Memory
-| Attention
+| Hippocampus
+| Salience
 | memory ID, access timestamp
 
 | `MemoryClaimed`
-| Tiered Memory
-| Attention, Association Graph
+| Hippocampus
+| Salience, Synapse
 | memory ID, claim timestamp
 
 | `MemoryRetrieved`
-| Tiered Memory
-| Recollection
+| Hippocampus
+| Recall
 | memory ID, content, metadata, tier
 
 | `TierChanged`
-| Tiered Memory
+| Hippocampus
 | (internal record)
 | memory ID, old tier, new tier, reason
 
 | `TierPromoted`
-| Attention
-| Tiered Memory
+| Salience
+| Hippocampus
 | memory ID, new tier, score
 
 | `TierDemoted`
-| Attention
-| Tiered Memory
+| Salience
+| Hippocampus
 | memory ID, new tier, score
 
-| `AttentionScored`
-| Attention
-| Recollection
+| `SalienceScored`
+| Salience
+| Recall
 | memory ID, score, last access, decay rate
 
 | `AssociationsFound`
-| Association Graph
-| Recollection
+| Synapse
+| Recall
 | source memory ID, associated memory IDs with types and strengths
 
 | `MemoryReclassified`
-| Tiered Memory
-| Association Graph
+| Hippocampus
+| Synapse
 | memory ID, old tier, new tier, reason (mind-initiated)
 |===
 
@@ -328,18 +328,18 @@ session_id:     String       -- which instance is searching
 ==== MemoryStored
 
 ....
-memory_id:      UUID         -- assigned by Tiered Memory
+memory_id:      UUID         -- assigned by Hippocampus
 content:        String       -- the stored content
 metadata:       Map          -- tags, source, context
 tier:           Tier         -- assigned tier (may differ from suggested)
 timestamp:      Instant      -- when storage completed
 ....
 
-==== AttentionScored
+==== SalienceScored
 
 ....
 memory_id:      UUID         -- which memory
-score:          Double       -- current attention score (0.0 - 1.0)
+score:          Double       -- current salience score (0.0 - 1.0)
 last_accessed:  Instant      -- when last accessed
 decay_rate:     Double       -- current decay rate (tier-dependent)
 claimed:        Boolean      -- whether this memory is claimed
@@ -374,7 +374,7 @@ associations:   List<Association>
 
 | Consolidation details
 | How `ConsolidateCommand` merge strategies work
-| When Daemon behavior is specified
+| When Subconscious behavior is specified
 
 | Heartbeat details
 | Keep-alive semantics, timeout thresholds
@@ -382,7 +382,7 @@ associations:   List<Association>
 
 | Additional notification types
 | Context drift warnings, memory capacity alerts
-| When Daemon behavior is specified
+| When Subconscious behavior is specified
 |===
 
 '''

@@ -47,7 +47,7 @@ architecture:
         url: /design/0003-what-is-an-acl/
       - title: "D: Hexagon Sides"
         url: /design/0004-hexagon-sides/
-      - title: "E1: Tiered Memory"
+      - title: "E1: Hippocampus"
         url: /design/0005-tiered-memory/
   - title: "Catalog"
     children:

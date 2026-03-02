@@ -84,7 +84,7 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 
 | link:/mcp-total-recall/decisions/0005-memory-as-aggregate-root/[0005]
 | Memory as Aggregate Root
-| Bounded contexts page (Tiered Memory)
+| Bounded contexts page (Hippocampus)
 
 | link:/mcp-total-recall/decisions/0006-events-and-commands-as-message-types/[0006]
 | Events and Commands as Message Types
@@ -92,7 +92,7 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 
 | link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[0007]
 | Biological Memory as Reference Model
-| Message catalog (claiming intelligence), bounded contexts (Attention)
+| Message catalog (claiming intelligence), bounded contexts (Salience)
 |===
 
 == Bounded Contexts to Code
@@ -103,32 +103,32 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 |===
 | Context | Responsibility | Code Artifacts | Status
 
-| Tiered Memory
+| Hippocampus
 | Aggregate root. CRUD for memories across four tiers. Claiming.
 | `Memory.kt`, `Tier.kt`, `MemoryPort`
 | Interfaces defined
 
-| Association Graph
+| Synapse
 | Typed relationships between memories. Graph traversal.
 | `Association.kt`, `AssociationType.kt`
 | Model defined
 
-| Attention
+| Salience
 | Scoring and decay. Tier promotion/demotion.
-| `AttentionScore.kt`
+| `SalienceScore.kt`
 | Model defined
 
-| Recollection
-| Search and recall. Attention-weighted, association-activated.
+| Recall
+| Search and recall. Salience-weighted, association-activated.
 | `SearchFilter.kt`
 | Model defined
 
-| Session Context
+| Cortex
 | Per-instance working state. Entry point for all requests.
 | `LifecyclePort`, `TotalRecall.kt` (tool handlers)
 | Stubs
 
-| Daemon
+| Subconscious
 | Background maintenance. Timers. Graceful shutdown.
 | _(no dedicated source yet)_
 | Not started
@@ -236,26 +236,26 @@ _Documents will be added as each bounded context is examined._
 | Done
 
 | link:/mcp-total-recall/design/0005-tiered-memory/[E1]
-| Tiered Memory -- the Aggregate Root
+| Hippocampus -- the Aggregate Root
 | Done
 
 | _E2_
-| Attention
+| Salience
 | Pending
 
 | _E3_
-| Association Graph
+| Synapse
 | Pending
 
 | _E4_
-| Recollection
+| Recall
 | Pending
 
 | _E5_
-| Session Context
+| Cortex
 | Pending
 
 | _E6_
-| Daemon
+| Subconscious
 | Pending
 |===

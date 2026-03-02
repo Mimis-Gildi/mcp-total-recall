@@ -59,7 +59,7 @@ stdio with 8 teapot-stub tools. The design and the code agree.
 ### Added
 
 - Domain model (6 types in `mimis.gildi.memory.domain.model`):
-  Memory, Tier, Association, AssociationType, AttentionScore, SearchFilter.
+  Memory, Tier, Association, AssociationType, SalienceScore, SearchFilter.
 - Domain messages (3 sealed hierarchies in `mimis.gildi.memory.domain.message`):
   Command (9 variants), Event (13 variants), Notification (2 variants).
 - Inbound ports: MemoryPort, LifecyclePort.
@@ -113,8 +113,8 @@ what we build next.
 - Lifecycle Port: session start/end, state transitions -- pluggable.
 - Notification Port: outbound alerts (break checks, session audits).
 - Internal timers (decay sweeps, break checks, consolidation) as domain logic.
-- Six bounded contexts: Tiered Memory, Association Graph, Attention,
-  Recollection, Session Context, Daemon.
+- Six bounded contexts: Hippocampus, Synapse, Salience,
+  Recall, Cortex, Subconscious.
 - Message catalog: 6 commands, 9 domain events, 5 lifecycle events,
   2 notification types -- all named, typed, with producer and consumer.
 

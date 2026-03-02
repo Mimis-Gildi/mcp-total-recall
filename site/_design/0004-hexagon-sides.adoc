@@ -82,7 +82,7 @@ The staff entrance. This is where session events arrive -- a mind connects, disc
 | instance ID, timestamp
 |===
 
-Four object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Daemon never triggers the audit prompt.
+Four object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Subconscious never triggers the audit prompt.
 
 **Outside adapters:**
 
@@ -91,7 +91,7 @@ Four object shapes. Lifecycle is simpler than memory -- fewer things cross, but 
 
 **Inside adapter:**
 
-Session Context handler. Translates lifecycle events into session state. Loads identity and last session on start. Triggers Daemon on end.
+Cortex handler. Translates lifecycle events into session state. Loads identity and last session on start. Triggers Subconscious on end.
 
 == Outbound Face 3: BackingServicePort
 
@@ -104,7 +104,7 @@ The kitchen loading dock. This is where the domain sends memories to be persiste
 | Object | Shape
 
 | Memory (outbound)
-| ID, content, metadata, tier, attention score, timestamps
+| ID, content, metadata, tier, salience score, timestamps
 
 | Memory (inbound -- returned)
 | same shape, populated by the adapter
@@ -127,7 +127,7 @@ Both can run simultaneously. Graceful shutdown depends on this -- the domain flu
 
 **Inside adapter:**
 
-Tiered Memory. The only bounded context that actually goes to storage. It puts Memory objects on the counter after processing commands. It picks up Memory objects from the counter when answering queries.
+Hippocampus. The only bounded context that actually goes to storage. It puts Memory objects on the counter after processing commands. It picks up Memory objects from the counter when answering queries.
 
 == Outbound Face 4: NotificationPort
 
@@ -146,7 +146,7 @@ The PA system. This is where the domain talks back to the mind -- not in respons
 | session duration, memories stored this session, prompt text
 |===
 
-Two object shapes today. More will come as the Daemon's behavior is specified (context drift warnings, memory capacity alerts).
+Two object shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
 
 **Outside adapters:**
 
@@ -155,7 +155,7 @@ Two object shapes today. More will come as the Daemon's behavior is specified (c
 
 **Inside adapter:**
 
-The Daemon. It decides when to notify based on timers, thresholds, and session state. It puts notification objects on the counter. It does not know whether the mind receiving the notification is Claude or a human.
+The Subconscious. It decides when to notify based on timers, thresholds, and session state. It puts notification objects on the counter. It does not know whether the mind receiving the notification is Claude or a human.
 
 == Outbound Face 5: RelayPort
 
@@ -251,4 +251,4 @@ The diagram link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] sh
 
 *Previous: link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?]* -- the full assembly: Adapter + Port + Adapter.
 
-*Next: the bounded contexts that live inside the hexagon, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Tiered Memory] -- the aggregate root.*
+*Next: the bounded contexts that live inside the hexagon, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus] -- the aggregate root.*

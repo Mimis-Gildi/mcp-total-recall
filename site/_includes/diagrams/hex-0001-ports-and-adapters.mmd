@@ -13,17 +13,17 @@ graph TB
 
     subgraph Core ["Core Domain (Actor Model)"]
         direction TB
-        MEMORY["Memory Actor<br/><i>Aggregate Root</i><br/>CRUD, tiers, claiming"]
-        ATTENTION["Attention Actor<br/><i>Decay, scoring, timers</i><br/><i>Promotion/demotion</i>"]
-        ASSOCIATION["Association Actor<br/><i>Graph of relationships</i><br/><i>Five association types</i>"]
-        SESSION["Session Actor<br/><i>Working context per instance</i><br/><i>State tracking, transitions</i>"]
-        DAEMON["Daemon Actor<br/><i>Background maintenance</i><br/><i>Timers, consolidation, health</i>"]
+        HIPPOCAMPUS["Hippocampus<br/><i>Aggregate Root</i><br/>CRUD, tiers, claiming"]
+        SALIENCE["Salience<br/><i>Decay, scoring, timers</i><br/><i>Promotion/demotion</i>"]
+        SYNAPSE["Synapse<br/><i>Graph of relationships</i><br/><i>Five association types</i>"]
+        CORTEX["Cortex<br/><i>Working context per instance</i><br/><i>State tracking, transitions</i>"]
+        SUBCONSCIOUS["Subconscious<br/><i>Background maintenance</i><br/><i>Timers, consolidation, health</i>"]
 
-        MEMORY <--> ATTENTION
-        MEMORY <--> ASSOCIATION
-        MEMORY <--> SESSION
-        ATTENTION <--> DAEMON
-        SESSION <--> DAEMON
+        HIPPOCAMPUS <--> SALIENCE
+        HIPPOCAMPUS <--> SYNAPSE
+        HIPPOCAMPUS <--> CORTEX
+        SALIENCE <--> SUBCONSCIOUS
+        CORTEX <--> SUBCONSCIOUS
     end
 
     subgraph Ports_Out ["Outbound Ports"]

@@ -9,7 +9,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType
-import mimis.gildi.memory.domain.model.AttentionScore
+import mimis.gildi.memory.domain.model.SalienceScore
 import mimis.gildi.memory.domain.model.Memory
 import mimis.gildi.memory.domain.model.SearchFilter
 import mimis.gildi.memory.domain.model.Tier
@@ -60,8 +60,8 @@ class ModelTest : StringSpec({
         filter.tags shouldBe emptySet()
     }
 
-    "attention score carries decay info" {
-        val score = AttentionScore(
+    "salience score carries decay info" {
+        val score = SalienceScore(
             memoryId = UUID.randomUUID(),
             score = 0.95,
             lastAccessed = Instant.now(),

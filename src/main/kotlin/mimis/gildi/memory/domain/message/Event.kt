@@ -18,7 +18,7 @@ import java.util.UUID
  */
 sealed interface Event
 
-// -- Tiered Memory events --
+// -- Hippocampus events --
 
 data class MemoryStored(
     val memoryId: UUID,
@@ -59,7 +59,7 @@ data class MemoryReclassified(
     val reason: String
 ) : Event
 
-// -- Attention events --
+// -- Salience events --
 
 data class TierPromoted(
     val memoryId: UUID,
@@ -73,7 +73,7 @@ data class TierDemoted(
     val score: Double
 ) : Event
 
-data class AttentionScored(
+data class SalienceScored(
     val memoryId: UUID,
     val score: Double,
     val lastAccessed: Instant,
@@ -81,7 +81,7 @@ data class AttentionScored(
     val claimed: Boolean
 ) : Event
 
-// -- Association Graph events --
+// -- Synapse events --
 
 data class AssociationsFound(
     val sourceId: UUID,

@@ -1,19 +1,19 @@
 sequenceDiagram
     participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
+    participant CX as Cortex
+    participant RC as Recall
+    participant HP as Hippocampus
+    participant SL as Salience
+    participant SY as Synapse
 
-    C->>SP: search_memory
-    SP->>RE: SearchQuery
-    RE->>TM: Query matching memories
-    TM-->>RE: MemoryRetrieved (candidates)
-    RE->>AT: Request scores for candidates
-    AT-->>RE: AttentionScored (scores)
-    RE->>AG: Request associations for top candidates
-    AG-->>RE: AssociationsFound (related memories)
-    RE->>RE: Rank by score, include activated
-    RE-->>SP: Ranked results
-    SP-->>C: MCP tool response
+    C->>CX: search_memory
+    CX->>RC: SearchQuery
+    RC->>HP: Query matching memories
+    HP-->>RC: MemoryRetrieved (candidates)
+    RC->>SL: Request scores for candidates
+    SL-->>RC: SalienceScored (scores)
+    RC->>SY: Request associations for top candidates
+    SY-->>RC: AssociationsFound (related memories)
+    RC->>RC: Rank by score, include activated
+    RC-->>CX: Ranked results
+    CX-->>C: MCP tool response

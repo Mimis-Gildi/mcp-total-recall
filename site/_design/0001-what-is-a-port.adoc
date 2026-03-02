@@ -90,8 +90,8 @@ That call hits the *MemoryPort* -- our inbound counter.
 On the outside (the dining room), the MCP adapter speaks *tool language*: JSON arguments, tool names, session IDs. The adapter is the waitress.
 It takes the request, formats it into what the counter expects, and slides it across.
 
-On the inside (the kitchen), the domain speaks *memory language*: `StoreCommand`, `Tier.ACTIVE_CONTEXT`, attention scoring, association triggers. The domain is the cook.
-It reads the command and starts working: persist the memory, calculate an initial attention score, check for related memories to associate.
+On the inside (the kitchen), the domain speaks *memory language*: `StoreCommand`, `Tier.ACTIVE_CONTEXT`, salience scoring, association triggers. The domain is the cook.
+It reads the command and starts working: persist the memory, calculate an initial salience score, check for related memories to associate.
 
 The MemoryPort defines the shape of what crosses -- the order slip:
 
@@ -104,7 +104,7 @@ session_id:     String            -- which instance is storing this
 
 That is the slip. Not a verb. Not an action. The shape of the object that both sides can read.
 
-The MCP adapter does not know about attention scores. The domain does not know about JSON or tool schemas. Each side reads only what matters to them.
+The MCP adapter does not know about salience scores. The domain does not know about JSON or tool schemas. Each side reads only what matters to them.
 *_The port defines the contract between them._*
 
 _The inanimate thing "port" owns a contract for the things that pass through it._
@@ -116,10 +116,10 @@ A country's border booth is such a port, and it defines a contract on the "ID" s
 
 The outbound direction works the same way.
 
-Tiered Memory (the domain) finishes processing a `StoreCommand`. The memory needs to be persisted.
-The domain speaks *memory language*: a `Memory` object with tier, content, metadata, attention score.
+Hippocampus (the domain) finishes processing a `StoreCommand`. The memory needs to be persisted.
+The domain speaks *memory language*: a `Memory` object with tier, content, metadata, salience score.
 
-Tiered Memory slides this across the *BackingServicePort* -- our outbound counter. It puts the `Memory` object on the counter and is done.
+Hippocampus slides this across the *BackingServicePort* -- our outbound counter. It puts the `Memory` object on the counter and is done.
 It was thinking about aggregate consistency, tier rules, event production. It marks itself done.
 
 On the other side, the Redis adapter picks up the `Memory` object. It does not think about aggregate consistency.

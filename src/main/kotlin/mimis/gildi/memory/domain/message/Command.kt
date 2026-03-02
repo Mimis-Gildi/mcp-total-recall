@@ -18,7 +18,7 @@ import java.util.UUID
  */
 sealed interface Command
 
-// -- Tiered Memory commands --
+// -- Hippocampus commands --
 
 data class StoreCommand(
     val content: String,
@@ -49,7 +49,7 @@ data class ShutdownCommand(
     val flushTimeout: Long
 ) : Command
 
-// -- Association Graph commands --
+// -- Synapse commands --
 
 data class AssociateCommand(
     val memoryIds: Pair<UUID, UUID>,
@@ -64,7 +64,7 @@ enum class AssociationDirection {
     WEAKEN
 }
 
-// -- Attention commands --
+// -- Salience commands --
 
 data class DecaySweep(
     val timestamp: Instant,
