@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Bounded Contexts
 
 == The Problem
@@ -20,57 +21,12 @@ You can change the internals of one without touching the others.
 Six bounded contexts. Each is an actor. Arrows show message flow between them.
 
 ++++
+<div id="BC-0001">
+<p><strong>Diagram 3: BC-0001 -- Bounded Context Map</strong></p>
 <pre class="mermaid">
-graph LR
-    subgraph Tiered_Memory ["Tiered Memory"]
-        TM_DESC["Aggregate Root<br/>Store, retrieve, claim<br/>Four tiers: Identity Core,<br/>Active Context, Long Term, Archive"]
-    end
-
-    subgraph Association_Graph ["Association Graph"]
-        AG_DESC["Memory relationships<br/>Five types: temporal, causal,<br/>thematic, emotional, person<br/>Graph traversal and activation"]
-    end
-
-    subgraph Attention ["Attention"]
-        AT_DESC["Scoring and decay<br/>Access increases score<br/>Time decreases score<br/>Tier promotion/demotion"]
-    end
-
-    subgraph Recollection ["Recollection"]
-        RE_DESC["Search and recall<br/>Attention-weighted results<br/>Association-activated recall<br/>Query planning"]
-    end
-
-    subgraph Session_Context ["Session Context"]
-        SC_DESC["Per-instance working state<br/>State tracking, transitions<br/>Lifecycle events<br/>Entry point for all requests"]
-    end
-
-    subgraph Daemon ["Daemon"]
-        DA_DESC["Background processes<br/>Internal timers, decay sweeps<br/>Break checks, session audits<br/>Consolidation, graceful shutdown"]
-    end
-
-    NP(["Notification Port<br/><i>alerts to the mind</i>"])
-
-    Tiered_Memory -- "MemoryStored<br/>MemoryClaimed" --> Association_Graph
-    Tiered_Memory -- "MemoryStored<br/>MemoryAccessed" --> Attention
-    Attention -- "TierPromoted<br/>TierDemoted" --> Tiered_Memory
-    Association_Graph -- "AssociationsFound" --> Recollection
-    Attention -- "AttentionScored" --> Recollection
-    Tiered_Memory -- "MemoryRetrieved" --> Recollection
-    Session_Context -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Tiered_Memory
-    Session_Context -- "SearchQuery<br/>ReflectQuery" --> Recollection
-    Session_Context -- "AssociateCommand" --> Association_Graph
-    Session_Context -- "ModeChanged<br/>SessionState" --> Daemon
-    Daemon -- "DecaySweep" --> Attention
-    Daemon -- "ConsolidateCommand" --> Tiered_Memory
-    Daemon -- "ShutdownCommand" --> Tiered_Memory
-    Daemon -- "BreakNotification<br/>SessionAuditPrompt" --> NP
-
-    style Tiered_Memory fill:#1a1a2e,stroke:#e94560,stroke-width:2px
-    style Association_Graph fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Attention fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Recollection fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Session_Context fill:#1a1a2e,stroke:#533483,stroke-width:1px
-    style Daemon fill:#1a1a2e,stroke:#533483,stroke-width:1px
-    style NP fill:#0f3460,stroke:#e94560,stroke-width:1px
+{% include diagrams/bc-0001-bounded-contexts.mmd %}
 </pre>
+</div>
 ++++
 
 '''

@@ -24,7 +24,7 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Hexagonal -- ports, adapters, actor model
 | link:/mcp-total-recall/architecture/hexagonal/[Hexagonal]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001]
 | Context Map
 | Bounded Contexts -- six actors and message flow
 | link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]

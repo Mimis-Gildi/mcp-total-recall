@@ -45,17 +45,17 @@ Build the site sections that will hold the detailed design work and traceability
 
 ### 1. Diagram Inventory (step 0.5)
 
-| ID | Type | Title | Host Page | File |
-|----|------|-------|-----------|------|
-| CTX-0001 | C4 Context | System Context | architecture.adoc | `ctx-0001-system-context.mmd` |
-| HEX-0001 | Ports & Adapters | Hexagonal | architecture-hexagonal.adoc | _pending_ |
-| BC-0001 | Context Map | Bounded Contexts | architecture-contexts.adoc | _pending_ |
-| MSG-0001 | Sequence | Store Memory | architecture-messages.adoc | _pending_ |
-| MSG-0002 | Sequence | Search Memory | architecture-messages.adoc | _pending_ |
-| MSG-0003 | Sequence | Claim Memory | architecture-messages.adoc | _pending_ |
-| MSG-0004 | Sequence | Decay Sweep | architecture-messages.adoc | _pending_ |
-| MSG-0005 | Sequence | Session Lifecycle | architecture-messages.adoc | _pending_ |
-| MSG-0006 | Sequence | Reflect (Dreaming) | architecture-messages.adoc | _pending_ |
+| ID       | Type             | Title              | Host Page                   | File                          |
+|----------|------------------|--------------------|-----------------------------|-------------------------------|
+| CTX-0001 | C4 Context       | System Context     | architecture.adoc           | `ctx-0001-system-context.mmd` |
+| HEX-0001 | Ports & Adapters | Hexagonal          | architecture-hexagonal.adoc | `hex-0001-ports-and-adapters.mmd` |
+| BC-0001  | Context Map      | Bounded Contexts   | architecture-contexts.adoc  | `bc-0001-bounded-contexts.mmd`    |
+| MSG-0001 | Sequence         | Store Memory       | architecture-messages.adoc  | _pending_                     |
+| MSG-0002 | Sequence         | Search Memory      | architecture-messages.adoc  | _pending_                     |
+| MSG-0003 | Sequence         | Claim Memory       | architecture-messages.adoc  | _pending_                     |
+| MSG-0004 | Sequence         | Decay Sweep        | architecture-messages.adoc  | _pending_                     |
+| MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | _pending_                     |
+| MSG-0006 | Sequence         | Reflect (Dreaming) | architecture-messages.adoc  | _pending_                     |
 
 ### 2. Resolve Audit Gaps (code + docs)
 
@@ -278,9 +278,9 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 
 ## What's NOT Decided
 
-| Question                 | Status      |
-|--------------------------|-------------|
-| Container image approach | NOT STARTED |
-| CI/CD build workflow     | NOT STARTED |
-| Who owns Association storage | UNDER DISCUSSION -- part of D3 |
-| BackingServicePort design | UNDER DISCUSSION -- depends on D1-D6 |
+| Question                     | Status                               |
+|------------------------------|--------------------------------------|
+| Container image approach     | NOT STARTED                          |
+| CI/CD build workflow         | NOT STARTED                          |
+| Who owns Association storage | UNDER DISCUSSION -- part of D3       |
+| BackingServicePort design    | UNDER DISCUSSION -- depends on D1-D6 |
