@@ -43,6 +43,8 @@ architecture:
         url: /design/0001-what-is-a-port/
       - title: "B: What is an Adapter?"
         url: /design/0002-what-is-an-adapter/
+      - title: "C: What is an ACL?"
+        url: /design/0003-what-is-an-acl/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"
