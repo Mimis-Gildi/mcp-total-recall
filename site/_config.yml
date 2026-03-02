@@ -47,6 +47,7 @@ collections:
       - 0001-what-is-a-port.adoc
       - 0002-what-is-an-adapter.adoc
       - 0003-what-is-an-acl.adoc
+      - 0004-hexagon-sides.adoc
   catalog:
     output: true
     permalink: /catalog/:name/

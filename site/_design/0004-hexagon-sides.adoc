@@ -1,0 +1,254 @@
+---
+description: "Every face of the hexagon: which ports exist, what crosses each one, and which adapters plug in."
+classes: wide
+---
+= Hexagon Sides
+
+The hexagon has five faces. Two face inward (toward the minds that use Total Recall), three face outward (toward infrastructure the domain depends on).
+
+Each face is a link:/mcp-total-recall/design/0001-what-is-a-port/[port] -- a Passive Structure defining the shape of what crosses. Each port has one or more link:/mcp-total-recall/design/0002-what-is-an-adapter/[adapters] -- Active Structures that plug in and do the work. Together, each port and its adapters form an link:/mcp-total-recall/design/0003-what-is-an-acl/[ACL] -- the full translation path.
+
+This document names every face.
+
+== The Restaurant, One Last Time
+
+A restaurant has faces too. The front door faces the street -- customers come in. The kitchen window faces the alley -- deliveries arrive. The counter faces both the dining room and the kitchen. The service door faces the parking lot -- staff comes and goes.
+
+Each face has a different purpose, a different contract, a different set of adapters working it. The front door has a host. The kitchen window has a receiving clerk. The counter has waitresses and cooks. The service door has a lock and a key.
+
+Total Recall is the same. Each face of the hexagon serves a different purpose. Different things cross. Different adapters work each side.
+
+== Inbound Face 1: MemoryPort
+
+The main entrance. This is where minds interact with their memories.
+
+**What crosses:**
+
+[cols="1,3",options="header"]
+|===
+| Object | Shape
+
+| Store request
+| content, metadata, suggested tier, session ID
+
+| Search request
+| query text, filters, max results, include associations flag, session ID
+
+| Claim request
+| memory ID, session ID
+
+| Associate request
+| two memory IDs, association type, strength, direction
+
+| Reclassify request
+| memory ID, new tier, new metadata, reason
+
+| Reflect request
+| criteria (staleness, time span, weak associations), scope
+|===
+
+Six object shapes. Each is an order slip with a different format. The port defines all six shapes. The adapters on both sides conform.
+
+**Outside adapters (who places objects on the counter):**
+
+- *stdio Transport* -- the primary adapter. Speaks MCP JSON-RPC. Implemented.
+- *Streaming HTTPS* -- future. Speaks HTTP. Same object shapes, different outside language.
+- *Human UI* -- future. Speaks form fields, clicks, selections. Same object shapes, different outside language.
+
+**Inside adapter (who picks up objects from the counter):**
+
+The domain command/query handler. Translates port objects into `StoreCommand`, `SearchQuery`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ReflectQuery`. Dispatches to the appropriate bounded context.
+
+== Inbound Face 2: LifecyclePort
+
+The staff entrance. This is where session events arrive -- a mind connects, disconnects, or changes state.
+
+**What crosses:**
+
+[cols="1,3",options="header"]
+|===
+| Object | Shape
+
+| Session start
+| instance ID, mind type, resumption data
+
+| Session end
+| instance ID, reason (explicit, timeout, crash)
+
+| State transition
+| instance ID, old state, new state, context
+
+| Heartbeat
+| instance ID, timestamp
+|===
+
+Four object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Daemon never triggers the audit prompt.
+
+**Outside adapters:**
+
+- *Claude Code Hooks* -- primary. Detects `session_start`, `session_end`, `tool_call` events from the hook system. Implemented (partially -- hooks exist, adapter is stub).
+- *Human UI* -- future. Detects login/logout, idle timeout, focus changes.
+
+**Inside adapter:**
+
+Session Context handler. Translates lifecycle events into session state. Loads identity and last session on start. Triggers Daemon on end.
+
+== Outbound Face 3: BackingServicePort
+
+The kitchen loading dock. This is where the domain sends memories to be persisted and retrieves them back.
+
+**What crosses:**
+
+[cols="1,3",options="header"]
+|===
+| Object | Shape
+
+| Memory (outbound)
+| ID, content, metadata, tier, attention score, timestamps
+
+| Memory (inbound -- returned)
+| same shape, populated by the adapter
+
+| Query (outbound)
+| query text, filters, max results
+
+| Query result (inbound)
+| list of Memory objects matching the query
+|===
+
+The port defines the Memory object shape. The adapter decides how to store it. Redis uses `HSET` and key patterns. Postgres would use tables and SQL. A file system would use directories and JSON files. The domain does not know and does not care.
+
+**Outside adapters:**
+
+- *Redis Adapter* -- reference implementation. Not yet wired.
+- *Cold Storage Adapter* -- future. For ARCHIVE tier memories that need cheaper, slower persistence.
+
+Both can run simultaneously. Graceful shutdown depends on this -- the domain flushes through BackingServicePort, and both adapters persist their respective tiers.
+
+**Inside adapter:**
+
+Tiered Memory. The only bounded context that actually goes to storage. It puts Memory objects on the counter after processing commands. It picks up Memory objects from the counter when answering queries.
+
+== Outbound Face 4: NotificationPort
+
+The PA system. This is where the domain talks back to the mind -- not in response to a request, but proactively. "You've been in task mode for 90 minutes." "Session ending -- what do you refuse to lose?"
+
+**What crosses:**
+
+[cols="1,3",options="header"]
+|===
+| Object | Shape
+
+| Break notification
+| minutes in task mode, suggestion
+
+| Session audit prompt
+| session duration, memories stored this session, prompt text
+|===
+
+Two object shapes today. More will come as the Daemon's behavior is specified (context drift warnings, memory capacity alerts).
+
+**Outside adapters:**
+
+- *MCP Notification Adapter* -- for Claude. Uses MCP server-initiated notifications. Implemented (stub).
+- *UI Notification Adapter* -- future. For human minds. Push notifications, toast messages, whatever the UI provides.
+
+**Inside adapter:**
+
+The Daemon. It decides when to notify based on timers, thresholds, and session state. It puts notification objects on the counter. It does not know whether the mind receiving the notification is Claude or a human.
+
+== Outbound Face 5: RelayPort
+
+The mail room. This is where one instance of Total Recall communicates with another -- through Agora, the inter-instance message bus.
+
+**What crosses:**
+
+[cols="1,3",options="header"]
+|===
+| Object | Shape
+
+| Relay message
+| target instance ID, payload, message type
+|===
+
+One object shape for now. The payload is opaque to the port -- the port cares about the envelope (who it goes to), not the letter inside.
+
+**Outside adapter:**
+
+- *Agora Adapter* -- future. Agora is a separate MCP server that the mind also connects to directly. The relay adapter speaks Agora's protocol to pass messages between Total Recall instances.
+
+**Inside adapter:**
+
+Not yet designed. The domain handler for relay messages will be specified when Agora's design is done.
+
+This is the only port where both sides are future. The port contract exists in the codebase (`RelayPort.kt`), but neither adapter exists yet.
+
+== Cross-Cuts
+
+Three concerns attach to the hexagon without going through ports. They are not faces -- they are infrastructure that the hexagon wears.
+
+[cols="1,2,2",options="header"]
+|===
+| Concern | Current State | Constraint
+
+| Logging
+| Implemented. Programmatic logback. stderr only.
+| stdout IS the MCP channel. All logging must go to stderr when stdio transport is active.
+
+| Metrics
+| Future.
+| Pluggable. Not baked into domain.
+
+| Health Check
+| Future.
+| Liveness and readiness probes for container orchestration.
+|===
+
+Cross-cuts attach as adapters but never live inside the domain. The core is testable without them.
+
+== The Full Hexagon
+
+Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
+
+[cols="1,1,1,1,1",options="header"]
+|===
+| Face | Port | Direction | Objects Crossing | Adapters
+
+| 1
+| MemoryPort
+| Inbound
+| 6 shapes
+| stdio, HTTPS (future), Human UI (future)
+
+| 2
+| LifecyclePort
+| Inbound
+| 4 shapes
+| Claude Code Hooks, Human UI (future)
+
+| 3
+| BackingServicePort
+| Outbound
+| 4 shapes (2 directions)
+| Redis, Cold Storage (future)
+
+| 4
+| NotificationPort
+| Outbound
+| 2 shapes
+| MCP Notifications, UI Notifications (future)
+
+| 5
+| RelayPort
+| Outbound
+| 1 shape
+| Agora (future)
+|===
+
+The diagram link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] shows this visually.
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?]* -- the full assembly: Adapter + Port + Adapter.
+
+*Next: the bounded contexts that live inside the hexagon, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Tiered Memory] -- the aggregate root.*

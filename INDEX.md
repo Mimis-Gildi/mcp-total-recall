@@ -18,7 +18,7 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
 Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
-Now extracting diagrams (step 0.5), then resolving audit gaps (code + docs), then completing designs.
+All 9 diagrams extracted. Design documents A-C done (Port, Adapter, ACL). Now completing remaining designs (D, E1-E6), then resolving audit gaps (code + docs).
 
 ---
 
@@ -41,7 +41,7 @@ Build the site sections that will hold the detailed design work and traceability
   - Lesson: `<figure>` breaks layout (default margins), use `<div>` instead
   - Lesson: `:page-liquid:` required for Liquid includes in AsciiDoc files
   - Lesson: inline svgPanZoom removed -- natural size inline, pan-zoom in lightbox only
-- [ ] **0.5b** Extract remaining 8 diagrams (one page at a time, review after each page)
+- [x] **0.5b** Extract remaining 8 diagrams (one page at a time, review after each page)
 
 ### 1. Diagram Inventory (step 0.5)
 
@@ -68,7 +68,7 @@ Decomposition-driven, each section is a separate view:
 - [x] **A)** What is a Port? (Passive Structure)
 - [x] **B)** What is an Adapter? (Active Structure, references Port)
 - [x] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
-- [ ] **D)** What hexagon sides do we have?
+- [x] **D)** What hexagon sides do we have?
 - [ ] **E1)** Tiered Memory -- the aggregate root
 - [ ] **E2)** Attention -- the scoring engine
 - [ ] **E3)** Association Graph -- the relationship layer
@@ -98,6 +98,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design A -- "What is a Port?": restaurant counter metaphor (inbound order, outbound dish), MemoryPort and BackingServicePort examples, ubiquitous language translation
 - [x] Design B -- "What is an Adapter?": waitress (inbound) and cook (outbound), MCP tool handler and Redis adapter examples, verbs belong on adapters not ports
 - [x] Design C -- "What is an ACL?": convenience construct, not a class. Adapter + Port + Adapter = full translation path. Contract lives in core domain (the SDK). Babel fish is wrong metaphor (hides boundary). Five ACLs in Total Recall, none built as ACLs.
+- [x] Design D -- "Hexagon Sides": five faces enumerated (2 inbound, 3 outbound). 17 object shapes crossing. Every port's contract, adapters, and inside/outside handlers named.
 
 ---
 
@@ -107,6 +108,8 @@ By then we have working examples from gap resolution to accelerate design writin
 2. **Stop for review between steps.** Combining 0.3+0.4 without pausing skipped the checkpoint. Small steps feel slow but catch problems early.
 3. **Inline pan-zoom was wrong.** Natural size for inline diagrams. Pan-zoom belongs in the fullscreen lightbox only.
 4. **`:page-liquid:` gotcha.** Jekyll-asciidoc does not process Liquid tags by default. Each AsciiDoc file using `{% include %}` needs `:page-liquid:` in its document header.
+5. **Knowledge is not understanding.** DDD vocabulary (port, adapter, ACL) was in the training data. The ontological distinction (Passive Structure vs Active Structure) was not. A port has no verbs -- `storeMemory()` and `save()` are adapter behavior leaked into port definitions. This changes how we read the entire codebase.
+6. **ACL is a convenience construct.** Not a class, not middleware. Adapter + Port + Adapter, visible from the architect's chair. You build adapters that plug into ports. The ACL emerges. The contract lives in the core domain -- that's the SDK.
 
 ---
 
@@ -124,42 +127,26 @@ Reference implementation: https://www.mostlylucid.net/blog/enhancingmermaiddiagr
 
 No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
-### A. What is a Port?
+### Design Document Notes
 
-TODO -- define precisely. A port is a face of the hexagon. An interface. The contract boundary between domain and outside world.
+**A-C DONE.** See published design documents on the site. Key terminology established:
+- **Port** = Passive Structure (the counter). No verbs. Defines shape of what crosses.
+- **Adapter** = Active Structure (the waitress, the cook). Has verbs, job description, behavior. Replaceable.
+- **ACL** = Adapter + Port + Adapter. Convenience construct. Not a class. Emerges from the assembly. Contract lives in core domain.
 
-### B. What is an ACL on a Port?
+**D. Hexagon Sides** -- TODO. Enumerate all ports with their responsibilities. Now informed by A-C terminology.
 
-TODO -- define precisely. The ACL translates domain language on one face to infrastructure/consumer language on the other. It protects the domain from external concerns. On an outbound port: domain speaks Memory, ACL translates to data operations. On an inbound port: external speaks MCP tool calls, ACL translates to domain commands.
+**E1. Tiered Memory** -- TODO. The aggregate root. Key open question: does it own Association storage too?
 
-### C. What hexagon sides do we have?
+**E2. Attention** -- TODO. The scoring engine. Key insight: Attention computes, it doesn't store. Sends tier change events back to Tiered Memory.
 
-TODO -- enumerate all ports (inbound and outbound) with their responsibilities.
+**E3. Association Graph** -- TODO. Open question: own storage or part of Memory aggregate?
 
-### D1. Tiered Memory -- the aggregate root
+**E4. Recollection** -- TODO. Read-only assembler. Assembles from three sources at query time. No storage.
 
-TODO -- perspective, core job, what it stores, what events it produces/consumes.
-Key open question: does it own Association storage too, or is that separate?
+**E5. Session Context** -- TODO. Entry point. Working state flows through ACTIVE_CONTEXT tier via Tiered Memory.
 
-### D2. Attention -- the scoring engine
-
-TODO -- perspective, core job. Key insight from discussion: Attention computes, it doesn't store. It sends tier change events back to Tiered Memory which persists.
-
-### D3. Association Graph -- the relationship layer
-
-TODO -- perspective, core job. Open question: does it own its own storage, or do associations belong to the Memory aggregate?
-
-### D4. Recollection -- the read-only assembler
-
-TODO -- perspective, core job. Assembles from three sources at query time. No storage.
-
-### D5. Session Context -- the entry point
-
-TODO -- perspective, core job. Working state flows through ACTIVE_CONTEXT tier via Tiered Memory.
-
-### D6. Daemon -- the maintenance worker
-
-TODO -- perspective, core job. Runtime timer state, writes through Tiered Memory via commands.
+**E6. Daemon** -- TODO. Maintenance worker. Runtime timer state, writes through Tiered Memory via commands.
 
 ---
 
@@ -171,7 +158,7 @@ ADR-0004 and architecture-hexagonal.adoc say: `persist, retrieve, query, delete`
 Code (BackingServicePort.kt) says: `save, findById, search, delete, update`.
 Three names don't match. Code has extra `update` not in ADR.
 
-**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is an ACL face of the hexagon. BackingServicePort translates domain (Memory) to data (CRUD). Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Tiered Memory actually goes to storage. Attention computes, Association Graph TBD, others don't persist. Resolution will come from the detailed design pass (D1-D6 above).
+**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is a Passive Structure (Design A) -- it defines the shape of what crosses, not what the adapter does with it. `save`, `findById`, `search` are adapter verbs (Design B), not port contract. BackingServicePort should define the object shape that crosses, not the CRUD operations. Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Tiered Memory actually goes to storage. Attention computes, Association Graph TBD, others don't persist. Resolution will come from the detailed design pass (E1-E6).
 
 ### D-Audit-2. NotificationPort operation names (Significant)
 
