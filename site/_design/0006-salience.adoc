@@ -1,0 +1,185 @@
+---
+description: "Salience: the scoring engine. Computes what fades and what stays vivid. Never persists."
+classes: wide
+---
+:page-liquid:
+= Salience
+
+Salience is the scoring engine. It tracks how vivid each memory is -- how recently accessed, how frequently used, whether the mind chose to hold onto it. When a score drops below a threshold, Salience recommends demotion. When it rises above one, promotion.
+
+This is the second bounded context inside the hexagon. Hippocampus owns the memories and writes to storage. Salience watches what Hippocampus does and decides what should move.
+
+++++
+<div id="SL-0001">
+<p><strong>Diagram 11: SL-0001 -- Salience Bounded Context</strong></p>
+<pre class="mermaid">
+{% include diagrams/sl-0001-salience.mmd %}
+</pre>
+</div>
+++++
+
+Three event streams in from Hippocampus. One sweep command from Subconscious. Thresholds from Cortex. Three outputs to two consumers. No persistence channel.
+
+== The Expo
+
+The expeditor stands at the pass. In a professional kitchen, the pass is the steel counter between the cooking line and the dining room -- the last stop before food goes out. The expo doesn't cook. Doesn't have a station. The expo watches.
+
+Every plate that lands on the pass, the expo tracks. How long has that risotto been sitting? Is table 7's steak keeping pace with their appetizer? The fish that came up two minutes ago -- still good, or dying?
+
+The expo doesn't set the standards. The head chef decides what "dying on the pass" means. Two minutes for fish. Five for a braise. The expo applies whatever standards the chef posted.
+
+When the head chef calls "how are we looking?" -- the expo runs through everything and calls back. "Table 12 is behind, fire their mains. That salmon has been sitting -- run it now. The short rib? Still perfect, leave it."
+
+If the expo steps out, the kitchen keeps running. Food is still on the pass, orders are still on the tickets. When the expo walks back in, they look around, read the room, and pick up where they left off. The state is in the kitchen, not in the expo's notes.
+
+== What It Watches
+
+Salience watches three events from Hippocampus. All three fire after persistence -- by the time Salience sees them, the memory is already written.
+
+[cols="1,2",options="header"]
+|===
+| Event | What Salience Does
+
+| MemoryStored
+| Registers the memory. Sets an initial score. Starts the clock.
+
+| MemoryAccessed
+| Bumps the score. Resets the clock. Frequent access keeps a memory vivid.
+
+| MemoryClaimed
+| Marks it claimed. Drops the decay rate. The mind said this one matters -- Salience respects that.
+|===
+
+Three events. Each one updates the projection.
+
+== What It Keeps
+
+Salience keeps one thing: a score for each memory.
+
+[cols="1,2",options="header"]
+|===
+| Field | Shape
+
+| memoryId
+| UUID -- which memory
+
+| score
+| Double -- how vivid this memory is right now
+
+| lastAccessed
+| Timestamp -- when it was last touched
+
+| decayRate
+| Double -- how fast it fades. Tier-dependent. Lower for claimed memories.
+
+| claimed
+| Boolean -- whether the mind actively held onto this
+|===
+
+This projection is not persisted. It lives in the process and nowhere else. If Salience restarts, it rebuilds by replaying events from Hippocampus. The projection is a view of Hippocampus state, not a copy of it.
+
+== What It Calls Out
+
+When a score crosses a threshold, Salience calls it out.
+
+[cols="1,2,2",options="header"]
+|===
+| Output | Meaning | Who Hears
+
+| TierPromoted
+| Score rose above the promotion threshold. Move this memory up.
+| Hippocampus
+
+| TierDemoted
+| Score dropped below the demotion threshold. Move this memory down.
+| Hippocampus
+
+| SalienceScored
+| Current score snapshot for a memory. Emitted after every recalculation.
+| Recall
+|===
+
+TierPromoted and TierDemoted are recommendations. Hippocampus decides whether to act on them. In practice, it does -- the aggregate root trusts the scoring engine's math. But the write authority belongs to Hippocampus.
+
+== The Sweep
+
+Salience doesn't run its own clock. Subconscious does.
+
+When Subconscious sends `DecaySweep`, Salience walks the entire projection. For each memory: recalculate the score based on elapsed time and decay rate. Check the new score against tier thresholds. If it crossed -- call it out.
+
+IDENTITY_CORE memories are exempt. Their scores don't drop. The recipe book doesn't expire.
+
+== The Chef's Standards
+
+The expo doesn't decide what "dying on the pass" means. The chef does.
+
+Tier thresholds are configuration. They are stored as memories in Hippocampus, in the IDENTITY_CORE tier -- the mind's own preferences about how its memory should behave. Cortex reads these configuration memories and passes them to Salience.
+
+When the mind stores new threshold values, Cortex reads them and Salience adapts. No restart. No redeployment. The rules on the wall changed, and the expo follows the new rules.
+
+== The Score
+
+Score decays with time. Every moment a memory goes unaccessed, its score drops. The rate depends on the tier -- fast for ACTIVE_CONTEXT, slow for LONG_TERM, very slow for ARCHIVE.
+
+Access reverses decay. Every time a memory is touched, the score bumps up and the clock resets. A memory that gets accessed every day stays vivid indefinitely.
+
+Claiming reduces the decay rate. A claimed memory still fades if never accessed -- but it fades slower. The mind said it matters, so the scoring engine gives it more time.
+
+There is a gap between promotion and demotion thresholds. A memory at the boundary doesn't bounce between tiers on small fluctuations. It has to clearly rise or clearly fall before Salience calls it.
+
+== No Filing Cabinet
+
+Salience has no relationship with BackingServicePort. It owns no data in Redis or anywhere else.
+
+If Salience crashes, nothing is lost. The memories are in Hippocampus. The event stream is intact. Salience restarts, replays the events, rebuilds its projection, and resumes. The expo stepped out and came back.
+
+A score can always be recomputed from a memory's timestamps, access history, and claim status. Persisting derived data creates a second source of truth. Hippocampus is the source. Salience computes from it.
+
+== Relationship to Hippocampus
+
+Hippocampus and Salience are tightly coupled. Every memory event Hippocampus emits, Salience consumes. Every tier change Salience recommends, Hippocampus executes.
+
+The coupling is one-directional in authority. Hippocampus does not ask Salience for permission. Salience does not command Hippocampus. Salience recommends. Hippocampus decides. The communication is event-driven in both directions -- neither calls the other directly.
+
+== Relationship to Recall
+
+Recall needs scores to rank search results. Salience emits SalienceScored after every recalculation. Recall maintains its own copy of current scores, built from those events. At search time, Recall assembles memories from Hippocampus, scores from its local copy, and associations from Synapse. No query to Salience needed.
+
+Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
+
+== Summary
+
+[cols="1,3",options="header"]
+|===
+| Aspect | Detail
+
+| Role
+| Scoring engine. Computes salience for every memory. Recommends tier changes.
+
+| Maintains
+| In-memory SalienceScore projection (5 fields). Not persisted. Rebuilt from events on restart.
+
+| Watches
+| 3 events from Hippocampus (MemoryStored, MemoryAccessed, MemoryClaimed)
+
+| Receives
+| DecaySweep from Subconscious, thresholds from Cortex
+
+| Calls out
+| TierPromoted and TierDemoted (to Hippocampus), SalienceScored (to Recall)
+
+| Key invariant
+| Computes, never persists. No relationship with BackingServicePort.
+
+| Key mechanism
+| Time-based decay with access boosts and claim resistance. Threshold gap prevents oscillation.
+
+| Configuration
+| Tier thresholds stored as IDENTITY_CORE memories. Read by Cortex, passed to Salience.
+|===
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus]* -- the aggregate root that owns all memory persistence.
+
+*Next: link:/mcp-total-recall/design/0007-association-graph/[Synapse]* -- the relationship layer that connects memories to each other.

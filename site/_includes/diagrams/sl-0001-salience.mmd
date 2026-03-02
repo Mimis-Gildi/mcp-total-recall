@@ -1,0 +1,37 @@
+graph LR
+    subgraph Sources ["Event & Command Sources"]
+        HP_IN(["Hippocampus"])
+        SB(["Subconscious"])
+        CX(["Cortex"])
+    end
+
+    subgraph SL ["Salience"]
+        direction TB
+        ENGINE["Scoring Engine<br/>Computes, never persists"]
+        PROJ["SalienceScore Projection<br/>memoryId, score, lastAccessed,<br/>decayRate, claimed"]
+        ENGINE --- PROJ
+    end
+
+    subgraph Consumers ["Event Consumers"]
+        HP_OUT(["Hippocampus"])
+        RC(["Recall"])
+    end
+
+    HP_IN -- "MemoryStored" --> SL
+    HP_IN -- "MemoryAccessed" --> SL
+    HP_IN -- "MemoryClaimed" --> SL
+    SB -- "DecaySweep" --> SL
+    CX -- "Thresholds" --> SL
+
+    SL -- "TierPromoted" --> HP_OUT
+    SL -- "TierDemoted" --> HP_OUT
+    SL -- "SalienceScored" --> RC
+
+    style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SL fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Consumers fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style HP_IN fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SB fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style HP_OUT fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#0f3460,stroke-width:1px

@@ -18,7 +18,7 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
 Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
-All 9 diagrams extracted. Design documents A-D done (Port, Adapter, ACL, Hexagon Sides), E1 (Hippocampus) done. Bounded contexts renamed to biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious). Now completing remaining designs (E2-E6), then resolving audit gaps (code + docs).
+10 diagrams total (9 extracted + HP-0001 bounded context diagram). Design documents A-D done (Port, Adapter, ACL, Hexagon Sides), E1 (Hippocampus) done. Bounded contexts renamed to biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious). Now completing remaining designs (E2-E6), then resolving audit gaps (code + docs).
 
 ---
 
@@ -100,7 +100,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design B -- "What is an Adapter?": waitress (inbound) and cook (outbound), MCP tool handler and Redis adapter examples, verbs belong on adapters not ports
 - [x] Design C -- "What is an ACL?": convenience construct, not a class. Adapter + Port + Adapter = full translation path. Contract lives in core domain (the SDK). Babel fish is wrong metaphor (hides boundary). Five ACLs in Total Recall, none built as ACLs.
 - [x] Design D -- "Hexagon Sides": five faces enumerated (2 inbound, 3 outbound). 17 object shapes crossing. Every port's contract, adapters, and inside/outside handlers named.
-- [x] Design E1 -- "Hippocampus": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. Association storage question deferred to E3.
+- [x] Design E1 -- "Hippocampus": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. HP-0001 bounded context diagram added. Association storage section rewritten (Synapse = dependent aggregate, own file cabinet, internal only).
 - [x] Architectural clarifications from Vadim: Synapse is a dependent aggregate (DDD pattern) with its own file cabinet (own storage), accessed only internally. Recall is the CQRS read side -- no state, assembles from three sources. Cortex is the window clerk / entry point / dispatcher. Search is both transactional (immediate MCP tool response) and asynchronous (deeper associations push via NotificationPort).
 - [x] Bounded context rename to biological memory vocabulary: Tiered Memory → Hippocampus, Association Graph → Synapse, Attention → Salience, Recollection → Recall, Session Context → Cortex, Daemon → Subconscious. Also AttentionScore → SalienceScore, AttentionScored → SalienceScored. 29+ files updated across site, code, diagrams, ADRs, blog posts. Build verified.
 
@@ -115,6 +115,7 @@ By then we have working examples from gap resolution to accelerate design writin
 5. **Knowledge is not understanding.** DDD vocabulary (port, adapter, ACL) was in the training data. The ontological distinction (Passive Structure vs Active Structure) was not. A port has no verbs -- `storeMemory()` and `save()` are adapter behavior leaked into port definitions. This changes how we read the entire codebase.
 6. **ACL is a convenience construct.** Not a class, not middleware. Adapter + Port + Adapter, visible from the architect's chair. You build adapters that plug into ports. The ACL emerges. The contract lives in the core domain -- that's the SDK.
 7. **Name things for what they are, not what they do technically.** "Tiered Memory" is a database description. "Hippocampus" tells you it forms, organizes, and consolidates memories -- which IS what the aggregate root does. Biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) makes the system self-documenting because the names carry the right connotations.
+8. **Copy the diagram include pattern, don't write from memory.** The full pattern is: `:page-liquid:` in front matter, `++++` passthrough block, `<div id="ID">`, `<pre class="mermaid">`, `{% include diagrams/file.mmd %}`. Context compaction erases muscle memory. Open a working page (e.g. architecture-contexts.adoc lines 23-30) and copy every time.
 
 ---
 
