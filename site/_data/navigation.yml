@@ -39,6 +39,8 @@ architecture:
     children:
       - title: "About Detailed Design"
         url: /design/0000-about-detailed-design/
+      - title: "A: What is a Port?"
+        url: /design/0001-what-is-a-port/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"

@@ -219,39 +219,43 @@ _Documents will be added as each bounded context is examined._
 | About Detailed Design -- why we front-load design
 | Done
 
-| _A_
+| link:/mcp-total-recall/design/0001-what-is-a-port/[A]
 | What is a Port?
-| Pending
+| Done
 
 | _B_
-| What is an ACL?
+| What is an Adapter? (Active Structure)
 | Pending
 
 | _C_
+| What is an ACL? (Adapter + Port + Adapter)
+| Pending
+
+| _D_
 | Hexagon Sides
 | Pending
 
-| _D1_
+| _E1_
 | Tiered Memory
 | Pending
 
-| _D2_
+| _E2_
 | Attention
 | Pending
 
-| _D3_
+| _E3_
 | Association Graph
 | Pending
 
-| _D4_
+| _E4_
 | Recollection
 | Pending
 
-| _D5_
+| _E5_
 | Session Context
 | Pending
 
-| _D6_
+| _E6_
 | Daemon
 | Pending
 |===

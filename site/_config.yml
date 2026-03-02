@@ -44,6 +44,7 @@ collections:
     permalink: /design/:name/
     order:
       - 0000-about-detailed-design.adoc
+      - 0001-what-is-a-port.adoc
   catalog:
     output: true
     permalink: /catalog/:name/

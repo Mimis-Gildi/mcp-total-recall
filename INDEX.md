@@ -45,16 +45,16 @@ Build the site sections that will hold the detailed design work and traceability
 
 ### 1. Diagram Inventory (step 0.5)
 
-| ID       | Type             | Title              | Host Page                   | File                          |
-|----------|------------------|--------------------|-----------------------------|-------------------------------|
-| CTX-0001 | C4 Context       | System Context     | architecture.adoc           | `ctx-0001-system-context.mmd` |
+| ID       | Type             | Title              | Host Page                   | File                              |
+|----------|------------------|--------------------|-----------------------------|-----------------------------------|
+| CTX-0001 | C4 Context       | System Context     | architecture.adoc           | `ctx-0001-system-context.mmd`     |
 | HEX-0001 | Ports & Adapters | Hexagonal          | architecture-hexagonal.adoc | `hex-0001-ports-and-adapters.mmd` |
 | BC-0001  | Context Map      | Bounded Contexts   | architecture-contexts.adoc  | `bc-0001-bounded-contexts.mmd`    |
 | MSG-0001 | Sequence         | Store Memory       | architecture-messages.adoc  | `msg-0001-store-memory.mmd`       |
 | MSG-0002 | Sequence         | Search Memory      | architecture-messages.adoc  | `msg-0002-search-memory.mmd`      |
 | MSG-0003 | Sequence         | Claim Memory       | architecture-messages.adoc  | `msg-0003-claim-memory.mmd`       |
 | MSG-0004 | Sequence         | Decay Sweep        | architecture-messages.adoc  | `msg-0004-decay-sweep.mmd`        |
-| MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | `msg-0005-session-lifecycle.mmd`   |
+| MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | `msg-0005-session-lifecycle.mmd`  |
 | MSG-0006 | Sequence         | Reflect (Dreaming) | architecture-messages.adoc  | `msg-0006-reflect.mmd`            |
 
 ### 2. Resolve Audit Gaps (code + docs)
@@ -65,15 +65,16 @@ Fix code issues and doc mismatches. This naturally fills in some detailed design
 
 Decomposition-driven, each section is a separate view:
 
-- [ ] **A)** What is a Port?
-- [ ] **B)** What is an ACL? How does it live on a port (a face of the hexagon)?
-- [ ] **C)** What hexagon sides do we have?
-- [ ] **D1)** Tiered Memory -- the aggregate root
-- [ ] **D2)** Attention -- the scoring engine
-- [ ] **D3)** Association Graph -- the relationship layer
-- [ ] **D4)** Recollection -- the read-only assembler
-- [ ] **D5)** Session Context -- the entry point
-- [ ] **D6)** Daemon -- the maintenance worker
+- [x] **A)** What is a Port? (Passive Structure)
+- [ ] **B)** What is an Adapter? (Active Structure, references Port)
+- [ ] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
+- [ ] **D)** What hexagon sides do we have?
+- [ ] **E1)** Tiered Memory -- the aggregate root
+- [ ] **E2)** Attention -- the scoring engine
+- [ ] **E3)** Association Graph -- the relationship layer
+- [ ] **E4)** Recollection -- the read-only assembler
+- [ ] **E5)** Session Context -- the entry point
+- [ ] **E6)** Daemon -- the maintenance worker
 
 By then we have working examples from gap resolution to accelerate design writing.
 
@@ -93,6 +94,8 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Created Catalog section (0.3): `site/_catalog/`, traceability matrix `0000-catalog.adoc`, Jekyll collection, symlink
 - [x] Created Catalog nav group (0.4): sidebar entry under Design
 - [x] Diagram extraction pattern (0.5a): tested on CTX-0001, fixed `<figure>` → `<div>`, fixed Liquid processing, removed inline svgPanZoom
+- [x] Diagram extraction (0.5b): all 9 diagrams extracted to `_includes/diagrams/`, all host pages updated, catalog links verified
+- [x] Design A -- "What is a Port?": restaurant counter metaphor (inbound order, outbound dish), MemoryPort and BackingServicePort examples, ubiquitous language translation
 
 ---
 
