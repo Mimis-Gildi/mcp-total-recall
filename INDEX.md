@@ -69,7 +69,7 @@ Decomposition-driven, each section is a separate view:
 - [x] **B)** What is an Adapter? (Active Structure, references Port)
 - [x] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
 - [x] **D)** What hexagon sides do we have?
-- [ ] **E1)** Tiered Memory -- the aggregate root
+- [x] **E1)** Tiered Memory -- the aggregate root
 - [ ] **E2)** Attention -- the scoring engine
 - [ ] **E3)** Association Graph -- the relationship layer
 - [ ] **E4)** Recollection -- the read-only assembler
@@ -99,6 +99,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design B -- "What is an Adapter?": waitress (inbound) and cook (outbound), MCP tool handler and Redis adapter examples, verbs belong on adapters not ports
 - [x] Design C -- "What is an ACL?": convenience construct, not a class. Adapter + Port + Adapter = full translation path. Contract lives in core domain (the SDK). Babel fish is wrong metaphor (hides boundary). Five ACLs in Total Recall, none built as ACLs.
 - [x] Design D -- "Hexagon Sides": five faces enumerated (2 inbound, 3 outbound). 17 object shapes crossing. Every port's contract, adapters, and inside/outside handlers named.
+- [x] Design E1 -- "Tiered Memory": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. Association storage question deferred to E3.
 
 ---
 
@@ -134,9 +135,9 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 - **Adapter** = Active Structure (the waitress, the cook). Has verbs, job description, behavior. Replaceable.
 - **ACL** = Adapter + Port + Adapter. Convenience construct. Not a class. Emerges from the assembly. Contract lives in core domain.
 
-**D. Hexagon Sides** -- TODO. Enumerate all ports with their responsibilities. Now informed by A-C terminology.
+**D. Hexagon Sides** -- DONE. Five faces (2 inbound, 3 outbound), 17 object shapes, all adapters named.
 
-**E1. Tiered Memory** -- TODO. The aggregate root. Key open question: does it own Association storage too?
+**E1. Tiered Memory** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Session Context, Daemon, Attention). Six events to four consumers. Claiming = active identity choice vs passive storage. Association storage ownership deferred to E3.
 
 **E2. Attention** -- TODO. The scoring engine. Key insight: Attention computes, it doesn't store. Sends tier change events back to Tiered Memory.
 

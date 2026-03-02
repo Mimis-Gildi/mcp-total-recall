@@ -235,9 +235,9 @@ _Documents will be added as each bounded context is examined._
 | Hexagon Sides
 | Done
 
-| _E1_
-| Tiered Memory
-| Pending
+| link:/mcp-total-recall/design/0005-tiered-memory/[E1]
+| Tiered Memory -- the Aggregate Root
+| Done
 
 | _E2_
 | Attention

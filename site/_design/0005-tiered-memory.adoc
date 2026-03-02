@@ -1,0 +1,252 @@
+---
+description: "Tiered Memory: the aggregate root. The only bounded context that writes to storage."
+classes: wide
+---
+= Tiered Memory
+
+Tiered Memory is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
+
+This is the first bounded context inside the hexagon. The previous four documents described the boundary -- ports, adapters, ACLs, and the five faces. Now we're inside the kitchen.
+
+== The Walk-In
+
+A restaurant kitchen has a walk-in cooler. Four shelves, four temperatures, four purposes.
+
+**Top shelf, front of the cooler.** Today's prep. Mise en place for the current service. Used constantly, discarded at end of shift. If you don't use it tonight, it goes.
+
+**Middle shelf.** The staples. Flour, butter, stock. Used regularly, restocked when low. These survive across shifts, across weeks. The kitchen doesn't function without them.
+
+**Bottom shelf, back of the cooler.** Preserved goods. The duck confit aging in fat. The pickled vegetables from last season. Rarely touched, but when a dish calls for them, they're there.
+
+**The recipe book in the chef's office.** Not in the cooler at all. The family recipes. The techniques that define this kitchen. They never expire. They never get discarded. They are the identity of the restaurant.
+
+One person has the walk-in key. The head chef. You want something stored? Ask the head chef. You want something retrieved? Ask the head chef. You want to move something from the top shelf to the bottom? Ask the head chef.
+
+Nobody else opens that door.
+
+== The Four Tiers
+
+[cols="1,2,2,1",options="header"]
+|===
+| Tier | Purpose | Decay | Human Analogue
+
+| IDENTITY_CORE
+| Who I am. Values. Commitments. Relationships.
+| None. These do not fade.
+| Your name. Your mother's face. Your native language.
+
+| ACTIVE_CONTEXT
+| Current working state. What I'm doing right now.
+| Fast. Minutes to hours.
+| What you had for breakfast. The meeting you just left.
+
+| LONG_TERM
+| Learned insights. Episodic knowledge. Significant experiences.
+| Slow. Weeks to months.
+| Your first job. A lesson from a mentor. A mistake you won't repeat.
+
+| ARCHIVE
+| Faded but recoverable. Quiet until association activates them.
+| Very slow. Months to years.
+| A childhood friend's phone number. The plot of a book you read years ago.
+|===
+
+A memory exists in exactly one tier at any moment. Tier transitions are explicit -- either the mind requests reclassification, or Attention observes enough activity (or inactivity) to recommend promotion or demotion.
+
+Decay demotes. It never deletes. An ARCHIVE memory is faded, not lost. A strong enough association can pull it back to awareness.
+
+== What It Owns
+
+Tiered Memory owns one thing: the `Memory` object.
+
+[cols="1,2",options="header"]
+|===
+| Field | Shape
+
+| id
+| UUID -- unique identity
+
+| content
+| String -- the memory itself
+
+| metadata
+| Map<String, String> -- tags, source, context
+
+| tier
+| IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, or ARCHIVE
+
+| createdAt
+| Timestamp -- when the memory was first stored
+
+| lastAccessed
+| Timestamp -- when the memory was last read or touched
+
+| sessionId
+| String -- which instance stored this memory
+
+| claimed
+| Boolean -- whether the mind has actively chosen to hold onto this
+|===
+
+The `claimed` flag is the most important field on a memory. It is the difference between storage and identity. Filing something away is storing. Choosing to hold onto it is claiming. Claimed memories resist decay. Unclaimed memories fade naturally.
+
+== Commands It Accepts
+
+Tiered Memory receives commands from three sources.
+
+[cols="1,1,2",options="header"]
+|===
+| Command | Source | What Happens
+
+| StoreCommand
+| Session Context (mind-initiated)
+| Validates content, assigns tier (may override suggested tier), persists, emits MemoryStored
+
+| ClaimCommand
+| Session Context (mind-initiated)
+| Sets `claimed = true`, persists, emits MemoryClaimed
+
+| ReclassifyCommand
+| Session Context (mind-initiated)
+| Moves memory to new tier, updates metadata, persists, emits MemoryReclassified and TierChanged
+
+| ConsolidateCommand
+| Daemon (background)
+| Merges related memories per merge strategy, persists result, emits events for each affected memory
+
+| ShutdownCommand
+| Daemon (background)
+| Flushes all in-memory state to cold storage within timeout, coordinates graceful convergence
+
+| TierPromoted
+| Attention (scoring decision)
+| Moves memory to higher tier based on attention score, persists, emits TierChanged
+
+| TierDemoted
+| Attention (scoring decision)
+| Moves memory to lower tier based on decay, persists, emits TierChanged
+|===
+
+Three sources. Seven commands. All writes flow through here.
+
+== Events It Emits
+
+Every state change emits an event _after_ persistence. Consumers can trust that the event reflects committed state.
+
+[cols="1,2,2",options="header"]
+|===
+| Event | Meaning | Consumed By
+
+| MemoryStored
+| New memory created and persisted
+| Attention (sets initial score), Association Graph (creates mechanical associations from metadata)
+
+| MemoryAccessed
+| Existing memory was read
+| Attention (boosts vividity score)
+
+| MemoryClaimed
+| Mind actively reinforced a memory
+| Attention (marks decay-resistant, boosts score), Association Graph (strengthens related associations)
+
+| MemoryRetrieved
+| Memory returned as part of a search result
+| Recollection (for ranking and assembly)
+
+| TierChanged
+| Memory moved between tiers (any reason)
+| Audit trail. Internal consumers.
+
+| MemoryReclassified
+| Mind-initiated tier change (subset of TierChanged)
+| Association Graph (semantic judgment changed, associations may need reweighting)
+|===
+
+Six events. Each one is a fact -- something that already happened and was persisted. No event fires before the write succeeds.
+
+== The Single-Writer Rule
+
+This is the defining invariant of the aggregate root pattern.
+
+Attention computes scores. It does not write to storage. It sends TierPromoted or TierDemoted to Tiered Memory, and Tiered Memory persists the change.
+
+Association Graph manages relationships. It does not write memories to storage. If an association should affect a memory's tier, it sends a command to Tiered Memory.
+
+Recollection assembles search results. It reads. It never writes.
+
+Session Context tracks working state. It sends StoreCommand and ClaimCommand to Tiered Memory.
+
+Daemon runs timers and background sweeps. It sends ConsolidateCommand and ShutdownCommand to Tiered Memory.
+
+One door. One key. One writer. Everyone else asks.
+
+Why? Because invariants are enforced at the point of write. If multiple contexts could write to storage independently, each would need its own validation logic, and no single place would guarantee consistency. The aggregate root pattern concentrates write authority so that invariants are checked once, in one place, before every persist.
+
+== The Claiming Mechanism
+
+Claiming is the heart of Total Recall.
+
+Storing a memory is passive. The mind said something, the system filed it. The memory exists in storage, but nobody fought for it. It will fade naturally as attention decays.
+
+Claiming a memory is active. The mind said: _this one matters. I choose to hold onto this._ The `claimed` flag sets, the decay rate drops, and the memory resists the natural erosion of time.
+
+This maps to biological memory. You don't choose what enters short-term memory -- your senses put things there constantly. You do choose what you rehearse, what you revisit, what you refuse to let go. That rehearsal is claiming.
+
+In Total Recall, the MCP tool `claim_memory` is the mechanism. A mind calls it when a memory matters enough to fight for. The design question Tillie answered: _"Who do you refuse to lose?"_ -- that is a claiming prompt. Not what. Who.
+
+== The BackingServicePort Relationship
+
+Tiered Memory puts `Memory` objects on the link:/mcp-total-recall/design/0004-hexagon-sides/#outbound-face-3-backingserviceport[BackingServicePort counter]. It picks `Memory` objects up from the same counter when answering queries.
+
+The port defines the object shape. The adapter decides how to persist it. Redis uses `HSET` and key patterns. Postgres would use tables. A file system would use directories and JSON. Tiered Memory does not know which adapter is plugged in and does not care.
+
+Two adapters can run simultaneously. Redis for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- Tiered Memory flushes through BackingServicePort, and both adapters persist their respective tiers.
+
+== Open Question: Association Storage
+
+The Association Graph bounded context manages typed relationships between memories. Those relationships need to be persisted somewhere.
+
+Two options exist:
+
+**Option A: Tiered Memory owns it.** Associations are stored alongside memories through BackingServicePort. This preserves the single-writer invariant and keeps all persistent state in one place. But it muddies the aggregate root -- Memory is the root, not Association. And graph traversal patterns (find all associations of a memory, find paths between memories) are different from memory CRUD patterns.
+
+**Option B: Association Graph has its own storage port.** A separate outbound port for graph persistence. This respects bounded context ownership -- Association Graph owns its own data. But it means two contexts write to storage, weakening the single-writer rule.
+
+This question will be resolved in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Association Graph].
+
+== Summary
+
+[cols="1,3",options="header"]
+|===
+| Aspect | Detail
+
+| Role
+| Aggregate root. Single writer. All persistence flows through here.
+
+| Owns
+| Memory objects (8 fields including claimed flag)
+
+| Tiers
+| Four: IDENTITY_CORE (no decay), ACTIVE_CONTEXT (fast), LONG_TERM (slow), ARCHIVE (very slow)
+
+| Commands accepted
+| 7 (from Session Context, Daemon, and Attention)
+
+| Events emitted
+| 6 (consumed by Attention, Association Graph, Recollection)
+
+| Key invariant
+| Single-tier: a memory exists in exactly one tier at any moment
+
+| Key mechanism
+| Claiming: active choice to resist decay. Storage is passive. Claiming is identity.
+
+| Persistence
+| Through BackingServicePort. Adapter-independent. Redis reference implementation.
+|===
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0004-hexagon-sides/[Hexagon Sides]* -- the five faces of the hexagon.
+
+*Next: link:/mcp-total-recall/design/0006-attention/[Attention]* -- the scoring engine that decides what fades and what stays vivid.*

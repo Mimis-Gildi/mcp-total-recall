@@ -48,6 +48,7 @@ collections:
       - 0002-what-is-an-adapter.adoc
       - 0003-what-is-an-acl.adoc
       - 0004-hexagon-sides.adoc
+      - 0005-tiered-memory.adoc
   catalog:
     output: true
     permalink: /catalog/:name/
