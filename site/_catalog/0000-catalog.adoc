@@ -58,6 +58,11 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Sequence
 | Reflect (Dreaming) flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| link:/mcp-total-recall/design/0005-tiered-memory/#HP-0001[HP-0001]
+| Bounded Context
+| Hippocampus -- commands, events, persistence
+| link:/mcp-total-recall/design/0005-tiered-memory/[Design E1: Hippocampus]
 |===
 
 == Architecture Decision Records

@@ -1,0 +1,52 @@
+graph LR
+    subgraph Sources ["Command Sources"]
+        CX(["Cortex"])
+        SB(["Subconscious"])
+        SL_IN(["Salience"])
+    end
+
+    subgraph HP ["Hippocampus"]
+        direction TB
+        ROOT["Aggregate Root<br/>Single Writer"]
+        MEM["Memory Object<br/>id, content, metadata, tier,<br/>createdAt, lastAccessed,<br/>sessionId, claimed"]
+        ROOT --- MEM
+    end
+
+    subgraph Consumers ["Event Consumers"]
+        SL_OUT(["Salience"])
+        SY(["Synapse"])
+        RC(["Recall"])
+    end
+
+    BSP[("BackingServicePort<br/>Memory persistence")]
+
+    CX -- "StoreCommand" --> HP
+    CX -- "ClaimCommand" --> HP
+    CX -- "ReclassifyCommand" --> HP
+    SB -- "ConsolidateCommand" --> HP
+    SB -- "ShutdownCommand" --> HP
+    SL_IN -- "TierPromoted" --> HP
+    SL_IN -- "TierDemoted" --> HP
+
+    HP -- "MemoryStored" --> SL_OUT
+    HP -- "MemoryAccessed" --> SL_OUT
+    HP -- "MemoryClaimed" --> SL_OUT
+    HP -- "MemoryStored" --> SY
+    HP -- "MemoryClaimed" --> SY
+    HP -- "MemoryReclassified" --> SY
+    HP -- "MemoryRetrieved" --> RC
+    HP -- "TierChanged" --> RC
+
+    HP -- "Memory objects" --> BSP
+    BSP -- "Memory objects" --> HP
+
+    style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Consumers fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style BSP fill:#0f3460,stroke:#e94560,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SB fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SL_IN fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SL_OUT fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SY fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#0f3460,stroke-width:1px

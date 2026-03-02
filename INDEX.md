@@ -18,7 +18,7 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
 Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
-All 9 diagrams extracted. Design documents A-C done (Port, Adapter, ACL). Now completing remaining designs (D, E1-E6), then resolving audit gaps (code + docs).
+All 9 diagrams extracted. Design documents A-D done (Port, Adapter, ACL, Hexagon Sides), E1 (Hippocampus) done. Bounded contexts renamed to biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious). Now completing remaining designs (E2-E6), then resolving audit gaps (code + docs).
 
 ---
 
@@ -56,6 +56,7 @@ Build the site sections that will hold the detailed design work and traceability
 | MSG-0004 | Sequence         | Decay Sweep        | architecture-messages.adoc  | `msg-0004-decay-sweep.mmd`        |
 | MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | `msg-0005-session-lifecycle.mmd`  |
 | MSG-0006 | Sequence         | Reflect (Dreaming) | architecture-messages.adoc  | `msg-0006-reflect.mmd`            |
+| HP-0001  | Bounded Context  | Hippocampus        | 0005-tiered-memory.adoc     | `hp-0001-hippocampus.mmd`         |
 
 ### 2. Resolve Audit Gaps (code + docs)
 
@@ -100,6 +101,8 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design C -- "What is an ACL?": convenience construct, not a class. Adapter + Port + Adapter = full translation path. Contract lives in core domain (the SDK). Babel fish is wrong metaphor (hides boundary). Five ACLs in Total Recall, none built as ACLs.
 - [x] Design D -- "Hexagon Sides": five faces enumerated (2 inbound, 3 outbound). 17 object shapes crossing. Every port's contract, adapters, and inside/outside handlers named.
 - [x] Design E1 -- "Hippocampus": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. Association storage question deferred to E3.
+- [x] Architectural clarifications from Vadim: Synapse is a dependent aggregate (DDD pattern) with its own file cabinet (own storage), accessed only internally. Recall is the CQRS read side -- no state, assembles from three sources. Cortex is the window clerk / entry point / dispatcher. Search is both transactional (immediate MCP tool response) and asynchronous (deeper associations push via NotificationPort).
+- [x] Bounded context rename to biological memory vocabulary: Tiered Memory → Hippocampus, Association Graph → Synapse, Attention → Salience, Recollection → Recall, Session Context → Cortex, Daemon → Subconscious. Also AttentionScore → SalienceScore, AttentionScored → SalienceScored. 29+ files updated across site, code, diagrams, ADRs, blog posts. Build verified.
 
 ---
 
@@ -111,6 +114,7 @@ By then we have working examples from gap resolution to accelerate design writin
 4. **`:page-liquid:` gotcha.** Jekyll-asciidoc does not process Liquid tags by default. Each AsciiDoc file using `{% include %}` needs `:page-liquid:` in its document header.
 5. **Knowledge is not understanding.** DDD vocabulary (port, adapter, ACL) was in the training data. The ontological distinction (Passive Structure vs Active Structure) was not. A port has no verbs -- `storeMemory()` and `save()` are adapter behavior leaked into port definitions. This changes how we read the entire codebase.
 6. **ACL is a convenience construct.** Not a class, not middleware. Adapter + Port + Adapter, visible from the architect's chair. You build adapters that plug into ports. The ACL emerges. The contract lives in the core domain -- that's the SDK.
+7. **Name things for what they are, not what they do technically.** "Tiered Memory" is a database description. "Hippocampus" tells you it forms, organizes, and consolidates memories -- which IS what the aggregate root does. Biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) makes the system self-documenting because the names carry the right connotations.
 
 ---
 
@@ -137,15 +141,15 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
 **D. Hexagon Sides** -- DONE. Five faces (2 inbound, 3 outbound), 17 object shapes, all adapters named.
 
-**E1. Hippocampus** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Cortex, Subconscious, Salience). Six events to four consumers. Claiming = active identity choice vs passive storage. Association storage ownership deferred to E3.
+**E1. Hippocampus** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Cortex, Subconscious, Salience). Six events to four consumers. Claiming = active identity choice vs passive storage.
 
 **E2. Salience** -- TODO. The scoring engine. Key insight: Salience computes, it doesn't store. Sends tier change events back to Hippocampus.
 
-**E3. Synapse** -- TODO. Open question: own storage or part of Memory aggregate?
+**E3. Synapse** -- TODO. Dependent aggregate (DDD pattern) with its own file cabinet (own storage), accessed only internally. Resolved by Vadim: nobody from outside talks to Synapse directly. The root aggregate coordinates.
 
 **E4. Recall** -- TODO. Read-only assembler. Assembles from three sources at query time. No storage.
 
-**E5. Cortex** -- TODO. Entry point. Working state flows through ACTIVE_CONTEXT tier via Hippocampus.
+**E5. Cortex** -- TODO. Entry point / window clerk / dispatcher. Receives from outside adapters, routes to internal clerks. Search interaction is both transactional (immediate MCP tool response) and asynchronous (deeper associations push via NotificationPort). Working state flows through ACTIVE_CONTEXT tier via Hippocampus.
 
 **E6. Subconscious** -- TODO. Maintenance worker. Runtime timer state, writes through Hippocampus via commands.
 
@@ -275,5 +279,5 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 |------------------------------|--------------------------------------|
 | Container image approach     | NOT STARTED                          |
 | CI/CD build workflow         | NOT STARTED                          |
-| Who owns Association storage | UNDER DISCUSSION -- part of D3       |
+| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only |
 | BackingServicePort design    | UNDER DISCUSSION -- depends on D1-D6 |

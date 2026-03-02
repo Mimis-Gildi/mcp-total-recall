@@ -2,11 +2,23 @@
 description: "Hippocampus: the aggregate root. The only bounded context that writes to storage."
 classes: wide
 ---
+:page-liquid:
 = Hippocampus
 
 Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
 
 This is the first bounded context inside the hexagon. The previous four documents described the boundary -- ports, adapters, ACLs, and the five faces. Now we're inside the kitchen.
+
+++++
+<div id="HP-0001">
+<p><strong>Diagram 10: HP-0001 -- Hippocampus Bounded Context</strong></p>
+<pre class="mermaid">
+{% include diagrams/hp-0001-hippocampus.mmd %}
+</pre>
+</div>
+++++
+
+Seven commands in from three sources. Six events out to three consumers. One persistence channel down to BackingServicePort. Everything Hippocampus touches, in one view.
 
 == The Walk-In
 
@@ -202,17 +214,15 @@ The port defines the object shape. The adapter decides how to persist it. Redis 
 
 Two adapters can run simultaneously. Redis for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- Hippocampus flushes through BackingServicePort, and both adapters persist their respective tiers.
 
-== Open Question: Association Storage
+== Relationship to Synapse
 
-The Synapse bounded context manages typed relationships between memories. Those relationships need to be persisted somewhere.
+Hippocampus owns Memory persistence. Synapse owns Association persistence. These are separate storage concerns.
 
-Two options exist:
+Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory ID) to link associations to the memories they connect, but it manages its own data in its own file cabinet. Nobody from outside the hexagon addresses Synapse directly -- only internal bounded contexts coordinate with it.
 
-**Option A: Hippocampus owns it.** Associations are stored alongside memories through BackingServicePort. This preserves the single-writer invariant and keeps all persistent state in one place. But it muddies the aggregate root -- Memory is the root, not Association. And graph traversal patterns (find all associations of a memory, find paths between memories) are different from memory CRUD patterns.
+Hippocampus does not store, retrieve, or manage associations. When it emits events like MemoryStored or MemoryClaimed, Synapse may react by creating or strengthening associations in its own storage. The two aggregates share a key (Memory ID), not a file cabinet.
 
-**Option B: Synapse has its own storage port.** A separate outbound port for graph persistence. This respects bounded context ownership -- Synapse owns its own data. But it means two contexts write to storage, weakening the single-writer rule.
-
-This question will be resolved in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Synapse].
+Full design in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Synapse].
 
 == Summary
 
