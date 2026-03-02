@@ -19,7 +19,7 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | System Context -- Total Recall in its environment
 | link:/mcp-total-recall/architecture/[Context]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001]
 | Ports & Adapters
 | Hexagonal -- ports, adapters, actor model
 | link:/mcp-total-recall/architecture/hexagonal/[Hexagonal]

@@ -17,8 +17,8 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Version:** 0.7.0
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
-Full skeptic audit completed. Findings documented below. Building site infrastructure
-for detailed design, catalog, and diagram governance before resolving inconsistencies.
+Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
+Now extracting diagrams (step 0.5), then resolving audit gaps (code + docs), then completing designs.
 
 ---
 
@@ -36,12 +36,32 @@ Build the site sections that will hold the detailed design work and traceability
   - Landing page: traceability matrix connecting Architecture, ADRs, Design, Diagrams, and GitHub task list
   - Diagram inventory (9 diagrams), ADR cross-references, bounded context to code mapping, messages to code, ports to code, known inconsistencies, design document tracker
 - [x] **0.4** Create Catalog nav group in sidebar
-- [ ] **0.5** Extract diagrams into `site/_diagrams/` folder ONE BY ONE
-  - Each diagram gets an exact designated ID in source
-  - Each gets added to the Catalog
-  - Diagrams are included by reference from Architecture/Design pages
+- [x] **0.5a** Diagram extraction pattern tested on CTX-0001 (System Context)
+  - Extract `.mmd` to `site/_includes/diagrams/`, `div` wrapper with `id` anchor, Liquid `include`, `:page-liquid:` on host page
+  - Lesson: `<figure>` breaks layout (default margins), use `<div>` instead
+  - Lesson: `:page-liquid:` required for Liquid includes in AsciiDoc files
+  - Lesson: inline svgPanZoom removed -- natural size inline, pan-zoom in lightbox only
+- [ ] **0.5b** Extract remaining 8 diagrams (one page at a time, review after each page)
 
-### 1. Detailed Design Pass (after infrastructure)
+### 1. Diagram Inventory (step 0.5)
+
+| ID | Type | Title | Host Page | File |
+|----|------|-------|-----------|------|
+| CTX-0001 | C4 Context | System Context | architecture.adoc | `ctx-0001-system-context.mmd` |
+| HEX-0001 | Ports & Adapters | Hexagonal | architecture-hexagonal.adoc | _pending_ |
+| BC-0001 | Context Map | Bounded Contexts | architecture-contexts.adoc | _pending_ |
+| MSG-0001 | Sequence | Store Memory | architecture-messages.adoc | _pending_ |
+| MSG-0002 | Sequence | Search Memory | architecture-messages.adoc | _pending_ |
+| MSG-0003 | Sequence | Claim Memory | architecture-messages.adoc | _pending_ |
+| MSG-0004 | Sequence | Decay Sweep | architecture-messages.adoc | _pending_ |
+| MSG-0005 | Sequence | Session Lifecycle | architecture-messages.adoc | _pending_ |
+| MSG-0006 | Sequence | Reflect (Dreaming) | architecture-messages.adoc | _pending_ |
+
+### 2. Resolve Audit Gaps (code + docs)
+
+Fix code issues and doc mismatches. This naturally fills in some detailed designs.
+
+### 3. Complete Detailed Designs (after gaps resolved)
 
 Decomposition-driven, each section is a separate view:
 
@@ -55,7 +75,7 @@ Decomposition-driven, each section is a separate view:
 - [ ] **D5)** Session Context -- the entry point
 - [ ] **D6)** Daemon -- the maintenance worker
 
-Through these views we iron out the audit findings.
+By then we have working examples from gap resolution to accelerate design writing.
 
 ---
 
@@ -72,6 +92,16 @@ Through these views we iron out the audit findings.
 - [x] Created Design nav group (0.2): sidebar entry under Decisions
 - [x] Created Catalog section (0.3): `site/_catalog/`, traceability matrix `0000-catalog.adoc`, Jekyll collection, symlink
 - [x] Created Catalog nav group (0.4): sidebar entry under Design
+- [x] Diagram extraction pattern (0.5a): tested on CTX-0001, fixed `<figure>` → `<div>`, fixed Liquid processing, removed inline svgPanZoom
+
+---
+
+## Lessons Learned This Session
+
+1. **Think and discuss first, implement after.** Testing one diagram before committing to nine caught three bugs: `<figure>` default margins break layout, `:page-liquid:` is required for Liquid in AsciiDoc, inline svgPanZoom forces 60vh height with massive empty space.
+2. **Stop for review between steps.** Combining 0.3+0.4 without pausing skipped the checkpoint. Small steps feel slow but catch problems early.
+3. **Inline pan-zoom was wrong.** Natural size for inline diagrams. Pan-zoom belongs in the fullscreen lightbox only.
+4. **`:page-liquid:` gotcha.** Jekyll-asciidoc does not process Liquid tags by default. Each AsciiDoc file using `{% include %}` needs `:page-liquid:` in its document header.
 
 ---
 
