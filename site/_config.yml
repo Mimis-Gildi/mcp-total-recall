@@ -39,6 +39,11 @@ collections:
       - 0005-memory-as-aggregate-root.adoc
       - 0006-events-and-commands-as-message-types.adoc
       - 0007-biological-memory-as-reference-model.adoc
+  design:
+    output: true
+    permalink: /design/:name/
+    order:
+      - 0000-about-detailed-design.adoc
 
 pagination:
   enabled: true
@@ -64,6 +69,17 @@ defaults:
   - scope:
       path: ""
       type: adr
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      share: false
+      related: false
+      sidebar:
+        nav: architecture
+  - scope:
+      path: ""
+      type: design
     values:
       layout: single
       author_profile: false

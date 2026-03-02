@@ -35,3 +35,7 @@ architecture:
         url: /decisions/0006-events-and-commands-as-message-types/
       - title: "ADR-0007: Bio Memory"
         url: /decisions/0007-biological-memory-as-reference-model/
+  - title: "Design"
+    children:
+      - title: "About Detailed Design"
+        url: /design/0000-about-detailed-design/
