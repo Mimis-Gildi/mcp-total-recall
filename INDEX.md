@@ -6,8 +6,220 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-03-01 by Claude (with Vadim)
+Last updated: 2026-03-02 by Claude (with Vadim)
 
 ---
 
-No active task. Previous: Issue #5 (ADRs) completed, version 0.7.0.
+## Where We Are
+
+**Branch:** `2-architecture-hexagonal-boundaries-bounded-contexts-and-message-contracts-2`
+**Issue:** #2 -- Architecture: Hexagonal boundaries, bounded contexts, and message contracts
+**Version:** 0.7.0
+**Sub-issues:** #3, #4, #5, #9 -- all closed
+
+Full skeptic audit completed. Findings documented below. Now doing detailed design
+pass to resolve inconsistencies, driven by decomposition:
+
+- A) What is a Port?
+- B) What is an ACL? How does it live on a port (a face of the hexagon)?
+- C) What hexagon sides do we have?
+- D1..Dn) Each bounded context viewed separately -- its perspective, its core job description
+
+Through these views we iron out the audit findings.
+
+---
+
+## Done This Session
+
+- [x] Cleared stale INDEX.md from Issue #5
+- [x] Version golden source: replaced hardcoded `const val VERSION` in TotalRecall.kt with build-time injection from gradle.properties via processResources
+- [x] GitHub Action: replaced dead SECURITY.md step with CLAUDE.md step (anchored pattern match, fail-loud verification)
+- [x] CLAUDE.md version updated 0.4.0 → 0.7.0 (by Vadim)
+- [x] Full skeptic audit: 3 parallel agents verified code, docs, tests
+- [x] All findings documented (D1-D10, C1-C9, T1-T3)
+
+---
+
+## Detailed Design Roadmap
+
+### X1. Diagrams need interactive zoom/inspect
+
+**Problem:** Mermaid diagrams on the Jekyll site are too small to read comfortably, even with browser zoom.
+
+**Solution:** Add [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) (~8KB) with a fullscreen lightbox.
+
+Approach:
+1. Load svg-pan-zoom from CDN in site layout
+2. After Mermaid renders, strip the inline `max-width: 1020px` Mermaid forces on SVGs
+3. Initialize svg-pan-zoom on each diagram (mouse wheel zoom, click-drag pan)
+4. Add click-to-fullscreen: clone SVG into modal overlay with backdrop blur, reinit pan-zoom in modal, close with ESC / click-outside / button
+
+Reference implementation: https://www.mostlylucid.net/blog/enhancingmermaiddiagramswithpanzoomandexport
+
+No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
+
+### A. What is a Port?
+
+TODO -- define precisely. A port is a face of the hexagon. An interface. The contract boundary between domain and outside world.
+
+### B. What is an ACL on a Port?
+
+TODO -- define precisely. The ACL translates domain language on one face to infrastructure/consumer language on the other. It protects the domain from external concerns. On an outbound port: domain speaks Memory, ACL translates to data operations. On an inbound port: external speaks MCP tool calls, ACL translates to domain commands.
+
+### C. What hexagon sides do we have?
+
+TODO -- enumerate all ports (inbound and outbound) with their responsibilities.
+
+### D1. Tiered Memory -- the aggregate root
+
+TODO -- perspective, core job, what it stores, what events it produces/consumes.
+Key open question: does it own Association storage too, or is that separate?
+
+### D2. Attention -- the scoring engine
+
+TODO -- perspective, core job. Key insight from discussion: Attention computes, it doesn't store. It sends tier change events back to Tiered Memory which persists.
+
+### D3. Association Graph -- the relationship layer
+
+TODO -- perspective, core job. Open question: does it own its own storage, or do associations belong to the Memory aggregate?
+
+### D4. Recollection -- the read-only assembler
+
+TODO -- perspective, core job. Assembles from three sources at query time. No storage.
+
+### D5. Session Context -- the entry point
+
+TODO -- perspective, core job. Working state flows through ACTIVE_CONTEXT tier via Tiered Memory.
+
+### D6. Daemon -- the maintenance worker
+
+TODO -- perspective, core job. Runtime timer state, writes through Tiered Memory via commands.
+
+---
+
+## Audit Findings -- Documentation vs. Code Mismatches
+
+### D-Audit-1. BackingServicePort operation names (Significant)
+
+ADR-0004 and architecture-hexagonal.adoc say: `persist, retrieve, query, delete`.
+Code (BackingServicePort.kt) says: `save, findById, search, delete, update`.
+Three names don't match. Code has extra `update` not in ADR.
+
+**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is an ACL face of the hexagon. BackingServicePort translates domain (Memory) to data (CRUD). Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Tiered Memory actually goes to storage. Attention computes, Association Graph TBD, others don't persist. Resolution will come from the detailed design pass (D1-D6 above).
+
+### D-Audit-2. NotificationPort operation names (Significant)
+
+Architecture-hexagonal.adoc says: `notify, remind, alert`.
+Code (NotificationPort.kt) has single `send` method.
+
+### D-Audit-3. RelayPort operation names (Minor)
+
+Architecture-hexagonal.adoc says: `send, receive, list_pending`.
+Code (RelayPort.kt) has single `relay` method.
+Future/Agora-dependent -- lower priority.
+
+### D-Audit-4. Event count mismatch in ADR-0006 (Significant)
+
+ADR-0006 says "13 variants" and lists 13.
+Code has 15: `ModeChanged` and `SessionState` missing from ADR.
+Architecture-messages page has the correct full list.
+
+### D-Audit-5. SearchQuery routing in ADR-0006 (Significant)
+
+ADR-0006 line 115 says SearchQuery goes to Tiered Memory.
+Architecture-contexts page correctly routes it to Recollection.
+
+### D-Audit-6. ReflectQuery routing in ADR-0006 (Significant)
+
+ADR-0006 line 115 says ReflectQuery goes to Association Graph.
+Architecture-contexts page correctly routes it to Recollection.
+
+### D-Audit-7. "Five actors" should be six (Moderate)
+
+Architecture-hexagonal.adoc line 226 says "five actors."
+There are six bounded contexts -- Recollection missing from hexagonal diagram.
+
+### D-Audit-8. Tiered Memory command list incomplete in contexts page (Minor)
+
+Architecture-contexts.adoc omits `ReclassifyCommand`, `TierPromoted`, `TierDemoted` from Tiered Memory's "Commands Accepted" text. ADR-0005 includes them. Mermaid diagram shows `ReclassifyCommand`.
+
+### D-Audit-9. "Governing Dynamic" not in ADR template (Minor)
+
+All 7 ADRs have a "Governing Dynamic" section. ADR-0001 template spec does not define it. Either add to template or document as convention.
+
+### D-Audit-10. SearchFilter type mismatch (Minor)
+
+ADR-0006 and architecture-messages describe `SearchQuery.filters` as `SearchFilter`.
+Code uses `Map<String, String>`. See also C-Audit-1 below.
+
+---
+
+## Audit Findings -- Code Issues
+
+### C-Audit-1. SearchFilter is dead code
+
+`SearchFilter` data class exists in domain model. Nothing references it -- not SearchQuery, not MemoryPort, not BackingServicePort. All use `Map<String, String>` instead. Either use it everywhere or remove it.
+
+### C-Audit-2. TierChanged / MemoryReclassified are duplicate events
+
+Structurally identical: same fields, same types. No documented semantic distinction. Either remove one or document when each fires.
+
+### C-Audit-3. AssociationDirection lives in wrong package
+
+`AssociationDirection` enum defined in `Command.kt` (message file). It's a domain concept. Should be in `domain/model/` alongside `AssociationType`.
+
+### C-Audit-4. associate_memories schema/code mismatch
+
+Tool declares `type` and `strength` as required in schema, but handler provides fallback defaults (`?: "THEMATIC"`, `?: "0.5"`). Pick one: required (remove defaults) or optional (remove from required list).
+
+### C-Audit-5. Stringly-typed fields that should be enums
+
+At least 6 fields use `String` where finite valid values exist:
+- `ConsolidateCommand.mergeStrategy`
+- `ShutdownCommand.coldStorageTarget`
+- `SessionState.activityLevel`
+- `ModeChanged.oldMode / newMode`
+- `StateTransition.oldState / newState`
+
+### C-Audit-6. Temporal fields have no unit specification
+
+`ShutdownCommand.flushTimeout: Long` and `SessionState.duration: Long` -- milliseconds? seconds? Not documented.
+
+### C-Audit-7. heartbeat() has no corresponding Event
+
+`LifecyclePort.heartbeat()` exists. No `HeartbeatReceived` event in the Event hierarchy.
+
+### C-Audit-8. AttentionScored duplicates AttentionScore fields
+
+Event `AttentionScored` has the same fields as model `AttentionScore`. Maintenance risk if either changes independently. Could reference the model type directly.
+
+### C-Audit-9. Refactoring pass still pending
+
+TotalRecall.kt line 51: "reviewed and accepted by rdd13r AND needs full refactoring pass by rdd13r"
+
+---
+
+## Audit Findings -- Test Gaps
+
+### T-Audit-1. Server test is smoke-only
+
+TotalRecallTest only verifies `createServer()` returns non-null. No tool invocation, no schema verification, no teapot response check.
+
+### T-Audit-2. Self-referential assertion in MessageTest
+
+Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Should compare against expected UUID.
+
+### T-Audit-3. Low message coverage
+
+4 of 7 Command variants untested. Both Query variants untested. 11 of 15 Event variants untested.
+
+---
+
+## What's NOT Decided
+
+| Question                 | Status      |
+|--------------------------|-------------|
+| Container image approach | NOT STARTED |
+| CI/CD build workflow     | NOT STARTED |
+| Who owns Association storage | UNDER DISCUSSION -- part of D3 |
+| BackingServicePort design | UNDER DISCUSSION -- depends on D1-D6 |
