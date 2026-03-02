@@ -223,9 +223,9 @@ _Documents will be added as each bounded context is examined._
 | What is a Port?
 | Done
 
-| _B_
+| link:/mcp-total-recall/design/0002-what-is-an-adapter/[B]
 | What is an Adapter? (Active Structure)
-| Pending
+| Done
 
 | _C_
 | What is an ACL? (Adapter + Port + Adapter)

@@ -45,6 +45,7 @@ collections:
     order:
       - 0000-about-detailed-design.adoc
       - 0001-what-is-a-port.adoc
+      - 0002-what-is-an-adapter.adoc
   catalog:
     output: true
     permalink: /catalog/:name/

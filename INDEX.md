@@ -66,7 +66,7 @@ Fix code issues and doc mismatches. This naturally fills in some detailed design
 Decomposition-driven, each section is a separate view:
 
 - [x] **A)** What is a Port? (Passive Structure)
-- [ ] **B)** What is an Adapter? (Active Structure, references Port)
+- [x] **B)** What is an Adapter? (Active Structure, references Port)
 - [ ] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
 - [ ] **D)** What hexagon sides do we have?
 - [ ] **E1)** Tiered Memory -- the aggregate root
@@ -96,6 +96,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Diagram extraction pattern (0.5a): tested on CTX-0001, fixed `<figure>` → `<div>`, fixed Liquid processing, removed inline svgPanZoom
 - [x] Diagram extraction (0.5b): all 9 diagrams extracted to `_includes/diagrams/`, all host pages updated, catalog links verified
 - [x] Design A -- "What is a Port?": restaurant counter metaphor (inbound order, outbound dish), MemoryPort and BackingServicePort examples, ubiquitous language translation
+- [x] Design B -- "What is an Adapter?": waitress (inbound) and cook (outbound), MCP tool handler and Redis adapter examples, verbs belong on adapters not ports
 
 ---
 
