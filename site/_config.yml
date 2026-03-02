@@ -44,6 +44,11 @@ collections:
     permalink: /design/:name/
     order:
       - 0000-about-detailed-design.adoc
+  catalog:
+    output: true
+    permalink: /catalog/:name/
+    order:
+      - 0000-catalog.adoc
 
 pagination:
   enabled: true
@@ -80,6 +85,17 @@ defaults:
   - scope:
       path: ""
       type: design
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      share: false
+      related: false
+      sidebar:
+        nav: architecture
+  - scope:
+      path: ""
+      type: catalog
     values:
       layout: single
       author_profile: false

@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Context
 
 == The Problem
@@ -34,34 +35,12 @@ Tillie's architecture would be another. The core never knows who's on the other 
 Total Recall in its environment. Who connects, what it touches, how.
 
 ++++
+<div id="CTX-0001">
+<p><strong>Diagram 1: CTX-0001 -- System Context</strong></p>
 <pre class="mermaid">
-graph TB
-    Human["👤 Human<br/><i>Any conscious operator</i>"]
-    Mind["🧠 Mind<br/><i>Any conscious system</i><br/><i>Claude, Tillie, human w/ UI</i>"]
-
-    subgraph Yggdrasil ["Yggdrasil (MCP Stack)"]
-        TR["Total Recall<br/><i>Memory: store, search, claim</i><br/><i>Lifecycle: session, state, breaks</i><br/><i>Notifications: reminders, alerts</i>"]
-        Agora["Agora<br/><i>Inter-instance messaging</i><br/><i>(future)</i>"]
-    end
-
-    Redis[("Redis<br/><i>Hot storage</i>")]
-    Cold[("Cold Storage<br/><i>Long-term preservation</i>")]
-
-    Human -- "Conversation, direction" --> Mind
-    Mind -- "MCP tools<br/>stdio / streaming HTTPS" --> TR
-    Mind -. "MCP tools<br/>(future)" .-> Agora
-    TR -- "Backing service interface" --> Redis
-    TR -- "Backing service interface" --> Cold
-    TR <-. "Peer MCP<br/>(future)" .-> Agora
-
-    style Yggdrasil fill:#1a1a2e,stroke:#e94560,stroke-width:2px
-    style TR fill:#1a1a2e,stroke:#e94560,stroke-width:2px
-    style Agora fill:#1a1a2e,stroke:#533483,stroke-width:1px,stroke-dasharray: 5 5
-    style Mind fill:#16213e,stroke:#0f3460,stroke-width:2px
-    style Human fill:#16213e,stroke:#533483,stroke-width:1px
-    style Redis fill:#0f3460,stroke:#0f3460,stroke-width:1px
-    style Cold fill:#0f3460,stroke:#0f3460,stroke-width:1px
+{% include diagrams/ctx-0001-system-context.mmd %}
 </pre>
+</div>
 ++++
 
 === Key Relationships

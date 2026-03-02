@@ -28,14 +28,14 @@ for detailed design, catalog, and diagram governance before resolving inconsiste
 
 Build the site sections that will hold the detailed design work and traceability.
 
-- [ ] **0.1** Create Design section (`site/_design/` folder, like `_adr/`)
+- [x] **0.1** Create Design section (`site/_design/` folder, like `_adr/`)
   - Landing page: "About Detailed Design"
   - Starts with WHY: massive precedent exists (enterprise-level synthetic mind system whose memory system we distill into Total Recall). Community needs architecture that storytells common understanding and produces a roadmap to execution.
-- [ ] **0.2** Create Design nav group in sidebar (alongside Architecture, Decisions)
-- [ ] **0.3** Create Catalog section (`site/_catalog/` folder)
+- [x] **0.2** Create Design nav group in sidebar (alongside Architecture, Decisions)
+- [x] **0.3** Create Catalog section (`site/_catalog/` folder)
   - Landing page: traceability matrix connecting Architecture, ADRs, Design, Diagrams, and GitHub task list
-  - Master audit -- revisit and check coherence of each item
-- [ ] **0.4** Create Catalog nav group in sidebar
+  - Diagram inventory (9 diagrams), ADR cross-references, bounded context to code mapping, messages to code, ports to code, known inconsistencies, design document tracker
+- [x] **0.4** Create Catalog nav group in sidebar
 - [ ] **0.5** Extract diagrams into `site/_diagrams/` folder ONE BY ONE
   - Each diagram gets an exact designated ID in source
   - Each gets added to the Catalog
@@ -68,6 +68,10 @@ Through these views we iron out the audit findings.
 - [x] Full skeptic audit: 3 parallel agents verified code, docs, tests
 - [x] All findings documented (D-Audit-1 through 10, C-Audit-1 through 9, T-Audit-1 through 3)
 - [x] Replaced mermaid-init.js with fullscreen lightbox (svg-pan-zoom + click-to-expand)
+- [x] Created Design section (0.1): `site/_design/`, landing page `0000-about-detailed-design.adoc`, Jekyll collection, symlink
+- [x] Created Design nav group (0.2): sidebar entry under Decisions
+- [x] Created Catalog section (0.3): `site/_catalog/`, traceability matrix `0000-catalog.adoc`, Jekyll collection, symlink
+- [x] Created Catalog nav group (0.4): sidebar entry under Design
 
 ---
 

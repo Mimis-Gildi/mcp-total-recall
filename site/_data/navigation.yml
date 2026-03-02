@@ -39,3 +39,7 @@ architecture:
     children:
       - title: "About Detailed Design"
         url: /design/0000-about-detailed-design/
+  - title: "Catalog"
+    children:
+      - title: "Traceability Matrix"
+        url: /catalog/0000-catalog/

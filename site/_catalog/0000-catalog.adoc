@@ -1,0 +1,257 @@
+---
+description: "Traceability matrix connecting architecture, decisions, design, diagrams, and code."
+classes: wide
+---
+= Catalog
+
+The catalog is the audit trail. It connects every architectural artifact to every other artifact -- diagrams to ADRs, ADRs to design documents, design documents to code, code to diagrams. If something is missing, the catalog shows it. If something contradicts, the catalog reveals it.
+
+== Diagram Inventory
+
+Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into `_diagrams/` with a designated source ID. Until then, this table is the index.
+
+[cols="1,1,2,2",options="header"]
+|===
+| ID | Type | Title | Source Page
+
+| link:/mcp-total-recall/architecture/#CTX-0001[CTX-0001]
+| C4 Context
+| System Context -- Total Recall in its environment
+| link:/mcp-total-recall/architecture/[Context]
+
+| _TBD_
+| Ports & Adapters
+| Hexagonal -- ports, adapters, actor model
+| link:/mcp-total-recall/architecture/hexagonal/[Hexagonal]
+
+| _TBD_
+| Context Map
+| Bounded Contexts -- six actors and message flow
+| link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]
+
+| _TBD_
+| Sequence
+| Store Memory flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| _TBD_
+| Sequence
+| Search Memory flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| _TBD_
+| Sequence
+| Claim Memory flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| _TBD_
+| Sequence
+| Decay Sweep flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| _TBD_
+| Sequence
+| Session Lifecycle flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+
+| _TBD_
+| Sequence
+| Reflect (Dreaming) flow
+| link:/mcp-total-recall/architecture/messages/[Message Catalog]
+|===
+
+== Architecture Decision Records
+
+[cols="1,3,2",options="header"]
+|===
+| ADR | Title | References
+
+| link:/mcp-total-recall/decisions/0001-architecture-decision-records/[0001]
+| Use Architecture Decision Records
+| Template for all ADRs
+
+| link:/mcp-total-recall/decisions/0002-hexagonal-architecture/[0002]
+| Hexagonal Architecture
+| Hexagonal page, ports and adapters diagram
+
+| link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[0003]
+| stdio as Primary Transport
+| Context page, hexagonal page (inbound adapters)
+
+| link:/mcp-total-recall/decisions/0004-resilient-storage-array/[0004]
+| Resilient Storage Array
+| Hexagonal page (outbound ports), BackingServicePort
+
+| link:/mcp-total-recall/decisions/0005-memory-as-aggregate-root/[0005]
+| Memory as Aggregate Root
+| Bounded contexts page (Tiered Memory)
+
+| link:/mcp-total-recall/decisions/0006-events-and-commands-as-message-types/[0006]
+| Events and Commands as Message Types
+| Message catalog page (all message tables)
+
+| link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[0007]
+| Biological Memory as Reference Model
+| Message catalog (claiming intelligence), bounded contexts (Attention)
+|===
+
+== Bounded Contexts to Code
+
+Mapping from architectural bounded contexts to Kotlin source artifacts.
+
+[cols="1,2,2,1",options="header"]
+|===
+| Context | Responsibility | Code Artifacts | Status
+
+| Tiered Memory
+| Aggregate root. CRUD for memories across four tiers. Claiming.
+| `Memory.kt`, `Tier.kt`, `MemoryPort`
+| Interfaces defined
+
+| Association Graph
+| Typed relationships between memories. Graph traversal.
+| `Association.kt`, `AssociationType.kt`
+| Model defined
+
+| Attention
+| Scoring and decay. Tier promotion/demotion.
+| `AttentionScore.kt`
+| Model defined
+
+| Recollection
+| Search and recall. Attention-weighted, association-activated.
+| `SearchFilter.kt`
+| Model defined
+
+| Session Context
+| Per-instance working state. Entry point for all requests.
+| `LifecyclePort`, `TotalRecall.kt` (tool handlers)
+| Stubs
+
+| Daemon
+| Background maintenance. Timers. Graceful shutdown.
+| _(no dedicated source yet)_
+| Not started
+|===
+
+== Messages to Code
+
+[cols="1,1,1,1",options="header"]
+|===
+| Category | Documented Count | Implemented Count | File
+
+| Commands
+| 7
+| 7
+| `Command.kt`
+
+| Queries
+| 2
+| 2
+| `Query.kt`
+
+| Events
+| 13 (ADR-0006) / 15 (code)
+| 15
+| `Event.kt`
+
+| Notifications
+| 2
+| 2
+| `Notification.kt`
+|===
+
+NOTE: ADR-0006 says 13 event variants. Code has 15 -- `ModeChanged` and `SessionState` are present in code and on the message catalog page but missing from the ADR. See audit finding D-Audit-4.
+
+== Ports to Code
+
+[cols="1,1,2,2",options="header"]
+|===
+| Port | Direction | Documented Operations | Code Operations
+
+| `MemoryPort`
+| Inbound
+| store, search, claim, associate, reclassify, reflect
+| `storeMemory`, `searchMemory`, `claimMemory`, `associateMemories`, `reclassifyMemory`, `reflect`
+
+| `LifecyclePort`
+| Inbound
+| session_start, session_end, state_transition, heartbeat
+| `sessionStart`, `sessionEnd`, `stateTransition`, `heartbeat`
+
+| `BackingServicePort`
+| Outbound
+| persist, retrieve, query, delete
+| `save`, `findById`, `search`, `delete`, `update`
+
+| `NotificationPort`
+| Outbound
+| notify, remind, alert
+| `send`
+
+| `RelayPort`
+| Outbound
+| send, receive, list_pending
+| `relay`
+|===
+
+NOTE: Outbound port operations diverge from documentation. See audit findings D-Audit-1, D-Audit-2, D-Audit-3. Resolution deferred to detailed design pass.
+
+== Known Inconsistencies
+
+Open audit findings tracked in `INDEX.md`. Summary:
+
+* *10 documentation mismatches* (D-Audit-1 through 10) -- port names, event counts, routing, actor count
+* *9 code issues* (C-Audit-1 through 9) -- dead code, duplicate events, wrong packages, stringly-typed fields
+* *3 test gaps* (T-Audit-1 through 3) -- smoke-only server test, self-referential assertion, low coverage
+
+These will be resolved through the detailed design pass (steps A through D6).
+
+== Design Documents
+
+_Documents will be added as each bounded context is examined._
+
+[cols="1,3,1",options="header"]
+|===
+| Document | Scope | Status
+
+| link:/mcp-total-recall/design/0000-about-detailed-design/[0000]
+| About Detailed Design -- why we front-load design
+| Done
+
+| _A_
+| What is a Port?
+| Pending
+
+| _B_
+| What is an ACL?
+| Pending
+
+| _C_
+| Hexagon Sides
+| Pending
+
+| _D1_
+| Tiered Memory
+| Pending
+
+| _D2_
+| Attention
+| Pending
+
+| _D3_
+| Association Graph
+| Pending
+
+| _D4_
+| Recollection
+| Pending
+
+| _D5_
+| Session Context
+| Pending
+
+| _D6_
+| Daemon
+| Pending
+|===

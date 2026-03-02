@@ -10,21 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
       svg.style.cursor = "pointer";
       svg.setAttribute("title", "Click to expand");
 
-      // Inline pan-zoom on the page (modest height, scroll-zoom off to avoid hijacking page scroll)
-      if (typeof svgPanZoom !== "undefined") {
-        svg.style.height = "60vh";
-        svgPanZoom(svg, {
-          zoomEnabled: true,
-          controlIconsEnabled: true,
-          zoomScaleSensitivity: 0.4,
-          dblClickZoomEnabled: true,
-          mouseWheelZoomEnabled: false,
-          fit: true,
-          center: true
-        });
-      }
-
-      // Click to open fullscreen lightbox
+      // Click to open fullscreen lightbox (pan-zoom lives there, not inline)
       svg.addEventListener("click", function () {
         openDiagramLightbox(svg);
       });
