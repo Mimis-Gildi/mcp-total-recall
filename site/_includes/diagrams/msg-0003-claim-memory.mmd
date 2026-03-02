@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant C as Mind
+    participant SP as Session Context
+    participant TM as Tiered Memory
+    participant AT as Attention
+    participant AG as Association Graph
+
+    C->>SP: claim_memory
+    SP->>TM: ClaimCommand
+    TM->>TM: Mark as claimed, update metadata
+    TM-->>AT: MemoryClaimed
+    TM-->>AG: MemoryClaimed
+    AT->>AT: Boost score, mark decay-resistant
+    AG->>AG: Strengthen associations
+    TM-->>SP: Acknowledgment
+    SP-->>C: MCP tool response

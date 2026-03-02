@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant C as Mind
+    participant SP as Session Context
+    participant TM as Tiered Memory
+    participant DA as Daemon
+    participant NP as Notification Port
+
+    C->>SP: session_start
+    SP->>TM: SearchQuery (load identity + last state)
+    TM-->>SP: MemoryRetrieved (identity, last session)
+    SP-->>C: Welcome back. Here's your context.
+
+    Note over C,NP: ... session activity ...
+
+    C->>SP: session_end
+    SP->>DA: SessionEnd
+    DA->>NP: SessionAuditPrompt
+    NP-->>C: What do you refuse to lose?
+    C->>SP: store_memory (session summary)
+    SP->>TM: StoreCommand

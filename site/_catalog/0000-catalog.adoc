@@ -29,32 +29,32 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Bounded Contexts -- six actors and message flow
 | link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0001[MSG-0001]
 | Sequence
 | Store Memory flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0002[MSG-0002]
 | Sequence
 | Search Memory flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0003[MSG-0003]
 | Sequence
 | Claim Memory flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0004[MSG-0004]
 | Sequence
 | Decay Sweep flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0005[MSG-0005]
 | Sequence
 | Session Lifecycle flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]
 
-| _TBD_
+| link:/mcp-total-recall/architecture/messages/#MSG-0006[MSG-0006]
 | Sequence
 | Reflect (Dreaming) flow
 | link:/mcp-total-recall/architecture/messages/[Message Catalog]

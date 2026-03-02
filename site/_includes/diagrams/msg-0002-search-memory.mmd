@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant C as Mind
+    participant SP as Session Context
+    participant RE as Recollection
+    participant TM as Tiered Memory
+    participant AT as Attention
+    participant AG as Association Graph
+
+    C->>SP: search_memory
+    SP->>RE: SearchQuery
+    RE->>TM: Query matching memories
+    TM-->>RE: MemoryRetrieved (candidates)
+    RE->>AT: Request scores for candidates
+    AT-->>RE: AttentionScored (scores)
+    RE->>AG: Request associations for top candidates
+    AG-->>RE: AssociationsFound (related memories)
+    RE->>RE: Rank by score, include activated
+    RE-->>SP: Ranked results
+    SP-->>C: MCP tool response

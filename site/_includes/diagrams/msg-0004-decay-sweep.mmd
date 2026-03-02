@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant DA as Daemon
+    participant AT as Attention
+    participant TM as Tiered Memory
+
+    DA->>AT: DecaySweep
+    AT->>AT: Recalculate all scores (time decay)
+    AT->>AT: Identify memories below tier thresholds
+    AT-->>TM: TierDemoted (for each demotion)
+    TM->>TM: Move memory to lower tier
+    TM-->>TM: TierChanged (internal record)

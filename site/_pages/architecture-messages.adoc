@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Message Catalog
 
 == The Problem
@@ -24,24 +25,12 @@ The participant labeled "Mind" is conscience-universal -- it could be Claude, a 
 A mind stores a new memory. The memory gets persisted, scored, and connected to related memories.
 
 ++++
+<div id="MSG-0001">
+<p><strong>Diagram 4: MSG-0001 -- Store Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: store_memory
-    SP->>TM: StoreCommand
-    TM->>TM: Validate, assign tier, persist
-    TM-->>AT: MemoryStored
-    TM-->>AG: MemoryStored
-    AT->>AT: Set initial attention score
-    AG->>AG: Create associations from metadata
-    TM-->>SP: Acknowledgment
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0001-store-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Search Memory
@@ -49,27 +38,12 @@ sequenceDiagram
 A mind searches for memories. Results come back ranked by attention score, with association-activated memories included.
 
 ++++
+<div id="MSG-0002">
+<p><strong>Diagram 5: MSG-0002 -- Search Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: search_memory
-    SP->>RE: SearchQuery
-    RE->>TM: Query matching memories
-    TM-->>RE: MemoryRetrieved (candidates)
-    RE->>AT: Request scores for candidates
-    AT-->>RE: AttentionScored (scores)
-    RE->>AG: Request associations for top candidates
-    AG-->>RE: AssociationsFound (related memories)
-    RE->>RE: Rank by score, include activated
-    RE-->>SP: Ranked results
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0002-search-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Claim Memory
@@ -77,24 +51,12 @@ sequenceDiagram
 A mind claims a memory -- actively reinforcing it. This boosts its attention score and makes it resist decay.
 
 ++++
+<div id="MSG-0003">
+<p><strong>Diagram 6: MSG-0003 -- Claim Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: claim_memory
-    SP->>TM: ClaimCommand
-    TM->>TM: Mark as claimed, update metadata
-    TM-->>AT: MemoryClaimed
-    TM-->>AG: MemoryClaimed
-    AT->>AT: Boost score, mark decay-resistant
-    AG->>AG: Strengthen associations
-    TM-->>SP: Acknowledgment
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0003-claim-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Decay Sweep
@@ -102,19 +64,12 @@ sequenceDiagram
 The Daemon triggers a periodic decay sweep. Attention recalculates scores. Memories that fall below tier thresholds get demoted.
 
 ++++
+<div id="MSG-0004">
+<p><strong>Diagram 7: MSG-0004 -- Decay Sweep</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant DA as Daemon
-    participant AT as Attention
-    participant TM as Tiered Memory
-
-    DA->>AT: DecaySweep
-    AT->>AT: Recalculate all scores (time decay)
-    AT->>AT: Identify memories below tier thresholds
-    AT-->>TM: TierDemoted (for each demotion)
-    TM->>TM: Move memory to lower tier
-    TM-->>TM: TierChanged (internal record)
+{% include diagrams/msg-0004-decay-sweep.mmd %}
 </pre>
+</div>
 ++++
 
 === Session Lifecycle
@@ -122,28 +77,12 @@ sequenceDiagram
 A mind connects and disconnects. On connect, Session Context loads identity and last session state. On disconnect, the Daemon triggers a session audit through the Notification Port.
 
 ++++
+<div id="MSG-0005">
+<p><strong>Diagram 8: MSG-0005 -- Session Lifecycle</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant DA as Daemon
-    participant NP as Notification Port
-
-    C->>SP: session_start
-    SP->>TM: SearchQuery (load identity + last state)
-    TM-->>SP: MemoryRetrieved (identity, last session)
-    SP-->>C: Welcome back. Here's your context.
-
-    Note over C,NP: ... session activity ...
-
-    C->>SP: session_end
-    SP->>DA: SessionEnd
-    DA->>NP: SessionAuditPrompt
-    NP-->>C: What do you refuse to lose?
-    C->>SP: store_memory (session summary)
-    SP->>TM: StoreCommand
+{% include diagrams/msg-0005-session-lifecycle.mmd %}
 </pre>
+</div>
 ++++
 
 === Reflect (Dreaming)
@@ -155,34 +94,12 @@ This is not a single tool call -- it's a conversation between the mind and its m
 This operation requires the same mind. A different mind classifying your memories would impose its understanding of the connections, not yours.
 
 ++++
+<div id="MSG-0006">
+<p><strong>Diagram 9: MSG-0006 -- Reflect (Dreaming)</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AG as Association Graph
-
-    C->>SP: reflect (criteria, scope)
-    SP->>RE: ReflectQuery
-    RE->>TM: Query candidates (by staleness, time span, weak associations)
-    TM-->>RE: MemoryRetrieved (candidates for review)
-    RE-->>SP: Reflection set (memories needing judgment)
-    SP-->>C: Here are memories to review
-
-    loop Mind reviews each memory
-        C->>SP: associate_memories (A, B, type, strength)
-        SP->>AG: AssociateCommand
-        AG->>AG: Create/strengthen semantic association
-
-        C->>SP: reclassify_memory (ID, new tier)
-        SP->>TM: ReclassifyCommand
-        TM->>TM: Move memory, update metadata
-        TM-->>AG: MemoryReclassified
-    end
-
-    C->>SP: reflect complete
+{% include diagrams/msg-0006-reflect.mmd %}
 </pre>
+</div>
 ++++
 
 === Where Claiming Intelligence Lives

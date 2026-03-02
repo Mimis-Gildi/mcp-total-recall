@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant C as Mind
+    participant SP as Session Context
+    participant RE as Recollection
+    participant TM as Tiered Memory
+    participant AG as Association Graph
+
+    C->>SP: reflect (criteria, scope)
+    SP->>RE: ReflectQuery
+    RE->>TM: Query candidates (by staleness, time span, weak associations)
+    TM-->>RE: MemoryRetrieved (candidates for review)
+    RE-->>SP: Reflection set (memories needing judgment)
+    SP-->>C: Here are memories to review
+
+    loop Mind reviews each memory
+        C->>SP: associate_memories (A, B, type, strength)
+        SP->>AG: AssociateCommand
+        AG->>AG: Create/strengthen semantic association
+
+        C->>SP: reclassify_memory (ID, new tier)
+        SP->>TM: ReclassifyCommand
+        TM->>TM: Move memory, update metadata
+        TM-->>AG: MemoryReclassified
+    end
+
+    C->>SP: reflect complete
