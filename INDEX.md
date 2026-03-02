@@ -17,13 +17,43 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Version:** 0.7.0
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
-Full skeptic audit completed. Findings documented below. Now doing detailed design
-pass to resolve inconsistencies, driven by decomposition:
+Full skeptic audit completed. Findings documented below. Building site infrastructure
+for detailed design, catalog, and diagram governance before resolving inconsistencies.
 
-- A) What is a Port?
-- B) What is an ACL? How does it live on a port (a face of the hexagon)?
-- C) What hexagon sides do we have?
-- D1..Dn) Each bounded context viewed separately -- its perspective, its core job description
+---
+
+## Task List (Current Priority Order)
+
+### 0. Site Infrastructure for Design and Catalog
+
+Build the site sections that will hold the detailed design work and traceability.
+
+- [ ] **0.1** Create Design section (`site/_design/` folder, like `_adr/`)
+  - Landing page: "About Detailed Design"
+  - Starts with WHY: massive precedent exists (enterprise-level synthetic mind system whose memory system we distill into Total Recall). Community needs architecture that storytells common understanding and produces a roadmap to execution.
+- [ ] **0.2** Create Design nav group in sidebar (alongside Architecture, Decisions)
+- [ ] **0.3** Create Catalog section (`site/_catalog/` folder)
+  - Landing page: traceability matrix connecting Architecture, ADRs, Design, Diagrams, and GitHub task list
+  - Master audit -- revisit and check coherence of each item
+- [ ] **0.4** Create Catalog nav group in sidebar
+- [ ] **0.5** Extract diagrams into `site/_diagrams/` folder ONE BY ONE
+  - Each diagram gets an exact designated ID in source
+  - Each gets added to the Catalog
+  - Diagrams are included by reference from Architecture/Design pages
+
+### 1. Detailed Design Pass (after infrastructure)
+
+Decomposition-driven, each section is a separate view:
+
+- [ ] **A)** What is a Port?
+- [ ] **B)** What is an ACL? How does it live on a port (a face of the hexagon)?
+- [ ] **C)** What hexagon sides do we have?
+- [ ] **D1)** Tiered Memory -- the aggregate root
+- [ ] **D2)** Attention -- the scoring engine
+- [ ] **D3)** Association Graph -- the relationship layer
+- [ ] **D4)** Recollection -- the read-only assembler
+- [ ] **D5)** Session Context -- the entry point
+- [ ] **D6)** Daemon -- the maintenance worker
 
 Through these views we iron out the audit findings.
 
@@ -36,17 +66,14 @@ Through these views we iron out the audit findings.
 - [x] GitHub Action: replaced dead SECURITY.md step with CLAUDE.md step (anchored pattern match, fail-loud verification)
 - [x] CLAUDE.md version updated 0.4.0 → 0.7.0 (by Vadim)
 - [x] Full skeptic audit: 3 parallel agents verified code, docs, tests
-- [x] All findings documented (D1-D10, C1-C9, T1-T3)
+- [x] All findings documented (D-Audit-1 through 10, C-Audit-1 through 9, T-Audit-1 through 3)
+- [x] Replaced mermaid-init.js with fullscreen lightbox (svg-pan-zoom + click-to-expand)
 
 ---
 
-## Detailed Design Roadmap
+## X1. Diagram Zoom (DONE)
 
-### X1. Diagrams need interactive zoom/inspect
-
-**Problem:** Mermaid diagrams on the Jekyll site are too small to read comfortably, even with browser zoom.
-
-**Solution:** Add [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) (~8KB) with a fullscreen lightbox.
+Replaced Artem's basic pan-zoom init with fullscreen lightbox.
 
 Approach:
 1. Load svg-pan-zoom from CDN in site layout
