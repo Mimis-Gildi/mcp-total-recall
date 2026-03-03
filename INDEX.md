@@ -6,7 +6,7 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-03-02 by Claude (with Vadim)
+Last updated: 2026-03-03 by Claude (with Vadim)
 
 ---
 
@@ -18,7 +18,11 @@ Last updated: 2026-03-02 by Claude (with Vadim)
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
 Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
-10 diagrams total (9 extracted + HP-0001 bounded context diagram). Design documents A-D done (Port, Adapter, ACL, Hexagon Sides), E1 (Hippocampus) done. Bounded contexts renamed to biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious). Now completing remaining designs (E2-E6), then resolving audit gaps (code + docs).
+15 diagrams total (9 extracted + 6 bounded context diagrams). All design documents complete:
+
+- A-D (Port, Adapter, ACL, Hexagon Sides) and E1-E6 (Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious).
+- Bounded contexts renamed to biological memory vocabulary with parenthetical subtitles: Hippocampus (Vault), Salience (Focus), Synapse (Matrix), Recall (Stream), Cortex (Inception), Subconscious (Dream).
+- Audit gaps remain (code + docs).
 
 ---
 
@@ -57,25 +61,108 @@ Build the site sections that will hold the detailed design work and traceability
 | MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | `msg-0005-session-lifecycle.mmd`  |
 | MSG-0006 | Sequence         | Reflect (Dreaming) | architecture-messages.adoc  | `msg-0006-reflect.mmd`            |
 | HP-0001  | Bounded Context  | Hippocampus        | 0005-tiered-memory.adoc     | `hp-0001-hippocampus.mmd`         |
+| SL-0001  | Bounded Context  | Salience           | 0006-salience.adoc          | `sl-0001-salience.mmd`            |
+| SY-0001  | Bounded Context  | Synapse            | 0007-association-graph.adoc | `sy-0001-synapse.mmd`             |
+| RC-0001  | Bounded Context  | Recall             | 0008-recall.adoc            | `rc-0001-recall.mmd`              |
+| CX-0001  | Bounded Context  | Cortex             | 0009-cortex.adoc            | `cx-0001-cortex.mmd`              |
+| SB-0001  | Bounded Context  | Subconscious       | 0010-subconscious.adoc      | `sb-0001-subconscious.mmd`        |
 
-### 2. Resolve Audit Gaps (code + docs)
-
-Fix code issues and doc mismatches. This naturally fills in some detailed designs.
-
-### 3. Complete Detailed Designs (after gaps resolved)
-
-Decomposition-driven, each section is a separate view:
+### 2. Complete Detailed Designs -- DONE
 
 - [x] **A)** What is a Port? (Passive Structure)
 - [x] **B)** What is an Adapter? (Active Structure, references Port)
 - [x] **C)** What is an ACL? (Adapter + Port + Adapter -- the full translator)
 - [x] **D)** What hexagon sides do we have?
-- [x] **E1)** Hippocampus -- the aggregate root
-- [ ] **E2)** Salience -- the scoring engine
-- [ ] **E3)** Synapse -- the relationship layer
-- [ ] **E4)** Recall -- the read-only assembler
-- [ ] **E5)** Cortex -- the entry point
-- [ ] **E6)** Subconscious -- the maintenance worker
+- [x] **E1)** Hippocampus (Vault) -- the aggregate root
+- [x] **E2)** Salience (Focus) -- the scoring engine
+- [x] **E3)** Synapse (Matrix) -- the relationship layer
+- [x] **E4)** Recall (Stream) -- the read-only assembler
+- [x] **E5)** Cortex (Inception) -- the entry point
+- [x] **E6)** Subconscious (Dream) -- the background caretaker
+
+### 3. Transaction Context (FUNDAMENTAL -- blocks steps 4-7)
+
+**Discovery (2026-03-03):** The design documents describe bounded contexts as if they pass notes to each other.
+In reality, Commands and Queries are transactional and conversational -- they carry payloads and expect responses within a traceable chain.
+Every message in the system must carry a transaction envelope.
+
+**Why this is not optional:** Without a transaction context on every message, you cannot:
+- Trace a `search_memory` call through Cortex → Recall → Hippocampus → Salience → Synapse and back
+- Correlate a fast-path MCP response with its deep-path NotificationPort results
+- Debug anything in production
+- Know which DecaySweep belongs to which session
+- Connect a BreakNotification back to the session state that triggered it
+
+**What the envelope carries (minimum):**
+- `sessionId` -- which session this belongs to (created at session_start, carried everywhere)
+- `requestId` -- which MCP tool call initiated this chain
+- `stepId` -- which step in the processing chain
+- `sequenceId` -- ordering within the flow
+- `timestamp` -- when this step occurred
+- (potentially: parentId for tree-structured traces, sourceContext for originating bounded context)
+
+**What this resolves:**
+- **3.4 ambiguity:** MemoryRetrieved, SalienceScored, AssociationsFound are response payloads in a transaction chain, not fire-and-forget domain events. The transaction context ties request to response.
+- **D-Audit-1 (partial):** Port contract shapes must include the envelope. The port defines the shape of what crosses -- and the envelope is part of that shape.
+- **C-Audit-6:** Temporal fields get their units from the envelope's timestamp convention.
+
+**Work items:**
+- [ ] **3.0** Design the TransactionContext data class and envelope convention. New design document or addition to existing architecture page. Must answer: what fields, what types, which messages carry it (all of them), how does the envelope propagate through bounded context boundaries.
+- [ ] **3.1** Update all sealed classes in Command.kt, Query.kt, Event.kt, Notification.kt to carry TransactionContext.
+- [ ] **3.2** Update design documents to reference the envelope where message flows are described.
+
+### 4. Fix Sequence Diagrams (data flow alignment)
+
+Designs are the source of truth. Sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs and have gaps. Transaction context (step 3) must be designed first -- diagrams need to show the envelope on every arrow.
+
+- [ ] **4.1** MSG-0002 (Search Memory): Add MemoryAccessed event firing on retrieval (feeds Salience decay model). Show two-speed architecture -- fast path returns through Cortex, deep path continues through NotificationPort. Show transaction context propagation.
+- [ ] **4.2** MSG-0005 (Session Lifecycle): Show SessionStart broadcasting to all contexts (Subconscious starts tracking, Cortex distributes config to Salience). Currently only shows Cortex → Hippocampus.
+- [ ] **4.3** MSG-0006 (Reflect): Show async deep-path continuing in background through NotificationPort.
+- [ ] **4.4** All diagrams: Show transaction context envelope on message arrows where it clarifies the flow.
+
+### 5. Resolve Documentation Audit Gaps (D-Audit)
+
+Fix mismatches between ADRs, architecture pages, and design documents.
+
+- [ ] **D-Audit-1** BackingServicePort operation names -- DESIGN DECISION NEEDED. Port has adapter verbs (save, findById, search). Design A says ports are passive structures. Either redefine port as passive contract or document exception. Code change required.
+- [ ] **D-Audit-2** NotificationPort: architecture says notify/remind/alert, code has single send(). Align.
+- [ ] **D-Audit-3** RelayPort: architecture says send/receive/list_pending, code has single relay(). Align (Agora-dependent, lower priority).
+- [ ] **D-Audit-4** ADR-0006 event count: says 13, code has 15. Add ModeChanged and SessionState to ADR.
+- [ ] **D-Audit-5** ADR-0006 SearchQuery routing: says Hippocampus, should be Recall.
+- [ ] **D-Audit-6** ADR-0006 ReflectQuery routing: says Synapse, should be Recall.
+- [ ] **D-Audit-7** architecture-hexagonal.adoc: "five actors" should be six (Recall missing).
+- [ ] **D-Audit-8** architecture-contexts.adoc: Hippocampus command list missing ReclassifyCommand, TierPromoted, TierDemoted.
+- [ ] **D-Audit-9** "Governing Dynamic" section in all ADRs not defined in ADR-0001 template.
+- [ ] **D-Audit-10** SearchFilter type: ADR-0006 says SearchFilter, code uses Map<String, String>.
+
+### 6. Resolve Code Audit Gaps (C-Audit)
+
+Fix code to match designs.
+
+- [ ] **C-Audit-1** SearchFilter is dead code. Remove or adopt.
+- [ ] **C-Audit-2** TierChanged / MemoryReclassified duplicate events. Document distinction or remove one.
+- [ ] **C-Audit-3** AssociationDirection in Command.kt. Move to domain/model/.
+- [ ] **C-Audit-4** associate_memories: required params have fallback defaults. Pick one.
+- [ ] **C-Audit-5** Stringly-typed fields (6 fields that should be enums).
+- [ ] **C-Audit-6** Temporal fields (flushTimeout, duration) have no unit spec.
+- [ ] **C-Audit-7** heartbeat() has no corresponding Event.
+- [ ] **C-Audit-8** SalienceScored duplicates SalienceScore fields.
+- [ ] **C-Audit-9** TotalRecall.kt refactoring pass (noted in code comment).
+
+### 7. Resolve Test Audit Gaps (T-Audit)
+
+- [ ] **T-Audit-1** Server test is smoke-only. Add tool invocation and schema checks.
+- [ ] **T-Audit-2** Self-referential assertion in MessageTest line 90. Fix.
+- [ ] **T-Audit-3** Low message coverage (4/7 commands, 0/2 queries, 4/15 events untested).
+
+### 8. Verify Catalog Matrix
+
+- [ ] **7.1** Diagram inventory matches actual diagrams (15 total).
+- [ ] **7.2** Design Documents table is current (all Done).
+- [ ] **7.3** Bounded Contexts to Code mapping is accurate after code fixes.
+- [ ] **7.4** Messages to Code counts are correct after event/command changes.
+- [ ] **7.5** Ports to Code operations match after port redesign.
+- [ ] **7.6** Known Inconsistencies section updated (resolved items removed, new items if any).
 
 By then we have working examples from gap resolution to accelerate design writing.
 
@@ -103,6 +190,15 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Design E1 -- "Hippocampus": aggregate root, single-writer invariant, walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources. Six events to four consumers. Claiming mechanism as active identity choice. HP-0001 bounded context diagram added. Association storage section rewritten (Synapse = dependent aggregate, own file cabinet, internal only).
 - [x] Architectural clarifications from Vadim: Synapse is a dependent aggregate (DDD pattern) with its own file cabinet (own storage), accessed only internally. Recall is the CQRS read side -- no state, assembles from three sources. Cortex is the window clerk / entry point / dispatcher. Search is both transactional (immediate MCP tool response) and asynchronous (deeper associations push via NotificationPort).
 - [x] Bounded context rename to biological memory vocabulary: Tiered Memory → Hippocampus, Association Graph → Synapse, Attention → Salience, Recollection → Recall, Session Context → Cortex, Daemon → Subconscious. Also AttentionScore → SalienceScore, AttentionScored → SalienceScored. 29+ files updated across site, code, diagrams, ADRs, blog posts. Build verified.
+- [x] Design E2 -- "Salience (Focus)": expo at the pass. Computes, never persists. Event-sourced projection. DecaySweep from Subconscious. Self-configuration via IDENTITY_CORE thresholds. SL-0001 diagram. First draft had LLM-speak -- rewrote with clean voice after re-reading E1.
+- [x] Design E3 -- "Synapse (Matrix)": "Hon, where did I put my keys?" Two kinds of knowing: noticed (mechanical) and understood (semantic). Dependent aggregate with own file cabinet. Five connection types. SY-0001 diagram.
+- [x] Design E4 -- "Recall (Stream)": remembering itself as the analogy. Fast path + deep path. CQRS read side. Owns nothing. RC-0001 diagram.
+- [x] Design E5 -- "Cortex (Inception)": "When someone asks you a question." Translates MCP ↔ internal. Routes to all five contexts. Two speeds. Session lifecycle. Self-configuration distribution. CX-0001 diagram.
+- [x] Design E6 -- "Subconscious (Dream)": "While you sleep." Timer-driven. Three jobs: decay sweeps, consolidation, session monitoring. Graceful shutdown. SB-0001 diagram.
+- [x] Parenthetical subtitles added to all six bounded contexts: Vault, Focus, Matrix, Stream, Inception, Dream. Navigation and doc titles updated.
+- [x] Catalog updated: 6 new bounded context diagrams added to inventory. All design docs marked Done.
+- [x] Data flow audit: verified all 6 sequence diagrams against completed designs. Found 6 findings (F-Audit-1 through 6). Critical: transaction context absent from all messages.
+- [x] Transaction context gap identified by Vadim: Commands and Queries are transactional/conversational, not fire-and-forget. Every message must carry a transaction envelope (sessionId, requestId, stepId, sequenceId, timestamps). This is structural, not observability. Blocks all remaining audit resolution.
 
 ---
 
@@ -116,6 +212,9 @@ By then we have working examples from gap resolution to accelerate design writin
 6. **ACL is a convenience construct.** Not a class, not middleware. Adapter + Port + Adapter, visible from the architect's chair. You build adapters that plug into ports. The ACL emerges. The contract lives in the core domain -- that's the SDK.
 7. **Name things for what they are, not what they do technically.** "Tiered Memory" is a database description. "Hippocampus" tells you it forms, organizes, and consolidates memories -- which IS what the aggregate root does. Biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) makes the system self-documenting because the names carry the right connotations.
 8. **Copy the diagram include pattern, don't write from memory.** The full pattern is: `:page-liquid:` in front matter, `++++` passthrough block, `<div id="ID">`, `<pre class="mermaid">`, `{% include diagrams/file.mmd %}`. Context compaction erases muscle memory. Open a working page (e.g. architecture-contexts.adoc lines 23-30) and copy every time.
+9. **Think about the thing, not the output.** When thinking about what an expo actually does at the pass, the writing is clean. When thinking about how the document should read, LLM-speak fills the space. E2 first draft failed because of this. E2 rewrite succeeded.
+10. **Tracing is not a crosscut -- it's structural.** Vadim caught a fundamental gap: the designs describe bounded contexts passing notes, but Commands and Queries are transactional conversations with payloads. Every message must carry a transaction envelope (sessionId, requestId, stepId, sequenceId, timestamps). Without it, nothing is traceable. This is not observability bolted on later -- it's the spine that makes data flow actually work. Designing without it is "speaking abstract fables, not designing a system that actually works."
+11. **Verify diagrams against designs, not the other way around.** The sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs. Artem asked about data flow gaps. Checking diagrams against designs found 6 issues, including 2 HIGH severity. Always verify existing artifacts when new design work changes the source of truth.
 
 ---
 
@@ -144,15 +243,45 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
 **E1. Hippocampus** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Cortex, Subconscious, Salience). Six events to four consumers. Claiming = active identity choice vs passive storage.
 
-**E2. Salience** -- TODO. The scoring engine. Key insight: Salience computes, it doesn't store. Sends tier change events back to Hippocampus.
+**E2. Salience (Focus)** -- DONE. Expo at the pass. Computes, never persists. Event-sourced projection rebuilt from Hippocampus events on restart. DecaySweep triggered by Subconscious. Self-configuration: thresholds stored as IDENTITY_CORE memories, read by Cortex, passed to Salience. SL-0001 diagram.
 
-**E3. Synapse** -- TODO. Dependent aggregate (DDD pattern) with its own file cabinet (own storage), accessed only internally. Resolved by Vadim: nobody from outside talks to Synapse directly. The root aggregate coordinates.
+**E3. Synapse (Matrix)** -- DONE. "Hon, where did I put my keys?" Two kinds of knowing: noticed (mechanical, reconstructible from metadata) and understood (semantic, mind's judgment, not reconstructible). Dependent aggregate with own file cabinet. Five connection types (TEMPORAL, CAUSAL, THEMATIC, EMOTIONAL, PERSON). SY-0001 diagram.
 
-**E4. Recall** -- TODO. Read-only assembler. Assembles from three sources at query time. No storage.
+**E4. Recall (Stream)** -- DONE. Remembering itself as the analogy. Fast path (match, rank, enrich) returns immediately. Deep path continues in background, pushes through NotificationPort. CQRS read side. Owns nothing. RC-0001 diagram.
 
-**E5. Cortex** -- TODO. Entry point / window clerk / dispatcher. Receives from outside adapters, routes to internal clerks. Search interaction is both transactional (immediate MCP tool response) and asynchronous (deeper associations push via NotificationPort). Working state flows through ACTIVE_CONTEXT tier via Hippocampus.
+**E5. Cortex (Inception)** -- DONE. "When someone asks you a question." Translates MCP ↔ internal language. Routes to all five contexts. Two speeds: synchronous through Cortex, asynchronous through NotificationPort. Session lifecycle. Self-configuration distribution. CX-0001 diagram.
 
-**E6. Subconscious** -- TODO. Maintenance worker. Runtime timer state, writes through Hippocampus via commands.
+**E6. Subconscious (Dream)** -- DONE. "While you sleep." Timer-driven, not request-driven. Three jobs: decay sweeps (Salience), consolidation (Hippocampus), session monitoring (NotificationPort). Graceful shutdown coordination. SB-0001 diagram.
+
+---
+
+## Audit Findings -- Data Flow (F-Audit)
+
+Discovered 2026-03-03. Sequence diagrams verified against completed design documents (E1-E6).
+
+### F-Audit-1. MSG-0002 missing MemoryAccessed on retrieval (HIGH)
+
+When memories are retrieved during search, Hippocampus should emit MemoryAccessed to Salience for each retrieved memory. This resets the vividity clock. Without it, searching for a memory doesn't boost its salience -- the decay model breaks.
+
+### F-Audit-2. MSG-0002 doesn't show two-speed architecture (MEDIUM)
+
+The diagram shows a linear synchronous flow. Design E4 (Recall) and E5 (Cortex) establish that search has two speeds: fast path returns through Cortex (synchronous MCP response), deep path continues through NotificationPort (asynchronous background). The diagram makes search look entirely synchronous.
+
+### F-Audit-3. MSG-0005 missing SessionStart broadcast (HIGH)
+
+Design E5 (Cortex) says "Cortex broadcasts SessionStart to all contexts." The diagram only shows Cortex → Hippocampus. Missing: Subconscious needs SessionStart to begin tracking session duration. Cortex needs to read IDENTITY_CORE config and distribute thresholds to Salience.
+
+### F-Audit-4. MSG-0006 missing async deep-path (MEDIUM)
+
+Reflect diagram doesn't show that deeper association traversals continue in background through NotificationPort, same pattern as search.
+
+### F-Audit-5. Transaction context absent from all messages (CRITICAL)
+
+No message in the system carries a transaction envelope. Commands and Queries are transactional and conversational with payloads -- not fire-and-forget. Without sessionId, requestId, stepId, sequenceId, and timestamps on every message, nothing is traceable. This is not observability bolted on later -- it is the structural spine that makes data flow work. See task list step 3.
+
+### F-Audit-6. MemoryRetrieved / SalienceScored / AssociationsFound identity crisis (MEDIUM)
+
+Message catalog (architecture-messages.adoc) lists these as domain Events. Design E4 (Recall) describes them as sources Recall "reads from." They are actually response payloads in a transactional chain -- the transaction context (F-Audit-5) is what ties the request to the response. Reclassify once TransactionContext is designed.
 
 ---
 
@@ -276,9 +405,11 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 
 ## What's NOT Decided
 
-| Question                     | Status                               |
-|------------------------------|--------------------------------------|
-| Container image approach     | NOT STARTED                          |
-| CI/CD build workflow         | NOT STARTED                          |
-| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only |
-| BackingServicePort design    | UNDER DISCUSSION -- depends on D1-D6 |
+| Question                     | Status                                                                                                                         |
+|------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| Container image approach     | NOT STARTED                                                                                                                    |
+| CI/CD build workflow         | NOT STARTED                                                                                                                    |
+| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only                                                   |
+| BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                              |
+| TransactionContext shape     | IDENTIFIED -- sessionId, requestId, stepId, sequenceId, timestamps minimum. Needs design doc.                                  |
+| Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext. |

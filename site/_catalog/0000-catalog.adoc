@@ -63,6 +63,31 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Bounded Context
 | Hippocampus -- commands, events, persistence
 | link:/mcp-total-recall/design/0005-tiered-memory/[Design E1: Hippocampus]
+
+| link:/mcp-total-recall/design/0006-salience/#SL-0001[SL-0001]
+| Bounded Context
+| Salience -- sources, scoring, consumers
+| link:/mcp-total-recall/design/0006-salience/[Design E2: Salience]
+
+| link:/mcp-total-recall/design/0007-association-graph/#SY-0001[SY-0001]
+| Bounded Context
+| Synapse -- associations, storage, traversal
+| link:/mcp-total-recall/design/0007-association-graph/[Design E3: Synapse]
+
+| link:/mcp-total-recall/design/0008-recall/#RC-0001[RC-0001]
+| Bounded Context
+| Recall -- assembly sources, consumers
+| link:/mcp-total-recall/design/0008-recall/[Design E4: Recall]
+
+| link:/mcp-total-recall/design/0009-cortex/#CX-0001[CX-0001]
+| Bounded Context
+| Cortex -- translation, routing, dispatch
+| link:/mcp-total-recall/design/0009-cortex/[Design E5: Cortex]
+
+| link:/mcp-total-recall/design/0010-subconscious/#SB-0001[SB-0001]
+| Bounded Context
+| Subconscious -- timers, sweeps, shutdown
+| link:/mcp-total-recall/design/0010-subconscious/[Design E6: Subconscious]
 |===
 
 == Architecture Decision Records
@@ -244,23 +269,23 @@ _Documents will be added as each bounded context is examined._
 | Hippocampus -- the Aggregate Root
 | Done
 
-| _E2_
-| Salience
-| Pending
+| link:/mcp-total-recall/design/0006-salience/[E2]
+| Salience (Focus) -- the Scoring Engine
+| Done
 
-| _E3_
-| Synapse
-| Pending
+| link:/mcp-total-recall/design/0007-association-graph/[E3]
+| Synapse (Matrix) -- the Relationship Layer
+| Done
 
-| _E4_
-| Recall
-| Pending
+| link:/mcp-total-recall/design/0008-recall/[E4]
+| Recall (Stream) -- the Read-Only Assembler
+| Done
 
-| _E5_
-| Cortex
-| Pending
+| link:/mcp-total-recall/design/0009-cortex/[E5]
+| Cortex (Inception) -- the Entry Point
+| Done
 
-| _E6_
-| Subconscious
-| Pending
+| link:/mcp-total-recall/design/0010-subconscious/[E6]
+| Subconscious (Dream) -- the Background Caretaker
+| Done
 |===
