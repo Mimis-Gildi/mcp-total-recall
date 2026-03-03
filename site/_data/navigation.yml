@@ -55,6 +55,8 @@ architecture:
         url: /design/0007-association-graph/
       - title: "E4: Recall (Stream)"
         url: /design/0008-recall/
+      - title: "E5: Cortex (Inception)"
+        url: /design/0009-cortex/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"

@@ -5,9 +5,11 @@ classes: wide
 :page-liquid:
 = Recall (Stream)
 
-Recall assembles search results from three sources. It pulls memories from Hippocampus, scores from Salience, and connections from Synapse. It combines them into a ranked, association-weighted response. It owns nothing. It stores nothing. It computes at query time and returns what it found.
+Recall assembles search results from three sources. It pulls memories from Hippocampus, scores from Salience, and connections from Synapse.
+It combines them into a ranked, association-weighted response. It owns nothing. It stores nothing. It computes at query time and returns what it found.
 
-This is the fourth bounded context inside the hexagon. The first three own things -- Hippocampus owns memories, Salience maintains scores, Synapse holds connections. Recall owns nothing. It reads from all three and assembles.
+This is the fourth bounded context inside the hexagon. The first three own things -- Hippocampus owns memories, Salience maintains scores, Synapse holds connections.
+Recall owns nothing. It reads from all three and assembles.
 
 ++++
 <div id="RC-0001">
@@ -26,11 +28,14 @@ Try to remember the name of that restaurant. The one with the good fish. It was 
 
 The first fragment comes fast. Downtown. Fish. Your partner mentioned it last week. That's the top-of-mind answer -- the strongest match for "good fish restaurant."
 
-Then connections fire. Right -- it was the night you talked about the job interview. You were nervous, and the waiter recommended the halibut. The halibut was good. That's why you remember the fish.
+Then connections fire. Right -- it was the night you talked about the job interview. You were nervous, and the waiter recommended the halibut. The halibut was good.
+That's why you remember the fish.
 
-Then deeper. Wasn't that the same week you got the phone call from your mother? The mood that night -- your partner noticed. That connects too, but it takes a moment to surface.
+Then deeper. Wasn't that the same week you got the phone call from your mother? The mood that night -- your partner noticed.
+That connects too, but it takes a moment to surface.
 
-Some memories arrive immediately. Some surface minutes later, triggered by associations you didn't consciously follow. Some show up the next day while you're thinking about something else entirely.
+Some memories arrive immediately. Some surface minutes later, triggered by associations you didn't consciously follow.
+Some show up the next day while you're thinking about something else entirely.
 
 That's how remembering works. Not a single lookup. A fast answer, then a widening ripple of connections that keeps going after the first response.
 
@@ -42,7 +47,9 @@ Nothing.
 
 Recall has no data model. No persistence. No backing service. No file cabinet. If Recall restarts, there is nothing to rebuild -- because there was nothing stored.
 
-Recall maintains a local copy of current salience scores, built from SalienceScored events. This is a convenience cache, not owned state. If the cache is lost, the next SalienceScored events rebuild it. The scores belong to Salience. Recall just keeps a copy close at hand so it doesn't have to ask at search time.
+Recall maintains a local copy of current salience scores, built from SalienceScored events.
+This is a convenience cache, not owned state. If the cache is lost, the next SalienceScored events rebuild it.
+The scores belong to Salience. Recall just keeps a copy close at hand so it doesn't have to ask at search time.
 
 == Where It Reads
 
@@ -65,17 +72,22 @@ Recall assembles from three sources. Each source answers a different question.
 | What other memories connect to these results?
 |===
 
-None of these sources know about each other. Hippocampus doesn't know about scores. Salience doesn't know about associations. Synapse doesn't know about search terms. Recall is the only place where all three come together.
+None of these sources know about each other. Hippocampus doesn't know about scores.
+Salience doesn't know about associations. Synapse doesn't know about search terms.
+Recall is the only place where all three come together.
 
 == The Fast Path
 
 A search comes in through Cortex. Recall handles it in three steps.
 
-**Match.** Ask Hippocampus for memories matching the query. Content, metadata, tags -- whatever the search filter specifies. Hippocampus returns MemoryRetrieved events for each match.
+**Match.** Ask Hippocampus for memories matching the query. Content, metadata, tags -- whatever the search filter specifies.
+Hippocampus returns MemoryRetrieved events for each match.
 
-**Rank.** For each match, look up the current salience score from the local cache. Higher scores rank higher. A vivid memory that was accessed yesterday outranks a faded memory from last month, even if both match the query equally well.
+**Rank.** For each match, look up the current salience score from the local cache. Higher scores rank higher.
+A vivid memory that was accessed yesterday outranks a faded memory from last month, even if both match the query equally well.
 
-**Enrich.** For each top result, ask Synapse for direct associations. If the top match connects to three other memories, include them. Association-activated memories surface even if they didn't match the original query -- because the connection is the relevance.
+**Enrich.** For each top result, ask Synapse for direct associations. If the top match connects to three other memories, include them.
+Association-activated memories surface even if they didn't match the original query -- because the connection is the relevance.
 
 Assemble. Return the ranked, enriched result set to Cortex. The fast path is done.
 
@@ -83,27 +95,37 @@ Assemble. Return the ranked, enriched result set to Cortex. The fast path is don
 
 The fast path returned the first answer. The ripple is still expanding.
 
-Synapse's direct associations are one hop. Memory A connects to B, C, D. But B connects to E and F. C connects to G. The graph goes deeper. Following those threads takes time, and the mind shouldn't wait for the full traversal before getting an answer.
+Synapse's direct associations are one hop. Memory A connects to B, C, D. But B connects to E and F. C connects to G.
+The graph goes deeper. Following those threads takes time, and the mind shouldn't wait for the full traversal before getting an answer.
 
-So Recall does both. The fast path returns immediately with direct matches and one-hop associations. The deep path continues in the background -- Synapse keeps traversing, and as it finds deeper connections, Recall pushes them through NotificationPort.
+So Recall does both. The fast path returns immediately with direct matches and one-hop associations.
+The deep path continues in the background -- Synapse keeps traversing, and as it finds deeper connections, Recall pushes them through NotificationPort.
 
-The mind gets the halibut restaurant right away. Five minutes later, a notification: "That dinner also connects to the conversation about your mother, which connects to the decision you made about the job." The deep path surfaced something the fast path couldn't reach in time.
+The mind gets the halibut restaurant right away. Five minutes later, a notification:
+"That dinner also connects to the conversation about your mother, which connects to the decision you made about the job."
+The deep path surfaced something the fast path couldn't reach in time.
 
-Not every search needs the deep path. A simple lookup -- "what did I store yesterday?" -- returns on the fast path and stops. The deep path fires when the query touches memories with rich association networks, where following the threads is likely to surface something useful.
+Not every search needs the deep path. A simple lookup -- "what did I store yesterday?" -- returns on the fast path and stops.
+The deep path fires when the query touches memories with rich association networks, where following the threads is likely to surface something useful.
 
 == The CQRS Split
 
 Recall is the read side of a split that runs through the entire hexagon.
 
-Hippocampus handles writes -- StoreCommand, ClaimCommand, ReclassifyCommand. Those change state. Recall handles reads -- SearchQuery, ReflectQuery. Those don't change anything. They assemble from current state and return a view.
+Hippocampus handles writes -- StoreCommand, ClaimCommand, ReclassifyCommand. Those change state.
+Recall handles reads -- SearchQuery, ReflectQuery. Those don't change anything.
+They assemble from current state and return a view (a Read Model Set).
 
-The split means Recall can be optimized independently from writes. Different data structures, different access patterns, different scaling characteristics. Hippocampus needs durability and consistency. Recall needs speed and associative reach. They serve different masters.
+The split means Recall can be optimized independently from writes. Different data structures, different access patterns, different scaling characteristics.
+Hippocampus needs durability and consistency. Recall needs speed and associative reach. They serve different masters.
 
-The communication between them is event-driven. Hippocampus emits MemoryRetrieved. Salience emits SalienceScored. Synapse emits AssociationsFound. Recall listens to all three and assembles. No direct calls. No shared state. Events flow one way.
+The communication between them is event-driven. Hippocampus emits MemoryRetrieved. Salience emits SalienceScored.
+Synapse emits AssociationsFound. Recall listens to all three and assembles. No direct calls. No shared state. Events flow one way.
 
 == Relationship to Cortex
 
-Cortex is the only path in and out. SearchQuery arrives from the mind through Cortex. Recall processes it and returns results through Cortex. The mind never talks to Recall directly.
+Cortex is the only path in and out. SearchQuery arrives from the mind through Cortex.
+Recall processes it and returns results through Cortex. The mind never talks to Recall directly.
 
 This is the same pattern as all the other bounded contexts. Cortex is the portal. Recall is behind it.
 

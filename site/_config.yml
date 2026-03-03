@@ -52,6 +52,7 @@ collections:
       - 0006-salience.adoc
       - 0007-association-graph.adoc
       - 0008-recall.adoc
+      - 0009-cortex.adoc
   catalog:
     output: true
     permalink: /catalog/:name/
