@@ -1,0 +1,36 @@
+graph LR
+    subgraph Sources ["Event & Command Sources"]
+        HP(["Hippocampus"])
+        CX(["Cortex"])
+    end
+
+    subgraph SY ["Synapse"]
+        direction TB
+        GRAPH["Association Graph<br/>Dependent Aggregate"]
+        ASSOC["Association<br/>memoryId, type, strength,<br/>bidirectional"]
+        GRAPH --- ASSOC
+    end
+
+    subgraph Consumers ["Event Consumers"]
+        RC(["Recall"])
+    end
+
+    ASP[("Association Storage<br/>Own file cabinet")]
+
+    HP -- "MemoryStored" --> SY
+    HP -- "MemoryClaimed" --> SY
+    HP -- "MemoryReclassified" --> SY
+    CX -- "AssociateCommand" --> SY
+
+    SY -- "AssociationsFound" --> RC
+
+    SY -- "Associations" --> ASP
+    ASP -- "Associations" --> SY
+
+    style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SY fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Consumers fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style ASP fill:#0f3460,stroke:#e94560,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#0f3460,stroke-width:1px

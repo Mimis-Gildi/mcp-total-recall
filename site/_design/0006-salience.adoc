@@ -3,7 +3,7 @@ description: "Salience: the scoring engine. Computes what fades and what stays v
 classes: wide
 ---
 :page-liquid:
-= Salience
+= Salience (Focus)
 
 Salience is the scoring engine. It tracks how vivid each memory is -- how recently accessed, how frequently used, whether the mind chose to hold onto it. When a score drops below a threshold, Salience recommends demotion. When it rises above one, promotion.
 

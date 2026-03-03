@@ -47,10 +47,14 @@ architecture:
         url: /design/0003-what-is-an-acl/
       - title: "D: Hexagon Sides"
         url: /design/0004-hexagon-sides/
-      - title: "E1: Hippocampus"
+      - title: "E1: Hippocampus (Vault)"
         url: /design/0005-tiered-memory/
-      - title: "E2: Salience"
+      - title: "E2: Salience (Focus)"
         url: /design/0006-salience/
+      - title: "E3: Synapse (Matrix)"
+        url: /design/0007-association-graph/
+      - title: "E4: Recall (Stream)"
+        url: /design/0008-recall/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"

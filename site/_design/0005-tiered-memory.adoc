@@ -3,7 +3,7 @@ description: "Hippocampus: the aggregate root. The only bounded context that wri
 classes: wide
 ---
 :page-liquid:
-= Hippocampus
+= Hippocampus (Vault)
 
 Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
 
