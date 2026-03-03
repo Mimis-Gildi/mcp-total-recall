@@ -1,0 +1,31 @@
+graph LR
+    subgraph Input ["Lifecycle Input"]
+        CX(["Cortex"])
+    end
+
+    subgraph SB ["Subconscious"]
+        direction TB
+        TIMER["Timers & Schedules<br/>Decay sweeps, consolidation"]
+        WATCH["Session Monitor<br/>Activity, breaks, shutdown"]
+        TIMER --- WATCH
+    end
+
+    subgraph Dispatch ["Dispatches To"]
+        SL(["Salience"])
+        HP(["Hippocampus"])
+        NP(["NotificationPort"])
+    end
+
+    CX -- "SessionStart,<br/>SessionEnd" --> SB
+
+    SB -- "DecaySweep" --> SL
+    SB -- "Consolidate,<br/>Shutdown" --> HP
+    SB -- "Break reminders,<br/>Session prompts" --> NP
+
+    style Input fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SB fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Dispatch fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SL fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style NP fill:#1a1a2e,stroke:#533483,stroke-width:1px

@@ -57,6 +57,8 @@ architecture:
         url: /design/0008-recall/
       - title: "E5: Cortex (Inception)"
         url: /design/0009-cortex/
+      - title: "E6: Subconscious (Dream)"
+        url: /design/0010-subconscious/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"
