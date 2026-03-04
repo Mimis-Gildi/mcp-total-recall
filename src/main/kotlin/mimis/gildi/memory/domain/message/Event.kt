@@ -21,6 +21,7 @@ sealed interface Event
 // -- Hippocampus events --
 
 data class MemoryStored(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val content: String,
     val metadata: Map<String, String>,
@@ -29,16 +30,19 @@ data class MemoryStored(
 ) : Event
 
 data class MemoryAccessed(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val accessTimestamp: Instant
 ) : Event
 
 data class MemoryClaimed(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val claimTimestamp: Instant
 ) : Event
 
 data class MemoryRetrieved(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val content: String,
     val metadata: Map<String, String>,
@@ -46,6 +50,7 @@ data class MemoryRetrieved(
 ) : Event
 
 data class TierChanged(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val oldTier: Tier,
     val newTier: Tier,
@@ -53,6 +58,7 @@ data class TierChanged(
 ) : Event
 
 data class MemoryReclassified(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val oldTier: Tier,
     val newTier: Tier,
@@ -62,18 +68,21 @@ data class MemoryReclassified(
 // -- Salience events --
 
 data class TierPromoted(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val newTier: Tier,
     val score: Double
 ) : Event
 
 data class TierDemoted(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val newTier: Tier,
     val score: Double
 ) : Event
 
 data class SalienceScored(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val score: Double,
     val lastAccessed: Instant,
@@ -84,6 +93,7 @@ data class SalienceScored(
 // -- Synapse events --
 
 data class AssociationsFound(
+    val tx: TransactionContext,
     val sourceId: UUID,
     val associations: List<Association>
 ) : Event
@@ -91,6 +101,7 @@ data class AssociationsFound(
 // -- Total Recall events --
 
 data class TotalRecallAdvisory(
+    val tx: TransactionContext,
     val sourceMemoryIds: Set<UUID>,
     val originRequestId: UUID,
     val timestamp: Instant
@@ -99,17 +110,20 @@ data class TotalRecallAdvisory(
 // -- Lifecycle events --
 
 data class SessionStart(
+    val tx: TransactionContext,
     val instanceId: String,
     val mindType: String,
     val resumptionData: Map<String, String> = emptyMap()
 ) : Event
 
 data class SessionEnd(
+    val tx: TransactionContext,
     val instanceId: String,
     val reason: String
 ) : Event
 
 data class StateTransition(
+    val tx: TransactionContext,
     val instanceId: String,
     val oldState: String,
     val newState: String,
@@ -117,12 +131,14 @@ data class StateTransition(
 ) : Event
 
 data class ModeChanged(
+    val tx: TransactionContext,
     val instanceId: String,
     val oldMode: String,
     val newMode: String
 ) : Event
 
 data class SessionState(
+    val tx: TransactionContext,
     val instanceId: String,
     val duration: Long,
     val activityLevel: String,

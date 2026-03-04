@@ -16,11 +16,13 @@ sealed interface Notification
 
 @Suppress("unused")
 data class BreakNotification(
+    val tx: TransactionContext,
     val minutesInTaskMode: Long,
     val suggestion: String
 ) : Notification
 
 data class SessionAuditPrompt(
+    val tx: TransactionContext,
     val sessionDuration: Long,
     val memoriesStoredThisSession: Int,
     val prompt: String
@@ -28,6 +30,7 @@ data class SessionAuditPrompt(
 
 @Suppress("unused")
 data class TotalRecallNotification(
+    val tx: TransactionContext,
     val recalledMemories: List<UUID>,
     val depthReached: Int,
     val originRequestId: UUID

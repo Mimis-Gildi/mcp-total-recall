@@ -21,6 +21,7 @@ sealed interface Command
 // -- Hippocampus commands --
 
 data class StoreCommand(
+    val tx: TransactionContext,
     val content: String,
     val metadata: Map<String, String>,
     val suggestedTier: Tier,
@@ -29,10 +30,12 @@ data class StoreCommand(
 ) : Command
 
 data class ClaimCommand(
+    val tx: TransactionContext,
     val memoryId: UUID
 ) : Command
 
 data class ReclassifyCommand(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val newTier: Tier,
     val newMetadata: Map<String, String> = emptyMap(),
@@ -40,11 +43,13 @@ data class ReclassifyCommand(
 ) : Command
 
 data class ConsolidateCommand(
+    val tx: TransactionContext,
     val memoryIds: List<UUID>,
     val mergeStrategy: String
 ) : Command
 
 data class ShutdownCommand(
+    val tx: TransactionContext,
     val coldStorageTarget: String,
     val flushTimeout: Long
 ) : Command
@@ -52,6 +57,7 @@ data class ShutdownCommand(
 // -- Synapse commands --
 
 data class AssociateCommand(
+    val tx: TransactionContext,
     val memoryIds: Pair<UUID, UUID>,
     val associationType: AssociationType,
     val strength: Double,
@@ -67,6 +73,7 @@ enum class AssociationDirection {
 // -- Salience commands --
 
 data class DecaySweep(
+    val tx: TransactionContext,
     val timestamp: Instant,
     val scope: String = "all"
 ) : Command
