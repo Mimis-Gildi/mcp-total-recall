@@ -1,0 +1,67 @@
+sequenceDiagram
+    participant SB as Subconscious
+    participant RC as Recall
+    participant SY as Synapse
+    participant HP as Hippocampus
+    participant MES as Memory<br/> Event Store
+    participant SL as Salience
+    participant NES as Notification<br/> Event Store
+    participant NP as NotificationPort
+    participant M as Mind
+
+    critical OnInit
+        SB ->> MES: TotalRecallAdvisory Subscribe
+        SL ->> MES: Memory Event Subscribe
+        NP ->> NES: Notification Subscribe
+    end
+
+    Note over MES,SB: Trigger (from MSG-0002)
+    MES--)SB: consume TotalRecallAdvisoryEvent
+    activate SB
+    Note right of SB: Evaluate: throttle,<br/>system state, shutdown?
+
+    SB->>RC: Command: Total Recall
+    activate RC
+    Note left of RC: data class TotalRecallCommand<br/>sourceMemoryIds: Set of UUID<br/>maxDepth: Int<br/>originRequestId: UUID
+
+    loop Depth levels remaining
+
+        RC->>SY: Query: Next-level Associations
+        activate SY
+        SY-->>RC: Query Response: Associated Memory IDs
+        deactivate SY
+
+        RC->>HP: Query: Retrieve Memories
+        activate HP
+        HP-->>RC: Query Response: Recalled Memories
+
+        Note over HP,SL: Broadcast (async)
+        HP-)MES: publish MemoryAccessedEvent
+        deactivate HP
+        activate MES
+        MES--)SL: consume MemoryAccessedEvent
+        deactivate MES
+        activate SL
+        SL->>SL: Update memory salience
+        deactivate SL
+
+        RC->>RC: Evaluate: continue deeper?
+
+    end
+
+    RC-->>SB: Command Response: Total Recall Complete
+    Note left of RC: data class TotalRecallCommand<br/>+ recalledMemories: List of RankedMemory<br/>+ depthReached: Int
+
+    RC-)NES: publish TotalRecallNotification
+    deactivate RC
+    activate NES
+
+    NES--)NP: consume TotalRecallNotification
+    deactivate NES
+    activate NP
+
+    NP-)M: Total Recall notification
+    deactivate NP
+    Note left of NP: Unsolicited recollection<br/>pushed to Mind
+
+    deactivate SB

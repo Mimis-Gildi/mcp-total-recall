@@ -7,19 +7,11 @@ sequenceDiagram
     participant SL as Salience
     participant SY as Synapse
 
-    participant NES as Notification<br/> Event Store
-    participant NP as NotificationPort
-
     activate M
-    activate MES
 
     critical OnInit
         SL ->> MES: Memory Event Subscribe
-        SY ->> MES: Memory Event Subscribe
-        NP ->> NES: Notification Event Subscribe
     end
-
-
 
     Note over M,RC: Transaction (Query)
     M->>CX: search_memory request
@@ -35,26 +27,22 @@ sequenceDiagram
     Note left of HP: data class MemoryMatchRequest
 
     HP-->>RC: Query Response: Matched Memories
-    Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory;
+    Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory
 
-    Note over HP,SY: Broadcast (async)
+    Note over HP,SL: Broadcast (async)
     HP-)MES: publish MemoryAccessedEvent
     deactivate HP
     activate MES
-    par Salience consumes events
-        MES--)SL: consume MemoryAccessedEvent
-        activate SL
-
-    and Synapse consumes events
-        MES--)SY: consume MemoryAccessedEvent
-        activate SY
-    end
-
+    MES--)SL: consume MemoryAccessedEvent
     deactivate MES
+    activate SL
+    SL->>SL: Update memory salience
+    deactivate SL
 
     RC->>RC: Rank by salience (local cache)
 
     RC->>SY: Query: Find Associations
+    activate SY
     Note right of RC: data class AssociationFindRequest
 
     SY-->>RC: Query Response: Associations
@@ -64,61 +52,26 @@ sequenceDiagram
     RC->>RC: Assemble ranked results
 
     RC-->>CX: Query Response: Search Results
-    Note left of RC: data class MemorySearchResponse<br/>results: ListRankedMemory;
+    Note left of RC: data class MemorySearchResponse<br/>results: List of RankedMemory
 
     CX-->>M: search_memory response
     deactivate CX
-
-    RC-->>RC: Calculate Total Recall Need (async)
-
-    opt Total Recall is Avisable
-        RC-)MES: publish TotalRecallEvent
-    end
     deactivate RC
 
+    Note over M: Mind evaluates results
+    Note over M,CX: Important: The decision to recollect<br/>is mind-adapter-specific.<br/>Humans: prefrontal cortex (native), or UI.<br/>LLMs: forced prompt (passive by nature),<br/>different per model (Claude, GPT, etc.).<br/>Core provides the port. Adapter decides how.
 
-%%    NES--)SL: consume MemoryAccessedEvent
-%%    Note right of SL: Resets vividity clock
-
-    opt Deep path (background)
-        MES--)SY: consume TotalRecallInitEvent
-        activate SY
-        SY->>SY: Continue graph traversal
-        loop Recover Associated Memories
-            SY->>RC: MemoryRecallCommand
-            activate RC
-            RC->>HP: Query: Match Memories
-            activate HP
-            Note left of HP: data class MemoryMatchRequest
-            HP-->>RC: Query Response: Matched Memories
-            Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory;
-
-            Note over HP,SY: Broadcast (async)
-            RC-)NES: publish MemoryRecalledEvent
-            activate NES
-            HP-)MES: publish MemoryAccessedEvent
-            deactivate HP
-        end
-
-        RC->>SY: TerminateTotalRecallCommand
-        deactivate SY
-        deactivate RC
-
-%%        RC-)NP: Deep association results
-%%        NP-)M: search_memory notification
+    opt Total Recall is Advisable
+        M->>CX: total_recall_advisory
+        activate CX
+        CX-)MES: publish TotalRecallAdvisoryEvent
+        deactivate CX
+        Note right of CX: See MSG-0007
     end
 
     opt No response within timeout
         M->>CX: search_memory request
         Note right of M: Same requestId<br/>Policy: at-most-once
-    end
-
-    opt Send Retrieved Memory Notification (async)
-        NES--)NP: consume MemoryRecalledNotificationEvent
-        activate NP
-        deactivate NES
-        NP->>M: PushMemoryRecalledNotificationCommand
-        deactivate NP
     end
 
     deactivate M

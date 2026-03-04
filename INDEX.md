@@ -6,7 +6,7 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-03-03 by Claude (with Vadim)
+Last updated: 2026-03-04 by Claude (with Vadim)
 
 ---
 
@@ -18,7 +18,7 @@ Last updated: 2026-03-03 by Claude (with Vadim)
 **Sub-issues:** #3, #4, #5, #9 -- all closed
 
 Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagram governance).
-15 diagrams total (9 extracted + 6 bounded context diagrams). All design documents complete:
+16 diagrams total (10 sequence/architecture + 6 bounded context diagrams). All design documents complete:
 
 - A-D (Port, Adapter, ACL, Hexagon Sides) and E1-E6 (Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious).
 - Bounded contexts renamed to biological memory vocabulary with parenthetical subtitles: Hippocampus (Vault), Salience (Focus), Synapse (Matrix), Recall (Stream), Cortex (Inception), Subconscious (Dream).
@@ -60,6 +60,7 @@ Build the site sections that will hold the detailed design work and traceability
 | MSG-0004 | Sequence         | Decay Sweep        | architecture-messages.adoc  | `msg-0004-decay-sweep.mmd`        |
 | MSG-0005 | Sequence         | Session Lifecycle  | architecture-messages.adoc  | `msg-0005-session-lifecycle.mmd`  |
 | MSG-0006 | Sequence         | Reflect (Dreaming) | architecture-messages.adoc  | `msg-0006-reflect.mmd`            |
+| MSG-0007 | Sequence         | Total Recall       | architecture-messages.adoc  | `msg-0007-total-recall.mmd`       |
 | HP-0001  | Bounded Context  | Hippocampus        | 0005-tiered-memory.adoc     | `hp-0001-hippocampus.mmd`         |
 | SL-0001  | Bounded Context  | Salience           | 0006-salience.adoc          | `sl-0001-salience.mmd`            |
 | SY-0001  | Bounded Context  | Synapse            | 0007-association-graph.adoc | `sy-0001-synapse.mmd`             |
@@ -199,6 +200,12 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Catalog updated: 6 new bounded context diagrams added to inventory. All design docs marked Done.
 - [x] Data flow audit: verified all 6 sequence diagrams against completed designs. Found 6 findings (F-Audit-1 through 6). Critical: transaction context absent from all messages.
 - [x] Transaction context gap identified by Vadim: Commands and Queries are transactional/conversational, not fire-and-forget. Every message must carry a transaction envelope (sessionId, requestId, stepId, sequenceId, timestamps). This is structural, not observability. Blocks all remaining audit resolution.
+- [x] Message conventions section added to architecture-messages.adoc: arrow types (solid=command/query, dashed=response, open=event), naming (snake_case external, CamelCase internal), payload conventions, event source pattern, retry.
+- [x] MSG-0001 rewritten by Vadim: activate/deactivate lifelines, critical OnInit with subscriptions, par blocks for parallel consumption/processing, publish/consume verbs on events. Template for all other diagrams.
+- [x] MSG-0002 rewritten: fast path only (query transaction + MemoryAccessedEvent broadcast + TotalRecallAdvisoryEvent). Deep path removed -- becomes MSG-0007.
+- [x] MSG-0007 created: Total Recall (the feature the project is named after). Subconscious drives, Recall assembles via queries to Synapse/Hippocampus, results push through NES → NotificationPort → Mind. Strict bounded context boundaries -- each component does its one job only.
+- [x] Two Event Stores established: MES (Memory Event Store) for domain events, NES (Notification Event Store) for mind-facing notifications. Different concerns, different channels.
+- [x] Key architectural correction: Total Recall deep path is NOT an appendix to search. It's a separate process with different trigger, lifecycle, actors, and timing. Subconscious is the background orchestrator (not Recall, not Synapse).
 
 ---
 
@@ -215,6 +222,9 @@ By then we have working examples from gap resolution to accelerate design writin
 9. **Think about the thing, not the output.** When thinking about what an expo actually does at the pass, the writing is clean. When thinking about how the document should read, LLM-speak fills the space. E2 first draft failed because of this. E2 rewrite succeeded.
 10. **Tracing is not a crosscut -- it's structural.** Vadim caught a fundamental gap: the designs describe bounded contexts passing notes, but Commands and Queries are transactional conversations with payloads. Every message must carry a transaction envelope (sessionId, requestId, stepId, sequenceId, timestamps). Without it, nothing is traceable. This is not observability bolted on later -- it's the spine that makes data flow actually work. Designing without it is "speaking abstract fables, not designing a system that actually works."
 11. **Verify diagrams against designs, not the other way around.** The sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs. Artem asked about data flow gaps. Checking diagrams against designs found 6 issues, including 2 HIGH severity. Always verify existing artifacts when new design work changes the source of truth.
+12. **Separate processes get separate diagrams.** MSG-0002 tried to contain both the synchronous search transaction AND the asynchronous Total Recall deep path. Different triggers, different lifecycles, different actors, different timing. Forcing them together tangled activation bars and blurred boundaries. Split into MSG-0002 (fast path) and MSG-0007 (Total Recall).
+13. **Total Recall IS the feature, not just the project name.** The project is named after this functionality. The MCP server's core purpose is pushing unsolicited recollections at the mind. Claude is passive by nature (waits for prompts). Total Recall overrides that passivity.
+14. **Strict jobs for components.** Each bounded context does ONE thing. Synapse answers association queries -- it does not command Recall. Hippocampus retrieves memories -- it does not orchestrate. Subconscious initiates background work -- it does not assemble. Overstepping authority in diagrams reveals misunderstanding of boundaries.
 
 ---
 

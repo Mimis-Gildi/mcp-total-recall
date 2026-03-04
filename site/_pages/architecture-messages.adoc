@@ -59,7 +59,7 @@ When a response does not arrive within timeout, the emitter retries per a named 
 
 == Message Flows
 
-Six flows cover the core operations. Each shows the full path through the domain.
+Seven flows cover the core operations. Each shows the full path through the domain.
 The participant labeled "Mind" is conscience-universal -- it could be Claude, a human with a UI, or any future conscious system.
 
 === Store Memory
@@ -140,6 +140,21 @@ This operation requires the same mind. A different mind classifying your memorie
 <p><strong>Diagram 9: MSG-0006 -- Reflect (Dreaming)</strong></p>
 <pre class="mermaid">
 {% include diagrams/msg-0006-reflect.mmd %}
+</pre>
+</div>
+++++
+
+=== Total Recall
+
+The feature the project is named after. When a search reveals that deeper recollection would be valuable, Recall publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+
+This is what makes the memory system active instead of passive. The mind does not ask for this. The system decides it is needed and delivers it.
+
+++++
+<div id="MSG-0007">
+<p><strong>Diagram 10: MSG-0007 -- Total Recall</strong></p>
+<pre class="mermaid">
+{% include diagrams/msg-0007-total-recall.mmd %}
 </pre>
 </div>
 ++++
