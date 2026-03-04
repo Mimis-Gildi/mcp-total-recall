@@ -15,9 +15,51 @@ Undocumented messages become mysteries that only the original author understands
 
 This page names every message. Types it. Says who produces it, who consumes it, and what it carries.
 
+== Diagram Conventions
+
+These conventions apply to all sequence diagrams on this page.
+
+=== Arrow Types
+
+[cols="1,2",options="header"]
+|===
+| Arrow | Meaning
+
+| Solid, filled (→)
+| Command or Query -- transactional, expects response
+
+| Dashed, filled (⇢)
+| Response -- return in transaction chain
+
+| Solid, open (↝)
+| Event -- fire-and-forget, async, no response
+|===
+
+=== Naming
+
+External arrows (Mind ↔ Cortex) use `snake_case`: `store_memory_command`, `store_memory_response`.
+
+Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreCommand`, `MemoryStoreResponse`.
+
+Cortex translates at the boundary. The ACL is visible in every diagram.
+
+=== Payloads
+
+Command responses return the *same payload* enriched with ID, metadata, and timestamps.
+
+Query responses are a *separate type* -- they may return collections, empty results, or errors.
+
+=== Event Source
+
+Publishers emit to a named event source (topic). Subscribers listen. The publisher does not know its consumers.
+
+=== Retry
+
+When a response does not arrive within timeout, the emitter retries per a named policy shown in the diagram.
+
 == Message Flows
 
-Five flows cover the core operations. Each shows the full path through the domain.
+Six flows cover the core operations. Each shows the full path through the domain.
 The participant labeled "Mind" is conscience-universal -- it could be Claude, a human with a UI, or any future conscious system.
 
 === Store Memory

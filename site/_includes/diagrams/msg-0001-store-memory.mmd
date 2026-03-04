@@ -1,16 +1,34 @@
 sequenceDiagram
-    participant C as Mind
+    participant M as Mind
     participant CX as Cortex
     participant HP as Hippocampus
+    participant ES as Memory<br/> Event Store
     participant SL as Salience
     participant SY as Synapse
 
-    C->>CX: store_memory
-    CX->>HP: StoreCommand
+    critical OnInit
+        SL ->> ES: Memory Event Subscribe
+        SY ->> ES: Memory Event Subscribe
+    end
+
+    Note over M,HP: Transaction
+    M->>CX: store_memory command
+    Note right of M: content: String<br/>metadata: Map<br/>suggested_tier: Tier
+    CX->>HP: Command: Store Memory
+    Note left of HP: data class MemoryStoreCommand
     HP->>HP: Validate, assign tier, persist
-    HP-->>SL: MemoryStored
-    HP-->>SY: MemoryStored
-    SL->>SL: Set initial salience score
-    SY->>SY: Create associations from metadata
-    HP-->>CX: Acknowledgment
-    CX-->>C: MCP tool response
+    HP-->>CX: Command Response: Memory Stored
+    Note left of HP: data class MemoryStoreCommand<br/> memory_id: UUID<br/>content: String<br/>metadata: Map<br/>tier: Tier<br/>timestamp: Instant
+    CX-->>M: store_memory response
+
+    Note over HP,SY: Broadcast (async)
+    HP-)ES: publish MemoryStoredEvent
+    ES--)SL: consume MemoryStoredEvent
+    ES--)SY: consume MemoryStoredEvent
+    SL->>SL: Compute initial salience
+    SY->>SY: Create associations
+
+    opt No response within timeout
+        M->>CX: store_memory command
+        Note right of M: Same requestId<br/>Policy: at-most-once
+    end
