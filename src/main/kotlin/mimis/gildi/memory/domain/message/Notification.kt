@@ -5,6 +5,8 @@
  */
 package mimis.gildi.memory.domain.message
 
+import java.util.UUID
+
 /**
  * Notifications flow outward through the Notification Port to reach
  * the connected mind. The port contract is universal. The adapter
@@ -12,6 +14,7 @@ package mimis.gildi.memory.domain.message
  */
 sealed interface Notification
 
+@Suppress("unused")
 data class BreakNotification(
     val minutesInTaskMode: Long,
     val suggestion: String
@@ -21,4 +24,11 @@ data class SessionAuditPrompt(
     val sessionDuration: Long,
     val memoriesStoredThisSession: Int,
     val prompt: String
+) : Notification
+
+@Suppress("unused")
+data class TotalRecallNotification(
+    val recalledMemories: List<UUID>,
+    val depthReached: Int,
+    val originRequestId: UUID
 ) : Notification

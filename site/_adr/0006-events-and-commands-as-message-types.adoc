@@ -76,7 +76,7 @@ data class ReflectQuery(...) : Query
 sealed interface Event
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
-// ... 13 total variants
+// ... 16 total variants
 
 sealed interface Notification
 data class BreakNotification(...) : Notification
@@ -112,7 +112,7 @@ Example flow: `StoreCommand` (Cortex -> Hippocampus) produces `MemoryStored` (co
 * Must be answered -- a query without a response is a bug.
 * Does not change state.
 
-Example flow: `SearchQuery` (Cortex -> Hippocampus) returns matching memories. `ReflectQuery` (Cortex -> Synapse) returns related associations and patterns.
+Example flow: `SearchQuery` (Cortex -> Recall) returns matching memories ranked by salience. `ReflectQuery` (Cortex -> Recall) returns candidates for retrospection.
 
 === Event Semantics
 
@@ -164,9 +164,9 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 
 * *Commands:* 7 variants (StoreCommand, ClaimCommand, AssociateCommand, ReclassifyCommand, ConsolidateCommand, ShutdownCommand, DecaySweep)
 * *Queries:* 2 variants (SearchQuery, ReflectQuery)
-* *Events:* 13 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, SalienceScored, AssociationsFound,
-MemoryReclassified, SessionStart, SessionEnd, StateTransition)
-* *Notifications:* 2 variants (BreakNotification, SessionAuditPrompt)
+* *Events:* 16 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, SalienceScored, AssociationsFound,
+MemoryReclassified, TotalRecallAdvisory, SessionStart, SessionEnd, StateTransition, ModeChanged, SessionState)
+* *Notifications:* 3 variants (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.
 

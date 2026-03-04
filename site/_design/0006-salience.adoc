@@ -88,11 +88,11 @@ When a score crosses a threshold, Salience calls it out.
 
 | TierPromoted
 | Score rose above the promotion threshold. Move this memory up.
-| Hippocampus
+| Hippocampus (via Memory Event Store)
 
 | TierDemoted
 | Score dropped below the demotion threshold. Move this memory down.
-| Hippocampus
+| Hippocampus (via Memory Event Store)
 
 | SalienceScored
 | Current score snapshot for a memory. Emitted after every recalculation.

@@ -153,7 +153,7 @@ Why actors:
 * *Concurrency.* Actors process messages sequentially within themselves but run concurrently with each other. Decay sweeps don't block memory storage.
 * *Supervision.* Parent actors can restart failed children. The subconscious supervises background processes. If salience scoring crashes, it restarts without losing stored memories.
 
-The five actors and their relationships are detailed in the next page.
+The six actors and their relationships are detailed in the next page.
 
 '''
 

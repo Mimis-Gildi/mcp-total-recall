@@ -88,6 +88,14 @@ data class AssociationsFound(
     val associations: List<Association>
 ) : Event
 
+// -- Total Recall events --
+
+data class TotalRecallAdvisory(
+    val sourceMemoryIds: Set<UUID>,
+    val originRequestId: UUID,
+    val timestamp: Instant
+) : Event
+
 // -- Lifecycle events --
 
 data class SessionStart(

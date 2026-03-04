@@ -146,9 +146,11 @@ This operation requires the same mind. A different mind classifying your memorie
 
 === Total Recall
 
-The feature the project is named after. When a search reveals that deeper recollection would be valuable, Recall publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
 
-This is what makes the memory system active instead of passive. The mind does not ask for this. The system decides it is needed and delivers it.
+The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model). The core provides the port. The adapter decides how.
+
+This is what makes the memory system active instead of passive. The mind does not ask for the deep traversal. Once triggered, the system executes it and delivers results.
 
 ++++
 <div id="MSG-0007">

@@ -66,7 +66,7 @@ Every state change emits a typed event:
 * `MemoryStored` -- consumed by Salience (initial score) and Synapse (initial associations).
 * `MemoryAccessed` -- consumed by Salience (score boost).
 * `MemoryClaimed` -- consumed by Salience (decay resistance) and Synapse (strengthen associations).
-* `MemoryRetrieved` -- consumed by Recall (search results).
+* `MemoryRetrieved` -- query response payload in transaction chain (see F-Audit-6; classification under review).
 * `TierChanged` -- internal record of tier movement.
 * `MemoryReclassified` -- consumed by Synapse (mind-initiated tier change may affect associations).
 

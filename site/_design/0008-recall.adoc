@@ -116,6 +116,8 @@ Hippocampus handles writes -- StoreCommand, ClaimCommand, ReclassifyCommand. Tho
 Recall handles reads -- SearchQuery, ReflectQuery. Those don't change anything.
 They assemble from current state and return a view (a Read Model Set).
 
+ReflectQuery is unique: it returns a reflection set (candidates for review), but then the mind enters a conversation loop -- issuing AssociateCommand and ReclassifyCommand for each memory it judges. The query phase is Recall's job. The judgment phase is the mind's. See MSG-0006.
+
 The split means Recall can be optimized independently from writes. Different data structures, different access patterns, different scaling characteristics.
 Hippocampus needs durability and consistency. Recall needs speed and associative reach. They serve different masters.
 
