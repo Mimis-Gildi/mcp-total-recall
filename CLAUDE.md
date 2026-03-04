@@ -38,7 +38,7 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
-## Current State (0.7.0)
+## Current State (0.8.0)
 
 MCP server with contract skeleton. All tools registered as teapot stubs -- callable but returning placeholder responses until backing services are wired.
 
