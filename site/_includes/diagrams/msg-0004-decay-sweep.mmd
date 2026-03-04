@@ -1,11 +1,36 @@
 sequenceDiagram
     participant SB as Subconscious
     participant SL as Salience
+    participant ES as Memory<br/> Event Store
     participant HP as Hippocampus
 
-    SB->>SL: DecaySweep
+    critical OnInit
+        HP ->> ES: Memory Event Subscribe
+    end
+
+    Note over SB: Timer-driven (no Mind involved)
+    SB->>SL: Command: Decay Sweep
+    activate SL
+    Note left of SL: data class DecaySweep<br/>timestamp: Instant<br/>scope: Tier or All
+
     SL->>SL: Recalculate all scores (time decay)
     SL->>SL: Identify memories below tier thresholds
-    SL-->>HP: TierDemoted (for each demotion)
-    HP->>HP: Move memory to lower tier
-    HP-->>HP: TierChanged (internal record)
+
+    loop Each memory below threshold
+        SL-)ES: publish TierDemotedEvent
+        Note right of SL: memory_id, new_tier, score
+    end
+
+    SL-->>SB: Command Response: Sweep Complete
+    Note left of SL: data class DecaySweep<br/>+ memoriesEvaluated: Int<br/>+ demotions: Int
+    deactivate SL
+
+    activate ES
+    loop Each TierDemotedEvent
+        ES--)HP: consume TierDemotedEvent
+    end
+    deactivate ES
+
+    activate HP
+    HP->>HP: Move memories to lower tiers
+    deactivate HP

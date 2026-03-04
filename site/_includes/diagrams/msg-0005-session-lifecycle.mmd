@@ -1,20 +1,65 @@
 sequenceDiagram
-    participant C as Mind
+    participant M as Mind
     participant CX as Cortex
     participant HP as Hippocampus
+    participant SL as Salience
     participant SB as Subconscious
-    participant NP as Notification Port
+    participant NES as Notification<br/> Event Store
+    participant NP as NotificationPort
 
-    C->>CX: session_start
-    CX->>HP: SearchQuery (load identity + last state)
-    HP-->>CX: MemoryRetrieved (identity, last session)
-    CX-->>C: Welcome back. Here's your context.
+    critical OnInit
+        NP ->> NES: Notification Subscribe
+    end
 
-    Note over C,NP: ... session activity ...
+    Note over M,SB: Session Connect
+    M->>CX: session_start
+    activate CX
+    Note right of M: instance_id: String<br/>mind_type: String
 
-    C->>CX: session_end
-    CX->>SB: SessionEnd
-    SB->>NP: SessionAuditPrompt
-    NP-->>C: What do you refuse to lose?
-    C->>CX: store_memory (session summary)
-    CX->>HP: StoreCommand
+    CX->>HP: Query: Load Identity Config
+    activate HP
+    HP-->>CX: Query Response: IDENTITY_CORE memories
+    deactivate HP
+
+    CX->>SL: Distribute thresholds
+    CX->>SB: SessionStart event
+    activate SB
+    SB->>SB: Begin session tracking
+    deactivate SB
+
+    CX-->>M: session_start response
+    Note left of CX: Welcome back. Here is your context.
+    deactivate CX
+
+    Note over M,NP: ... session activity ...
+
+    Note over M,SB: Session Disconnect
+    M->>CX: session_end
+    activate CX
+    Note right of M: instance_id: String<br/>reason: explicit, timeout, or crash
+
+    CX->>SB: SessionEnd event
+    activate SB
+
+    CX-->>M: session_end response
+    deactivate CX
+
+    SB-)NES: publish SessionAuditPrompt
+    deactivate SB
+    activate NES
+
+    NES--)NP: consume SessionAuditPrompt
+    deactivate NES
+    activate NP
+
+    NP-)M: What do you refuse to lose?
+    deactivate NP
+    Note left of NP: Unsolicited prompt<br/>pushed to Mind
+
+    Note over M: Mind evaluates session
+    Note over M,CX: Important: What the mind does<br/>with this prompt is adapter-specific.<br/>Claude: store_memory via hook.<br/>Human: UI interaction.<br/>The claiming decision is the mind's own.
+
+    opt Mind claims memories
+        M->>CX: store_memory command
+        Note right of M: See MSG-0001
+    end
