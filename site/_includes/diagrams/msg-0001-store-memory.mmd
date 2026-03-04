@@ -13,6 +13,8 @@ sequenceDiagram
         SY ->> ES: Memory Event Subscribe
     end
 
+    Note over M,SY: TransactionContext: every internal message carries<br/>sessionId, requestId, messageId, causationId,<br/>timestamp, sourceContext. See Design F.
+
     Note over M,HP: Transaction
     M->>CX: store_memory command
     activate CX
@@ -31,6 +33,7 @@ sequenceDiagram
     deactivate CX
 
     Note over HP,SY: Broadcast (async)
+    Note right of HP: tx propagation:<br/>same sessionId, requestId<br/>new messageId<br/>causationId = command messageId
     HP-)ES: publish MemoryStoredEvent
     deactivate HP
     activate ES

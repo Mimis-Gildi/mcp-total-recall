@@ -50,7 +50,7 @@ Salience watches three events from Hippocampus. All three fire after persistence
 | Marks it claimed. Drops the decay rate. The mind said this one matters -- Salience respects that.
 |===
 
-Three events. Each one updates the projection.
+Three events. Each one updates the projection. Every event carries a `TransactionContext` identifying its source and tracing its path (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == What It Keeps
 

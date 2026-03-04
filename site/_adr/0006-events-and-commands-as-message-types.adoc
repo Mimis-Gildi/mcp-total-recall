@@ -81,9 +81,13 @@ data class MemoryAccessed(...) : Event
 sealed interface Notification
 data class BreakNotification(...) : Notification
 data class SessionAuditPrompt(...) : Notification
+data class TotalRecallNotification(...) : Notification
+// ... 3 total variants
 ----
 
 Package: `mimis.gildi.memory.domain.message`.
+
+Every variant carries a `TransactionContext` as its first field -- a six-field chain of custody envelope (sessionId, requestId, messageId, causationId, timestamp, sourceContext). See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
 
 === Why Sealed, Not Open
 

@@ -13,6 +13,8 @@ sequenceDiagram
         SL ->> MES: Memory Event Subscribe
     end
 
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
     Note over M,RC: Transaction (Query)
     M->>CX: search_memory request
     activate CX

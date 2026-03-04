@@ -14,6 +14,8 @@ sequenceDiagram
         SY ->> ES: Memory Event Subscribe
     end
 
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
     Note over M,RC: Transaction (Query)
     M->>CX: reflect request
     activate CX

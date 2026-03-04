@@ -93,7 +93,7 @@ Cortex knows which bounded context handles which request. The routing is fixed -
 Store goes to Hippocampus. Search goes to Recall. Associate goes to Synapse. Session events go to Subconscious.
 
 This is the only structural knowledge Cortex holds: the map from tool to context. The map does not change at runtime.
-When a new tool is added to Total Recall, its route is defined once in Cortex.
+When a new tool is added to Total Recall, its route is defined once in Cortex. Every command and query routed through Cortex receives a `TransactionContext` envelope that travels with it downstream (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == The Two Speeds
 

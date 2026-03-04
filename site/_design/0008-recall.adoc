@@ -74,7 +74,7 @@ Recall assembles from three sources. Each source answers a different question.
 
 None of these sources know about each other. Hippocampus doesn't know about scores.
 Salience doesn't know about associations. Synapse doesn't know about search terms.
-Recall is the only place where all three come together.
+Recall is the only place where all three come together. Every event Recall consumes carries a `TransactionContext` that tracks its origin (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == The Fast Path
 

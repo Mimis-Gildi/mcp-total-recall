@@ -13,6 +13,8 @@ sequenceDiagram
         SY ->> ES: Memory Event Subscribe
     end
 
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
     Note over M,HP: Transaction
     M->>CX: claim_memory command
     activate CX

@@ -6,7 +6,7 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-03-04 by Claude (with Vadim)
+Last updated: 2026-03-04 (session 2) by Claude (with Vadim)
 
 ---
 
@@ -94,13 +94,13 @@ Every message in the system must carry a transaction envelope.
 - Know which DecaySweep belongs to which session
 - Connect a BreakNotification back to the session state that triggered it
 
-**What the envelope carries (minimum):**
-- `sessionId` -- which session this belongs to (created at session_start, carried everywhere)
-- `requestId` -- which MCP tool call initiated this chain
-- `stepId` -- which step in the processing chain
-- `sequenceId` -- ordering within the flow
-- `timestamp` -- when this step occurred
-- (potentially: parentId for tree-structured traces, sourceContext for originating bounded context)
+**What the envelope carries (decided):**
+- `sessionId: UUID` -- which session this belongs to (non-nullable, every domain message happens within a session)
+- `requestId: UUID` -- which MCP tool call or timer tick initiated this chain
+- `messageId: UUID` -- unique identity of this specific message
+- `causationId: UUID` -- messageId of the message that caused this one (non-nullable, originator always knows the cause)
+- `timestamp: Instant` -- when this message was created
+- `sourceContext: String` -- which bounded context produced this message
 
 **What this resolves:**
 - **3.4 ambiguity:** MemoryRetrieved, SalienceScored, AssociationsFound are response payloads in a transaction chain, not fire-and-forget domain events. The transaction context ties request to response.
@@ -108,18 +108,18 @@ Every message in the system must carry a transaction envelope.
 - **C-Audit-6:** Temporal fields get their units from the envelope's timestamp convention.
 
 **Work items:**
-- [ ] **3.0** Design the TransactionContext data class and envelope convention. New design document or addition to existing architecture page. Must answer: what fields, what types, which messages carry it (all of them), how does the envelope propagate through bounded context boundaries.
-- [ ] **3.1** Update all sealed classes in Command.kt, Query.kt, Event.kt, Notification.kt to carry TransactionContext.
-- [ ] **3.2** Update design documents to reference the envelope where message flows are described.
+- [x] **3.0** Design the TransactionContext data class and envelope convention. Design F (0011-transaction-context.adoc): six fields, zero nullable. sessionId, requestId, messageId, causationId, timestamp, sourceContext. Chain of custody metaphor. Propagation rules, fan-out, touch recording.
+- [x] **3.1** TransactionContext.kt created. All 28 message variants updated (7 commands, 2 queries, 16 events, 3 notifications). Tests updated (testTx helper, propagation test). T-Audit-2 fixed. Build green.
+- [x] **3.2** TransactionContext references added to: architecture-messages.adoc (convention section, fixed counts, added missing events/notifications), ADR-0006 (hierarchy example, envelope paragraph), all 6 design docs E1-E6 (one-sentence cross-references to Design F).
 
 ### 4. Fix Sequence Diagrams (data flow alignment)
 
 Designs are the source of truth. Sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs and have gaps. Transaction context (step 3) must be designed first -- diagrams need to show the envelope on every arrow.
 
-- [ ] **4.1** MSG-0002 (Search Memory): Add MemoryAccessed event firing on retrieval (feeds Salience decay model). Show two-speed architecture -- fast path returns through Cortex, deep path continues through NotificationPort. Show transaction context propagation.
-- [ ] **4.2** MSG-0005 (Session Lifecycle): Show SessionStart broadcasting to all contexts (Subconscious starts tracking, Cortex distributes config to Salience). Currently only shows Cortex → Hippocampus.
-- [ ] **4.3** MSG-0006 (Reflect): Show async deep-path continuing in background through NotificationPort.
-- [ ] **4.4** All diagrams: Show transaction context envelope on message arrows where it clarifies the flow.
+- [x] **4.1** MSG-0002: Already done (MemoryAccessedEvent, two-speed split into MSG-0002 + MSG-0007).
+- [x] **4.2** MSG-0005: Already done (SessionStart broadcasts to Subconscious, config to Salience).
+- [x] **4.3** MSG-0006: NOT APPLICABLE (F-Audit-4). Reflect is mind-driven, no async deep-path needed.
+- [x] **4.4** TransactionContext on diagrams: MSG-0001 gets full propagation note (six fields + causationId chain example). MSG-0002 through MSG-0007 get brief "All internal messages carry TransactionContext (Design F)" reference. Not repeated on every arrow -- convention doc handles it.
 
 ### 5. Resolve Documentation Audit Gaps (D-Audit)
 
@@ -218,6 +218,12 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] All 7 sequence diagrams complete (MSG-0001 through MSG-0007).
 - [x] Trivial impact fixes across codebase: TotalRecallAdvisory added to Event.kt, TotalRecallNotification added to Notification.kt, ADR-0006 query routing fixed (Recall not Hippocampus/Synapse), event count 13→16, notification count 2→3, "five actors"→"six actors" in hexagonal page, messages page Total Recall section corrected (Mind decides via Cortex not Recall), Salience TierDemoted/TierPromoted clarified (via MES), Recall design doc updated with Reflect conversation pattern, ADR-0005 MemoryRetrieved flagged as classification under review (F-Audit-6). Build verified green.
 - [x] Data flow diagrams decided: NOT NEEDED. Sequence diagrams carry all data flow information.
+- [x] Subconscious fourth job: Total Recall. 0010-subconscious.adoc updated from "Three Jobs" to "Four Jobs" with four evaluation criteria (throttle, session gate, shutdown gate, debounce window). SB-0001 diagram updated with MES input, Recall dispatch, Total Recall Gate node.
+- [x] Design F -- "TransactionContext": chain of custody metaphor. Six fields, zero nullable. Propagation rules, fan-out handling, touch recording convention. Design doc 0011-transaction-context.adoc. Wired into navigation and catalog.
+- [x] Step 3.1 -- TransactionContext in code: TransactionContext.kt data class. All 28 message variants updated with `val tx: TransactionContext` as first parameter. Tests updated with testTx() helper and propagation test. T-Audit-2 fixed (self-referential → proper UUID comparison). Build green.
+- [x] Step 3.2 -- TransactionContext in docs: architecture-messages.adoc (convention section, fixed event count 13→16, notification count 2→3, added TotalRecallNotification and TotalRecallAdvisory to tables). ADR-0006 (TotalRecallNotification in hierarchy, TransactionContext paragraph). All 6 design docs E1-E6 (one-sentence cross-references to Design F).
+- [x] F-Audit-5 resolved: TransactionContext designed, implemented, and documented.
+- [x] T-Audit-2 fixed: self-referential assertion replaced with proper UUID comparison.
 
 ---
 
@@ -232,12 +238,13 @@ By then we have working examples from gap resolution to accelerate design writin
 7. **Name things for what they are, not what they do technically.** "Tiered Memory" is a database description. "Hippocampus" tells you it forms, organizes, and consolidates memories -- which IS what the aggregate root does. Biological memory vocabulary (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) makes the system self-documenting because the names carry the right connotations.
 8. **Copy the diagram include pattern, don't write from memory.** The full pattern is: `:page-liquid:` in front matter, `++++` passthrough block, `<div id="ID">`, `<pre class="mermaid">`, `{% include diagrams/file.mmd %}`. Context compaction erases muscle memory. Open a working page (e.g. architecture-contexts.adoc lines 23-30) and copy every time.
 9. **Think about the thing, not the output.** When thinking about what an expo actually does at the pass, the writing is clean. When thinking about how the document should read, LLM-speak fills the space. E2 first draft failed because of this. E2 rewrite succeeded.
-10. **Tracing is not a crosscut -- it's structural.** Vadim caught a fundamental gap: the designs describe bounded contexts passing notes, but Commands and Queries are transactional conversations with payloads. Every message must carry a transaction envelope (sessionId, requestId, stepId, sequenceId, timestamps). Without it, nothing is traceable. This is not observability bolted on later -- it's the spine that makes data flow actually work. Designing without it is "speaking abstract fables, not designing a system that actually works."
+10. **Tracing is not a crosscut -- it's structural.** Vadim caught a fundamental gap: the designs describe bounded contexts passing notes, but Commands and Queries are transactional conversations with payloads. Every message must carry a transaction envelope. Final design: six fields (sessionId, requestId, messageId, causationId, timestamp, sourceContext), zero nullable. Causal tree via parent pointers (messageId + causationId), not linear step counters. Start strict, loosen later.
 11. **Verify diagrams against designs, not the other way around.** The sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs. Artem asked about data flow gaps. Checking diagrams against designs found 6 issues, including 2 HIGH severity. Always verify existing artifacts when new design work changes the source of truth.
 12. **Separate processes get separate diagrams.** MSG-0002 tried to contain both the synchronous search transaction AND the asynchronous Total Recall deep path. Different triggers, different lifecycles, different actors, different timing. Forcing them together tangled activation bars and blurred boundaries. Split into MSG-0002 (fast path) and MSG-0007 (Total Recall).
 13. **Total Recall IS the feature, not just the project name.** The project is named after this functionality. The MCP server's core purpose is pushing unsolicited recollections at the mind. Claude is passive by nature (waits for prompts). Total Recall overrides that passivity.
 14. **Strict jobs for components.** Each bounded context does ONE thing. Synapse answers association queries -- it does not command Recall. Hippocampus retrieves memories -- it does not orchestrate. Subconscious initiates background work -- it does not assemble. Overstepping authority in diagrams reveals misunderstanding of boundaries.
 15. **Only the mind has judgment.** Recall can assemble and rank, but it cannot decide whether results are "enough." That's the mind's job -- like the prefrontal cortex evaluating hippocampal retrieval. In humans it's native. In LLMs it's a forced prompt (different per model). The decision mechanism is adapter business. The core provides the port.
+16. **Start strict, loosen later.** Vadim challenged both nullable fields in TransactionContext. sessionId: "which message doesn't have a session?" -- none. causationId: "which scenario doesn't know its cause?" -- none. Every domain message happens within a session. Every originator knows the MCP call or timer tick that started it. Making fields nullable "just in case" creates ambiguity. Start non-nullable, add nullability only when a concrete scenario demands it.
 
 ---
 
@@ -298,9 +305,9 @@ SessionStart now broadcasts to Subconscious and distributes config to Salience i
 
 Reflect is mind-initiated and mind-driven. The mind is present reviewing memories. No async deep-path needed -- that pattern applies to search (MSG-0007) where the mind has moved on.
 
-### F-Audit-5. Transaction context absent from all messages (CRITICAL)
+### F-Audit-5. ~~Transaction context absent from all messages~~ RESOLVED
 
-No message in the system carries a transaction envelope. Commands and Queries are transactional and conversational with payloads -- not fire-and-forget. Without sessionId, requestId, stepId, sequenceId, and timestamps on every message, nothing is traceable. This is not observability bolted on later -- it is the structural spine that makes data flow work. See task list step 3.
+TransactionContext designed (Design F: 0011-transaction-context.adoc), implemented in code (TransactionContext.kt, all 28 message variants carry `val tx: TransactionContext`), and cross-referenced in all design docs and architecture pages. Six fields, zero nullable: sessionId, requestId, messageId, causationId, timestamp, sourceContext.
 
 ### F-Audit-6. MemoryRetrieved / SalienceScored / AssociationsFound identity crisis (MEDIUM)
 
@@ -416,9 +423,9 @@ TotalRecall.kt line 51: "reviewed and accepted by rdd13r AND needs full refactor
 
 TotalRecallTest only verifies `createServer()` returns non-null. No tool invocation, no schema verification, no teapot response check.
 
-### T-Audit-2. Self-referential assertion in MessageTest
+### T-Audit-2. ~~Self-referential assertion in MessageTest~~ FIXED
 
-Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Should compare against expected UUID.
+Was `cmd.memoryIds.first shouldBe cmd.memoryIds.first`. Now compares against known UUID variable `id1`.
 
 ### T-Audit-3. Low message coverage
 
@@ -434,6 +441,6 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 | CI/CD build workflow         | NOT STARTED                                                                                                                                                                                                    |
 | Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only                                                                                                                                   |
 | BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                                                                                                              |
-| TransactionContext shape     | IDENTIFIED -- sessionId, requestId, stepId, sequenceId, timestamps minimum. Needs design doc.                                                                                                                  |
+| TransactionContext shape     | RESOLVED -- Design F (0011-transaction-context.adoc). Six fields, zero nullable. Implemented in code.                                                                                                          |
 | Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext.                                                                                 |
 | Data flow diagrams           | DECIDED -- Not needed. Sequence diagrams (MSG-0001 through MSG-0007) now carry all data flow information: producers, consumers, payloads, ordering, branching. Separate data flow diagrams would be redundant. |

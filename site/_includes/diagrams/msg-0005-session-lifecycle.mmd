@@ -11,6 +11,8 @@ sequenceDiagram
         NP ->> NES: Notification Subscribe
     end
 
+    Note over M,NP: All internal messages carry TransactionContext (Design F)
+
     Note over M,SB: Session Connect
     M->>CX: session_start
     activate CX

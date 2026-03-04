@@ -8,6 +8,8 @@ sequenceDiagram
         HP ->> ES: Memory Event Subscribe
     end
 
+    Note over SB,HP: All internal messages carry TransactionContext (Design F)
+
     Note over SB: Timer-driven (no Mind involved)
     SB->>SL: Command: Decay Sweep
     activate SL

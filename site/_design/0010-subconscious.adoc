@@ -59,7 +59,7 @@ From the Memory Event Store, it consumes advisory events:
 | The mind searched, evaluated the results, and decided deeper recollection is needed. Subconscious evaluates four criteria (see Total Recall below) before starting a deep traversal.
 |===
 
-Between session start and end, Subconscious tracks the session state: how long the mind has been connected, how long since the last interaction, what the current activity level looks like. This tracking drives the break notification logic.
+Between session start and end, Subconscious tracks the session state: how long the mind has been connected, how long since the last interaction, what the current activity level looks like. This tracking drives the break notification logic. All commands Subconscious initiates carry a `TransactionContext` identifying the session and triggering conditions (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == Four Jobs
 

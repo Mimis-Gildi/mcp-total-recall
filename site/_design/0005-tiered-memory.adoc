@@ -139,7 +139,7 @@ Hippocampus receives commands from three sources.
 | Moves memory to lower tier based on decay, persists, emits TierChanged
 |===
 
-Three sources. Seven commands. All writes flow through here.
+Three sources. Seven commands. All writes flow through here. Every command carries a `TransactionContext` envelope for chain-of-custody tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == Events It Emits
 

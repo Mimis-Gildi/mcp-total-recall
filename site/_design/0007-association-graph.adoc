@@ -117,7 +117,7 @@ Both kinds live in the same graph. Both can be traversed the same way. The disti
 | The mind wants to create, strengthen, or weaken a specific association. Semantic entry.
 |===
 
-Three events from Hippocampus carry facts -- things that already happened. One command from Cortex carries intent -- the mind wants a connection made.
+Three events from Hippocampus carry facts -- things that already happened. One command from Cortex carries intent -- the mind wants a connection made. Both are wrapped in a `TransactionContext` for audit tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == What Goes Out
 
