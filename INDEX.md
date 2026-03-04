@@ -28,7 +28,7 @@ Full skeptic audit completed. Site infrastructure built (Design, Catalog, diagra
 
 ## Task List (Current Priority Order)
 
-### 0. Site Infrastructure for Design and Catalog
+### 0. Site Infrastructure for Design and Catalog -- DONE
 
 Build the site sections that will hold the detailed design work and traceability.
 
@@ -81,7 +81,7 @@ Build the site sections that will hold the detailed design work and traceability
 - [x] **E5)** Cortex (Inception) -- the entry point
 - [x] **E6)** Subconscious (Dream) -- the background caretaker
 
-### 3. Transaction Context (FUNDAMENTAL -- blocks steps 4-7)
+### 3. Transaction Context -- DONE
 
 **Discovery (2026-03-03):** The design documents describe bounded contexts as if they pass notes to each other.
 In reality, Commands and Queries are transactional and conversational -- they carry payloads and expect responses within a traceable chain.
@@ -112,7 +112,7 @@ Every message in the system must carry a transaction envelope.
 - [x] **3.1** TransactionContext.kt created. All 28 message variants updated (7 commands, 2 queries, 16 events, 3 notifications). Tests updated (testTx helper, propagation test). T-Audit-2 fixed. Build green.
 - [x] **3.2** TransactionContext references added to: architecture-messages.adoc (convention section, fixed counts, added missing events/notifications), ADR-0006 (hierarchy example, envelope paragraph), all 6 design docs E1-E6 (one-sentence cross-references to Design F).
 
-### 4. Fix Sequence Diagrams (data flow alignment)
+### 4. Fix Sequence Diagrams -- DONE
 
 Designs are the source of truth. Sequence diagrams (MSG-0001 through MSG-0006) were written before the detailed designs and have gaps. Transaction context (step 3) must be designed first -- diagrams need to show the envelope on every arrow.
 
@@ -121,7 +121,7 @@ Designs are the source of truth. Sequence diagrams (MSG-0001 through MSG-0006) w
 - [x] **4.3** MSG-0006: NOT APPLICABLE (F-Audit-4). Reflect is mind-driven, no async deep-path needed.
 - [x] **4.4** TransactionContext on diagrams: MSG-0001 gets full propagation note (six fields + causationId chain example). MSG-0002 through MSG-0007 get brief "All internal messages carry TransactionContext (Design F)" reference. Not repeated on every arrow -- convention doc handles it.
 
-### 5. Resolve Documentation Audit Gaps (D-Audit)
+### 5. Resolve Documentation Audit Gaps (D-Audit) -- DONE
 
 Fix mismatches between ADRs, architecture pages, and design documents.
 
@@ -136,7 +136,7 @@ Fix mismatches between ADRs, architecture pages, and design documents.
 - [x] **D-Audit-9** ~~Governing Dynamic~~ RESOLVED: added to ADR-0001 template (and "may be omitted" list).
 - [x] **D-Audit-10** ~~SearchFilter type~~ RESOLVED: architecture-messages.adoc, architecture-contexts.adoc, msg-0002 diagram all updated to Map.
 
-### 6. Resolve Code Audit Gaps (C-Audit)
+### 6. Resolve Code Audit Gaps (C-Audit) -- 8/9 DONE
 
 Fix code to match designs.
 
@@ -150,13 +150,13 @@ Fix code to match designs.
 - [x] **C-Audit-8** ~~SalienceScored duplicates SalienceScore~~ RESOLVED: refactored to wrap SalienceScore model instead of duplicating fields.
 - [ ] **C-Audit-9** TotalRecall.kt refactoring pass -- SKIPPED (comment says "needs full refactoring pass by rdd13r").
 
-### 7. Resolve Test Audit Gaps (T-Audit)
+### 7. Resolve Test Audit Gaps (T-Audit) -- DONE
 
 - [x] **T-Audit-1** ~~Server test smoke-only~~ RESOLVED: TotalRecallTest.kt rewritten with 10 tests: server creation, all 8 tool names, 4 schema validations (required params), 5 handler invocations (teapot responses, error responses, defaults). Zero warnings.
 - [x] **T-Audit-2** ~~Self-referential assertion~~ FIXED (previous session).
 - [x] **T-Audit-3** ~~Low message coverage~~ RESOLVED: MessageTest.kt expanded from 6 to 17 tests. All 7 commands tested (added ReclassifyCommand, ConsolidateCommand, ShutdownCommand with Duration). Both queries tested (SearchQuery defaults, ReflectQuery). All 17 events tested (Hippocampus 5, Salience 3 including SalienceScored wrapping SalienceScore, Synapse+TotalRecall 2, Lifecycle 5 with SessionEndReason/WorkingMode/Duration). All 3 notifications tested (added TotalRecallNotification). Enum entry counts verified (4 enums). DecaySweep scope default tested. Zero warnings.
 
-### 8. Verify Catalog Matrix
+### 8. Verify Catalog Matrix -- DONE
 
 - [x] **8.1** Diagram inventory: 16 `.mmd` files match 16 catalog entries. ✓
 - [x] **8.2** Design Documents: 12 entries (0000, A-D, E1-E6, F), all Done. ✓
