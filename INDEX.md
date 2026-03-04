@@ -290,7 +290,7 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
 ---
 
-## Audit Findings -- Data Flow (F-Audit)
+## Audit Findings -- Data Flow (F-Audit) -- 5/6 RESOLVED
 
 Discovered 2026-03-03. Sequence diagrams verified against completed design documents (E1-E6).
 
@@ -320,109 +320,91 @@ Message catalog (architecture-messages.adoc) lists these as domain Events. Desig
 
 ---
 
-## Audit Findings -- Documentation vs. Code Mismatches
+## Audit Findings -- Documentation vs. Code Mismatches -- ALL RESOLVED
 
-### D-Audit-1. BackingServicePort operation names (Significant)
+### D-Audit-1. ~~BackingServicePort operation names~~ RESOLVED
 
-ADR-0004 and architecture-hexagonal.adoc say: `persist, retrieve, query, delete`.
-Code (BackingServicePort.kt) says: `save, findById, search, delete, update`.
-Three names don't match. Code has extra `update` not in ADR.
+~~ADR-0004 and architecture-hexagonal.adoc say: `persist, retrieve, query, delete`. Code says: `save, findById, search, delete, update`.~~ Architecture-hexagonal.adoc aligned with code.
 
-**Discussion (2026-03-02):** Deeper issue identified. The question isn't which names -- it's what the port IS. A port is a Passive Structure (Design A) -- it defines the shape of what crosses, not what the adapter does with it. `save`, `findById`, `search` are adapter verbs (Design B), not port contract. BackingServicePort should define the object shape that crosses, not the CRUD operations. Tillie's experience: orchestrated composite storage ate 50% compute, 90% IO. This time: simplicity first, additive enhancement later. Each bounded context owns its own data. Only Hippocampus actually goes to storage. Salience computes, Synapse TBD, others don't persist. Resolution will come from the detailed design pass (E1-E6).
+### D-Audit-2. ~~NotificationPort operation names~~ RESOLVED
 
-### D-Audit-2. NotificationPort operation names (Significant)
+~~Architecture-hexagonal.adoc says: `notify, remind, alert`. Code has single `send` method.~~ Aligned with code.
 
-Architecture-hexagonal.adoc says: `notify, remind, alert`.
-Code (NotificationPort.kt) has single `send` method.
+### D-Audit-3. ~~RelayPort operation names~~ RESOLVED
 
-### D-Audit-3. RelayPort operation names (Minor)
+~~Architecture-hexagonal.adoc says: `send, receive, list_pending`. Code has single `relay` method.~~ Aligned with code.
 
-Architecture-hexagonal.adoc says: `send, receive, list_pending`.
-Code (RelayPort.kt) has single `relay` method.
-Future/Agora-dependent -- lower priority.
+### D-Audit-4. ~~Event count mismatch in ADR-0006~~ RESOLVED
 
-### D-Audit-4. Event count mismatch in ADR-0006 (Significant)
+~~ADR-0006 says "13 variants". Code has 15.~~ Fixed: 13→17 (added ModeChanged, SessionState, TotalRecallAdvisory, HeartbeatReceived). Notifications 2→3.
 
-ADR-0006 says "13 variants" and lists 13.
-Code has 15: `ModeChanged` and `SessionState` missing from ADR.
-Architecture-messages page has the correct full list.
+### D-Audit-5. ~~SearchQuery routing in ADR-0006~~ RESOLVED
 
-### D-Audit-5. SearchQuery routing in ADR-0006 (Significant)
+~~Says Hippocampus.~~ Fixed → Recall.
 
-ADR-0006 line 115 says SearchQuery goes to Hippocampus.
-Architecture-contexts page correctly routes it to Recall.
+### D-Audit-6. ~~ReflectQuery routing in ADR-0006~~ RESOLVED
 
-### D-Audit-6. ReflectQuery routing in ADR-0006 (Significant)
+~~Says Synapse.~~ Fixed → Recall.
 
-ADR-0006 line 115 says ReflectQuery goes to Synapse.
-Architecture-contexts page correctly routes it to Recall.
+### D-Audit-7. ~~"Five actors" should be six~~ RESOLVED
 
-### D-Audit-7. "Five actors" should be six (Moderate)
+Fixed → "six actors" in architecture-hexagonal.adoc.
 
-Architecture-hexagonal.adoc line 226 says "five actors."
-There are six bounded contexts -- Recall missing from hexagonal diagram.
+### D-Audit-8. ~~Hippocampus command list incomplete~~ RESOLVED
 
-### D-Audit-8. Hippocampus command list incomplete in contexts page (Minor)
+ReclassifyCommand, TierPromoted, TierDemoted added to architecture-contexts.adoc.
 
-Architecture-contexts.adoc omits `ReclassifyCommand`, `TierPromoted`, `TierDemoted` from Hippocampus's "Commands Accepted" text. ADR-0005 includes them. Mermaid diagram shows `ReclassifyCommand`.
+### D-Audit-9. ~~"Governing Dynamic" not in ADR template~~ RESOLVED
 
-### D-Audit-9. "Governing Dynamic" not in ADR template (Minor)
+Added to ADR-0001 template (and "may be omitted" list).
 
-All 7 ADRs have a "Governing Dynamic" section. ADR-0001 template spec does not define it. Either add to template or document as convention.
+### D-Audit-10. ~~SearchFilter type mismatch~~ RESOLVED
 
-### D-Audit-10. SearchFilter type mismatch (Minor)
-
-ADR-0006 and architecture-messages describe `SearchQuery.filters` as `SearchFilter`.
-Code uses `Map<String, String>`. See also C-Audit-1 below.
+All references updated to Map<String, String>.
 
 ---
 
-## Audit Findings -- Code Issues
+## Audit Findings -- Code Issues -- 8/9 RESOLVED
 
-### C-Audit-1. SearchFilter is dead code
+### C-Audit-1. ~~SearchFilter is dead code~~ RESOLVED
 
-`SearchFilter` data class exists in domain model. Nothing references it -- not SearchQuery, not MemoryPort, not BackingServicePort. All use `Map<String, String>` instead. Either use it everywhere or remove it.
+Deleted SearchFilter.kt, removed test, updated all references.
 
-### C-Audit-2. TierChanged / MemoryReclassified are duplicate events
+### C-Audit-2. ~~TierChanged / MemoryReclassified are duplicate events~~ RESOLVED
 
-Structurally identical: same fields, same types. No documented semantic distinction. Either remove one or document when each fires.
+KDoc added. TierChanged = any tier change (internal record). MemoryReclassified = mind-initiated only (consumed by Synapse).
 
-### C-Audit-3. AssociationDirection lives in wrong package
+### C-Audit-3. ~~AssociationDirection lives in wrong package~~ RESOLVED
 
-`AssociationDirection` enum defined in `Command.kt` (message file). It's a domain concept. Should be in `domain/model/` alongside `AssociationType`.
+Moved to domain/model/AssociationDirection.kt.
 
-### C-Audit-4. associate_memories schema/code mismatch
+### C-Audit-4. ~~associate_memories schema/code mismatch~~ RESOLVED
 
-Tool declares `type` and `strength` as required in schema, but handler provides fallback defaults (`?: "THEMATIC"`, `?: "0.5"`). Pick one: required (remove defaults) or optional (remove from required list).
+Removed fallback defaults. Schema says required, handler now errors on missing.
 
-### C-Audit-5. Stringly-typed fields that should be enums
+### C-Audit-5. ~~Stringly-typed fields that should be enums~~ RESOLVED
 
-At least 6 fields use `String` where finite valid values exist:
-- `ConsolidateCommand.mergeStrategy`
-- `ShutdownCommand.coldStorageTarget`
-- `SessionState.activityLevel`
-- `ModeChanged.oldMode / newMode`
-- `StateTransition.oldState / newState`
+WorkingMode (TASK, CONVERSATION, IDLE), SessionEndReason (EXPLICIT, TIMEOUT, CRASH) created. DecaySweep.scope → Tier?. Remaining String fields left as-is (designs say TBD).
 
-### C-Audit-6. Temporal fields have no unit specification
+### C-Audit-6. ~~Temporal fields have no unit specification~~ RESOLVED
 
-`ShutdownCommand.flushTimeout: Long` and `SessionState.duration: Long` -- milliseconds? seconds? Not documented.
+Changed to kotlin.time.Duration.
 
-### C-Audit-7. heartbeat() has no corresponding Event
+### C-Audit-7. ~~heartbeat() has no corresponding Event~~ RESOLVED
 
-`LifecyclePort.heartbeat()` exists. No `HeartbeatReceived` event in the Event hierarchy.
+HeartbeatReceived event added.
 
-### C-Audit-8. SalienceScored duplicates SalienceScore fields
+### C-Audit-8. ~~SalienceScored duplicates SalienceScore fields~~ RESOLVED
 
-Event `SalienceScored` has the same fields as model `SalienceScore`. Maintenance risk if either changes independently. Could reference the model type directly.
+Refactored to wrap SalienceScore model.
 
-### C-Audit-9. Refactoring pass still pending
+### C-Audit-9. Refactoring pass -- DEFERRED to implementation phase
 
-TotalRecall.kt line 51: "reviewed and accepted by rdd13r AND needs full refactoring pass by rdd13r"
+TotalRecall.kt teapot stubs work and tests pass. Refactoring makes more sense when real logic replaces stubs. Artem can take this.
 
 ---
 
-## Audit Findings -- Test Gaps
+## Audit Findings -- Test Gaps -- ALL RESOLVED
 
 ### T-Audit-1. ~~Server test is smoke-only~~ RESOLVED
 
@@ -438,14 +420,20 @@ MessageTest.kt expanded from 6 to 17 tests. All 7 commands, 2 queries, 17 events
 
 ---
 
-## What's NOT Decided
+## Open for Implementation Phase
 
-| Question                     | Status                                                                                                                                                                                                         |
-|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Container image approach     | NOT STARTED                                                                                                                                                                                                    |
-| CI/CD build workflow         | NOT STARTED                                                                                                                                                                                                    |
-| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only                                                                                                                                   |
-| BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                                                                                                              |
-| TransactionContext shape     | RESOLVED -- Design F (0011-transaction-context.adoc). Six fields, zero nullable. Implemented in code.                                                                                                          |
-| Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext.                                                                                 |
-| Data flow diagrams           | DECIDED -- Not needed. Sequence diagrams (MSG-0001 through MSG-0007) now carry all data flow information: producers, consumers, payloads, ordering, branching. Separate data flow diagrams would be redundant. |
+| Question                           | Status                                                                                                                                                                                                                                                                                                                                                                                 |
+|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Container image approach           | NOT STARTED -- implementation phase                                                                                                                                                                                                                                                                                                                                                    |
+| CI/CD build workflow               | NOT STARTED -- implementation phase                                                                                                                                                                                                                                                                                                                                                    |
+| BackingServicePort design          | OPEN -- TransactionContext is done (Design F). Port contract shape still needs revisiting when real persistence replaces teapot stubs. Design A (Passive Structure) established the principle: ports define shapes, not CRUD verbs.                                                                                                                                                    |
+| F-Audit-6: Message identity crisis | OPEN -- MemoryRetrieved/SalienceScored/AssociationsFound classified as Events in code and catalog, but function as response payloads in transactional chains. TransactionContext (Design F) provides the envelope. Reclassification decision needed when implementation makes the usage pattern concrete.                                                                              |
+| Community refactoring (C-Audit-9)  | DEFERRED -- TotalRecall.kt teapot stubs work and tests pass. When real logic replaces stubs during implementation, refactoring the tool handler structure makes sense. Artem can take first pass. Expect significant refactoring across all source files as implementation proceeds -- architecture phase established contracts, implementation phase will reshape code to serve them. |
+
+### Decided This Branch (moved from open)
+
+| Question                     | Resolution                                                                                 |
+|------------------------------|--------------------------------------------------------------------------------------------|
+| Who owns Association storage | Synapse is a dependent aggregate with own storage, internal only                           |
+| TransactionContext shape     | Design F (0011-transaction-context.adoc). Six fields, zero nullable. Implemented in code.  |
+| Data flow diagrams           | Not needed. Sequence diagrams (MSG-0001 through MSG-0007) carry all data flow information. |
