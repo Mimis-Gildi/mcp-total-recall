@@ -206,6 +206,11 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] MSG-0007 created: Total Recall (the feature the project is named after). Subconscious drives, Recall assembles via queries to Synapse/Hippocampus, results push through NES → NotificationPort → Mind. Strict bounded context boundaries -- each component does its one job only.
 - [x] Two Event Stores established: MES (Memory Event Store) for domain events, NES (Notification Event Store) for mind-facing notifications. Different concerns, different channels.
 - [x] Key architectural correction: Total Recall deep path is NOT an appendix to search. It's a separate process with different trigger, lifecycle, actors, and timing. Subconscious is the background orchestrator (not Recall, not Synapse).
+- [x] MSG-0007 wired into architecture-messages.adoc (section text, include markup, Diagram 10). Catalog updated. Flow count Six → Seven.
+- [x] HTML entities removed from diagrams: `&lt;` / `&gt;` replaced with "Set of Type" / "List of Type" in MSG-0002 and MSG-0007. Entities don't render in IDE or scripts -- spell out collection types in diagrams.
+- [x] MSG-0002 Total Recall trigger redesigned: Mind decides, not Recall. Recall assembles and returns -- it has no judgment. The mind evaluates results (prefrontal cortex in humans, forced prompt in LLMs) and signals through Cortex. Advisory event stays, but origin moves from Recall to Mind → Cortex. Added Important note: decision to recollect is mind-adapter-specific (humans: native prefrontal cortex or UI; LLMs: forced prompt, different per model). Core provides the port, adapter decides how.
+- [x] F-Audit-1 resolved: MemoryAccessedEvent fires on retrieval in MSG-0002.
+- [x] F-Audit-2 resolved: two-speed architecture is now two diagrams (MSG-0002 fast path, MSG-0007 deep path).
 
 ---
 
@@ -225,6 +230,7 @@ By then we have working examples from gap resolution to accelerate design writin
 12. **Separate processes get separate diagrams.** MSG-0002 tried to contain both the synchronous search transaction AND the asynchronous Total Recall deep path. Different triggers, different lifecycles, different actors, different timing. Forcing them together tangled activation bars and blurred boundaries. Split into MSG-0002 (fast path) and MSG-0007 (Total Recall).
 13. **Total Recall IS the feature, not just the project name.** The project is named after this functionality. The MCP server's core purpose is pushing unsolicited recollections at the mind. Claude is passive by nature (waits for prompts). Total Recall overrides that passivity.
 14. **Strict jobs for components.** Each bounded context does ONE thing. Synapse answers association queries -- it does not command Recall. Hippocampus retrieves memories -- it does not orchestrate. Subconscious initiates background work -- it does not assemble. Overstepping authority in diagrams reveals misunderstanding of boundaries.
+15. **Only the mind has judgment.** Recall can assemble and rank, but it cannot decide whether results are "enough." That's the mind's job -- like the prefrontal cortex evaluating hippocampal retrieval. In humans it's native. In LLMs it's a forced prompt (different per model). The decision mechanism is adapter business. The core provides the port.
 
 ---
 
@@ -269,13 +275,13 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 
 Discovered 2026-03-03. Sequence diagrams verified against completed design documents (E1-E6).
 
-### F-Audit-1. MSG-0002 missing MemoryAccessed on retrieval (HIGH)
+### F-Audit-1. ~~MSG-0002 missing MemoryAccessed on retrieval~~ RESOLVED
 
-When memories are retrieved during search, Hippocampus should emit MemoryAccessed to Salience for each retrieved memory. This resets the vividity clock. Without it, searching for a memory doesn't boost its salience -- the decay model breaks.
+MemoryAccessedEvent now fires on retrieval in MSG-0002. Feeds Salience decay model.
 
-### F-Audit-2. MSG-0002 doesn't show two-speed architecture (MEDIUM)
+### F-Audit-2. ~~MSG-0002 doesn't show two-speed architecture~~ RESOLVED
 
-The diagram shows a linear synchronous flow. Design E4 (Recall) and E5 (Cortex) establish that search has two speeds: fast path returns through Cortex (synchronous MCP response), deep path continues through NotificationPort (asynchronous background). The diagram makes search look entirely synchronous.
+Two-speed architecture is now two diagrams: MSG-0002 (fast path) and MSG-0007 (deep path / Total Recall).
 
 ### F-Audit-3. MSG-0005 missing SessionStart broadcast (HIGH)
 
@@ -423,3 +429,4 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 | BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                              |
 | TransactionContext shape     | IDENTIFIED -- sessionId, requestId, stepId, sequenceId, timestamps minimum. Needs design doc.                                  |
 | Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext. |
+| Data flow diagrams           | DECIDED -- Not needed. Sequence diagrams (MSG-0001 through MSG-0007) now carry all data flow information: producers, consumers, payloads, ordering, branching. Separate data flow diagrams would be redundant. |
