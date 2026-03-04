@@ -59,6 +59,8 @@ architecture:
         url: /design/0009-cortex/
       - title: "E6: Subconscious (Dream)"
         url: /design/0010-subconscious/
+      - title: "F: TransactionContext"
+        url: /design/0011-transaction-context/
   - title: "Catalog"
     children:
       - title: "Traceability Matrix"

@@ -186,17 +186,17 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 | `Query.kt`
 
 | Events
-| 13 (ADR-0006) / 15 (code)
-| 15
+| 16
+| 16
 | `Event.kt`
 
 | Notifications
-| 2
-| 2
+| 3
+| 3
 | `Notification.kt`
 |===
 
-NOTE: ADR-0006 says 13 event variants. Code has 15 -- `ModeChanged` and `SessionState` are present in code and on the message catalog page but missing from the ADR. See audit finding D-Audit-4.
+NOTE: Event and notification counts updated after D-Audit-4 fix. ADR-0006 now matches code (16 events, 3 notifications).
 
 == Ports to Code
 
@@ -292,5 +292,9 @@ _Documents will be added as each bounded context is examined._
 
 | link:/mcp-total-recall/design/0010-subconscious/[E6]
 | Subconscious (Dream) -- the Background Caretaker
+| Done
+
+| link:/mcp-total-recall/design/0011-transaction-context/[F]
+| TransactionContext (Chain of Custody) -- the envelope every message carries
 | Done
 |===
