@@ -1,19 +1,124 @@
 sequenceDiagram
-    participant C as Mind
+    participant M as Mind
     participant CX as Cortex
     participant RC as Recall
     participant HP as Hippocampus
+    participant MES as Memory<br/> Event Store
     participant SL as Salience
     participant SY as Synapse
 
-    C->>CX: search_memory
-    CX->>RC: SearchQuery
-    RC->>HP: Query matching memories
-    HP-->>RC: MemoryRetrieved (candidates)
-    RC->>SL: Request scores for candidates
-    SL-->>RC: SalienceScored (scores)
-    RC->>SY: Request associations for top candidates
-    SY-->>RC: AssociationsFound (related memories)
-    RC->>RC: Rank by score, include activated
-    RC-->>CX: Ranked results
-    CX-->>C: MCP tool response
+    participant NES as Notification<br/> Event Store
+    participant NP as NotificationPort
+
+    activate M
+    activate MES
+
+    critical OnInit
+        SL ->> MES: Memory Event Subscribe
+        SY ->> MES: Memory Event Subscribe
+        NP ->> NES: Notification Event Subscribe
+    end
+
+
+
+    Note over M,RC: Transaction (Query)
+    M->>CX: search_memory request
+    activate CX
+    Note right of M: query: String<br/>filters: SearchFilter<br/>max_results: Int
+
+    CX->>RC: Query: Find Memories
+    activate RC
+    Note left of RC: data class MemorySearchRequest
+
+    RC->>HP: Query: Match Memories
+    activate HP
+    Note left of HP: data class MemoryMatchRequest
+
+    HP-->>RC: Query Response: Matched Memories
+    Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory;
+
+    Note over HP,SY: Broadcast (async)
+    HP-)MES: publish MemoryAccessedEvent
+    deactivate HP
+    activate MES
+    par Salience consumes events
+        MES--)SL: consume MemoryAccessedEvent
+        activate SL
+
+    and Synapse consumes events
+        MES--)SY: consume MemoryAccessedEvent
+        activate SY
+    end
+
+    deactivate MES
+
+    RC->>RC: Rank by salience (local cache)
+
+    RC->>SY: Query: Find Associations
+    Note right of RC: data class AssociationFindRequest
+
+    SY-->>RC: Query Response: Associations
+    deactivate SY
+    Note left of SY: data class AssociationResponse<br/>associations: Set of Association
+
+    RC->>RC: Assemble ranked results
+
+    RC-->>CX: Query Response: Search Results
+    Note left of RC: data class MemorySearchResponse<br/>results: ListRankedMemory;
+
+    CX-->>M: search_memory response
+    deactivate CX
+
+    RC-->>RC: Calculate Total Recall Need (async)
+
+    opt Total Recall is Avisable
+        RC-)MES: publish TotalRecallEvent
+    end
+    deactivate RC
+
+
+%%    NES--)SL: consume MemoryAccessedEvent
+%%    Note right of SL: Resets vividity clock
+
+    opt Deep path (background)
+        MES--)SY: consume TotalRecallInitEvent
+        activate SY
+        SY->>SY: Continue graph traversal
+        loop Recover Associated Memories
+            SY->>RC: MemoryRecallCommand
+            activate RC
+            RC->>HP: Query: Match Memories
+            activate HP
+            Note left of HP: data class MemoryMatchRequest
+            HP-->>RC: Query Response: Matched Memories
+            Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory;
+
+            Note over HP,SY: Broadcast (async)
+            RC-)NES: publish MemoryRecalledEvent
+            activate NES
+            HP-)MES: publish MemoryAccessedEvent
+            deactivate HP
+        end
+
+        RC->>SY: TerminateTotalRecallCommand
+        deactivate SY
+        deactivate RC
+
+%%        RC-)NP: Deep association results
+%%        NP-)M: search_memory notification
+    end
+
+    opt No response within timeout
+        M->>CX: search_memory request
+        Note right of M: Same requestId<br/>Policy: at-most-once
+    end
+
+    opt Send Retrieved Memory Notification (async)
+        NES--)NP: consume MemoryRecalledNotificationEvent
+        activate NP
+        deactivate NES
+        NP->>M: PushMemoryRecalledNotificationCommand
+        deactivate NP
+    end
+
+    deactivate M
