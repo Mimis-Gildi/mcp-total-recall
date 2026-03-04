@@ -46,8 +46,8 @@ What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
 - MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - 8 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, associate_memories, reclassify_memory, reflect
-- Domain model: Memory, Tier, AssociationType, Association, SalienceScore, SearchFilter
-- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (13 sealed variants), Notification (2 sealed variants)
+- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
+- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants)
 - Inbound ports: MemoryPort, LifecyclePort
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort
 - Programmatic logback configuration (stderr for stdio transport)

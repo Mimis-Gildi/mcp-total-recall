@@ -6,6 +6,7 @@
 package mimis.gildi.memory.domain.message
 
 import java.util.UUID
+import kotlin.time.Duration
 
 /**
  * Notifications flow outward through the Notification Port to reach
@@ -17,13 +18,13 @@ sealed interface Notification
 @Suppress("unused")
 data class BreakNotification(
     val tx: TransactionContext,
-    val minutesInTaskMode: Long,
+    val timeInTaskMode: Duration,
     val suggestion: String
 ) : Notification
 
 data class SessionAuditPrompt(
     val tx: TransactionContext,
-    val sessionDuration: Long,
+    val sessionDuration: Duration,
     val memoriesStoredThisSession: Int,
     val prompt: String
 ) : Notification

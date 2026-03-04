@@ -7,10 +7,12 @@
 
 package mimis.gildi.memory.domain.message
 
+import mimis.gildi.memory.domain.model.AssociationDirection
 import mimis.gildi.memory.domain.model.AssociationType
 import mimis.gildi.memory.domain.model.Tier
 import java.time.Instant
 import java.util.UUID
+import kotlin.time.Duration
 
 /**
  * Commands are requests to change state. They carry intent.
@@ -51,7 +53,7 @@ data class ConsolidateCommand(
 data class ShutdownCommand(
     val tx: TransactionContext,
     val coldStorageTarget: String,
-    val flushTimeout: Long
+    val flushTimeout: Duration
 ) : Command
 
 // -- Synapse commands --
@@ -64,16 +66,10 @@ data class AssociateCommand(
     val direction: AssociationDirection = AssociationDirection.STRENGTHEN
 ) : Command
 
-enum class AssociationDirection {
-    CREATE,
-    STRENGTHEN,
-    WEAKEN
-}
-
 // -- Salience commands --
 
 data class DecaySweep(
     val tx: TransactionContext,
     val timestamp: Instant,
-    val scope: String = "all"
+    val scope: Tier? = null
 ) : Command

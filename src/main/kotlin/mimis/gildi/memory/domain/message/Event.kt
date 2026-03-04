@@ -8,7 +8,11 @@
 package mimis.gildi.memory.domain.message
 
 import mimis.gildi.memory.domain.model.Association
+import mimis.gildi.memory.domain.model.SalienceScore
+import mimis.gildi.memory.domain.model.SessionEndReason
 import mimis.gildi.memory.domain.model.Tier
+import mimis.gildi.memory.domain.model.WorkingMode
+import kotlin.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -49,6 +53,7 @@ data class MemoryRetrieved(
     val tier: Tier
 ) : Event
 
+/** Internal record of any tier change (Salience-driven or mind-initiated). */
 data class TierChanged(
     val tx: TransactionContext,
     val memoryId: UUID,
@@ -57,6 +62,7 @@ data class TierChanged(
     val reason: String
 ) : Event
 
+/** Mind-initiated reclassification only. Consumed by Synapse to update associations. */
 data class MemoryReclassified(
     val tx: TransactionContext,
     val memoryId: UUID,
@@ -83,11 +89,7 @@ data class TierDemoted(
 
 data class SalienceScored(
     val tx: TransactionContext,
-    val memoryId: UUID,
-    val score: Double,
-    val lastAccessed: Instant,
-    val decayRate: Double,
-    val claimed: Boolean
+    val salienceScore: SalienceScore
 ) : Event
 
 // -- Synapse events --
@@ -119,7 +121,7 @@ data class SessionStart(
 data class SessionEnd(
     val tx: TransactionContext,
     val instanceId: String,
-    val reason: String
+    val reason: SessionEndReason
 ) : Event
 
 data class StateTransition(
@@ -133,14 +135,20 @@ data class StateTransition(
 data class ModeChanged(
     val tx: TransactionContext,
     val instanceId: String,
-    val oldMode: String,
-    val newMode: String
+    val oldMode: WorkingMode,
+    val newMode: WorkingMode
+) : Event
+
+data class HeartbeatReceived(
+    val tx: TransactionContext,
+    val instanceId: String,
+    val timestamp: Instant
 ) : Event
 
 data class SessionState(
     val tx: TransactionContext,
     val instanceId: String,
-    val duration: Long,
+    val duration: Duration,
     val activityLevel: String,
     val lastInteraction: Instant
 ) : Event

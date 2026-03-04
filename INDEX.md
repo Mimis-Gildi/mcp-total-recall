@@ -140,15 +140,15 @@ Fix mismatches between ADRs, architecture pages, and design documents.
 
 Fix code to match designs.
 
-- [ ] **C-Audit-1** SearchFilter is dead code. Remove or adopt.
-- [ ] **C-Audit-2** TierChanged / MemoryReclassified duplicate events. Document distinction or remove one.
-- [ ] **C-Audit-3** AssociationDirection in Command.kt. Move to domain/model/.
-- [ ] **C-Audit-4** associate_memories: required params have fallback defaults. Pick one.
-- [ ] **C-Audit-5** Stringly-typed fields (6 fields that should be enums).
-- [ ] **C-Audit-6** Temporal fields (flushTimeout, duration) have no unit spec.
-- [ ] **C-Audit-7** heartbeat() has no corresponding Event.
-- [ ] **C-Audit-8** SalienceScored duplicates SalienceScore fields.
-- [ ] **C-Audit-9** TotalRecall.kt refactoring pass (noted in code comment).
+- [x] **C-Audit-1** ~~SearchFilter dead code~~ RESOLVED: deleted SearchFilter.kt, removed test, updated all references (CHANGELOG, README, CLAUDE.md, catalog, blog post).
+- [x] **C-Audit-2** ~~TierChanged / MemoryReclassified duplicates~~ RESOLVED: KDoc added. TierChanged = any tier change (internal record). MemoryReclassified = mind-initiated only (consumed by Synapse).
+- [x] **C-Audit-3** ~~AssociationDirection wrong package~~ RESOLVED: moved to domain/model/AssociationDirection.kt. Import updated in Command.kt and MessageTest.kt.
+- [x] **C-Audit-4** ~~associate_memories defaults conflict~~ RESOLVED: removed fallback defaults. Schema says required, handler now errors on missing.
+- [x] **C-Audit-5** ~~Stringly-typed fields~~ RESOLVED: created WorkingMode enum (TASK, CONVERSATION, IDLE), SessionEndReason enum (EXPLICIT, TIMEOUT, CRASH). DecaySweep.scope changed from String to Tier? (null = all). ModeChanged uses WorkingMode. SessionEnd uses SessionEndReason. Left mergeStrategy, coldStorageTarget, activityLevel, oldState/newState as String (designs say TBD).
+- [x] **C-Audit-6** ~~Temporal fields no units~~ RESOLVED: changed to kotlin.time.Duration. ShutdownCommand.flushTimeout, SessionState.duration, BreakNotification.timeInTaskMode, SessionAuditPrompt.sessionDuration.
+- [x] **C-Audit-7** ~~heartbeat() no Event~~ RESOLVED: added HeartbeatReceived event. Added to architecture-messages.adoc lifecycle events table. Event count 16→17.
+- [x] **C-Audit-8** ~~SalienceScored duplicates SalienceScore~~ RESOLVED: refactored to wrap SalienceScore model instead of duplicating fields.
+- [ ] **C-Audit-9** TotalRecall.kt refactoring pass -- SKIPPED (comment says "needs full refactoring pass by rdd13r").
 
 ### 7. Resolve Test Audit Gaps (T-Audit)
 
@@ -226,6 +226,7 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] T-Audit-2 fixed: self-referential assertion replaced with proper UUID comparison.
 - [x] Step 4 complete: TransactionContext annotations on all 7 sequence diagrams. Full propagation example on MSG-0001, brief Design F reference on MSG-0002 through MSG-0007.
 - [x] Step 5 complete: All D-Audit items resolved. architecture-hexagonal.adoc port operations aligned with code (D-Audit-1,2,3). Hippocampus commands completed (D-Audit-8). Governing Dynamic in ADR template (D-Audit-9). SearchFilter→Map everywhere (D-Audit-10). Design D NotificationPort updated: 2→3 shapes (TotalRecallNotification), 13→14 total object shapes.
+- [x] Step 6 complete (8 of 9): SearchFilter deleted (C-Audit-1). TierChanged/MemoryReclassified documented (C-Audit-2). AssociationDirection moved to domain/model (C-Audit-3). associate_memories defaults removed (C-Audit-4). WorkingMode, SessionEndReason enums created, DecaySweep.scope→Tier? (C-Audit-5). Long→Duration for all temporal fields (C-Audit-6). HeartbeatReceived event added (C-Audit-7). SalienceScored wraps SalienceScore model (C-Audit-8). C-Audit-9 skipped (Vadim's refactoring pass). All references updated: CHANGELOG, README, CLAUDE.md, catalog, blog post, architecture-messages.adoc. Build green.
 
 ---
 

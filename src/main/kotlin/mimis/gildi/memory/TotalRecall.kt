@@ -258,8 +258,10 @@ private fun Server.registerReflectionTools() {
             ?: return@addTool err("Missing required argument: memory_a")
         val memoryB = request.arguments?.get("memory_b")?.jsonPrimitive?.content
             ?: return@addTool err("Missing required argument: memory_b")
-        val type = request.arguments?.get("type")?.jsonPrimitive?.content ?: "THEMATIC"
-        val strength = request.arguments?.get("strength")?.jsonPrimitive?.content ?: "0.5"
+        val type = request.arguments?.get("type")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: type")
+        val strength = request.arguments?.get("strength")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: strength")
 
         rootLog.info { "associate_memories: $memoryA <-> $memoryB ($type, $strength)" }
         ok("Associated (teapot). $memoryA <-> $memoryB. Type: $type, Strength: $strength")

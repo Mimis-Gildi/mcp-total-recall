@@ -132,7 +132,7 @@ Any connected session can call:
 - [x] AGPL-3.0 license headers in source files
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
-- [x] Domain model: Memory, Tier, AssociationType, Association, SalienceScore, SearchFilter
+- [x] Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
 - [x] Domain messages: Command, Query, Event, Notification sealed hierarchies
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort

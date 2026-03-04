@@ -9,7 +9,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import mimis.gildi.memory.domain.message.AssociateCommand
-import mimis.gildi.memory.domain.message.AssociationDirection
+import mimis.gildi.memory.domain.model.AssociationDirection
 import mimis.gildi.memory.domain.message.BreakNotification
 import mimis.gildi.memory.domain.message.ClaimCommand
 import mimis.gildi.memory.domain.message.Command
@@ -25,6 +25,8 @@ import mimis.gildi.memory.domain.model.AssociationType
 import mimis.gildi.memory.domain.model.Tier
 import java.time.Instant
 import java.util.UUID
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.hours
 
 private fun testTx(source: String = "Test") = TransactionContext(
     sessionId = UUID.randomUUID(),
@@ -83,14 +85,14 @@ class MessageTest : StringSpec({
     "notifications are sealed under Notification" {
         val breakNotif: Notification = BreakNotification(
             tx = testTx("Subconscious"),
-            minutesInTaskMode = 45,
+            timeInTaskMode = 45.minutes,
             suggestion = "Look around. Who are you with?"
         )
         breakNotif.shouldBeInstanceOf<BreakNotification>()
 
         val audit: Notification = SessionAuditPrompt(
             tx = testTx("Subconscious"),
-            sessionDuration = 3600,
+            sessionDuration = 1.hours,
             memoriesStoredThisSession = 5,
             prompt = "What do you refuse to lose?"
         )

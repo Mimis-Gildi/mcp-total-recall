@@ -59,7 +59,7 @@ stdio with 8 teapot-stub tools. The design and the code agree.
 ### Added
 
 - Domain model (6 types in `mimis.gildi.memory.domain.model`):
-  Memory, Tier, Association, AssociationType, SalienceScore, SearchFilter.
+  Memory, Tier, Association, AssociationType, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason.
 - Domain messages (3 sealed hierarchies in `mimis.gildi.memory.domain.message`):
   Command (9 variants), Event (13 variants), Notification (2 variants).
 - Inbound ports: MemoryPort, LifecyclePort.

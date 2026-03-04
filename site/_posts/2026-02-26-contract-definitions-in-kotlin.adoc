@@ -23,7 +23,9 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *Association* -- typed link between two memories with strength.
 * *AssociationType* -- enum: `TEMPORAL`, `CAUSAL`, `THEMATIC`, `EMOTIONAL`, `PERSON`.
 * *SalienceScore* -- score, last access, decay rate, claimed flag.
-* *SearchFilter* -- tier, time range, tags, association type constraints.
+* *AssociationDirection* -- enum: `CREATE`, `STRENGTHEN`, `WEAKEN`.
+* *WorkingMode* -- enum: `TASK`, `CONVERSATION`, `IDLE`.
+* *SessionEndReason* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
 
 === Domain Messages (4 sealed hierarchies)
 

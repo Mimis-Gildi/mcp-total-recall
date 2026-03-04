@@ -11,7 +11,6 @@ import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType
 import mimis.gildi.memory.domain.model.SalienceScore
 import mimis.gildi.memory.domain.model.Memory
-import mimis.gildi.memory.domain.model.SearchFilter
 import mimis.gildi.memory.domain.model.Tier
 import java.time.Instant
 import java.util.UUID
@@ -52,12 +51,6 @@ class ModelTest : StringSpec({
             strength = 0.8
         )
         assoc.bidirectional shouldBe true
-    }
-
-    "search filter defaults are permissive" {
-        val filter = SearchFilter()
-        filter.tier shouldBe null
-        filter.tags shouldBe emptySet()
     }
 
     "salience score carries decay info" {

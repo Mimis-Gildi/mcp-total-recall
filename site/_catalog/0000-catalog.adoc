@@ -155,8 +155,8 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Recall
 | Search and recall. Salience-weighted, association-activated.
-| `SearchFilter.kt`
-| Model defined
+| _(no dedicated source -- reads from Hippocampus, Salience, Synapse)_
+| CQRS read side
 
 | Cortex
 | Per-instance working state. Entry point for all requests.
