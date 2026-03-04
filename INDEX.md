@@ -128,10 +128,10 @@ Fix mismatches between ADRs, architecture pages, and design documents.
 - [ ] **D-Audit-1** BackingServicePort operation names -- DESIGN DECISION NEEDED. Port has adapter verbs (save, findById, search). Design A says ports are passive structures. Either redefine port as passive contract or document exception. Code change required.
 - [ ] **D-Audit-2** NotificationPort: architecture says notify/remind/alert, code has single send(). Align.
 - [ ] **D-Audit-3** RelayPort: architecture says send/receive/list_pending, code has single relay(). Align (Agora-dependent, lower priority).
-- [ ] **D-Audit-4** ADR-0006 event count: says 13, code has 15. Add ModeChanged and SessionState to ADR.
-- [ ] **D-Audit-5** ADR-0006 SearchQuery routing: says Hippocampus, should be Recall.
-- [ ] **D-Audit-6** ADR-0006 ReflectQuery routing: says Synapse, should be Recall.
-- [ ] **D-Audit-7** architecture-hexagonal.adoc: "five actors" should be six (Recall missing).
+- [x] **D-Audit-4** ~~ADR-0006 event count~~ FIXED: 13→16 (added ModeChanged, SessionState, TotalRecallAdvisory). Notifications 2→3 (added TotalRecallNotification).
+- [x] **D-Audit-5** ~~ADR-0006 SearchQuery routing~~ FIXED: Hippocampus → Recall.
+- [x] **D-Audit-6** ~~ADR-0006 ReflectQuery routing~~ FIXED: Synapse → Recall.
+- [x] **D-Audit-7** ~~"five actors"~~ FIXED: → "six actors" in architecture-hexagonal.adoc.
 - [ ] **D-Audit-8** architecture-contexts.adoc: Hippocampus command list missing ReclassifyCommand, TierPromoted, TierDemoted.
 - [ ] **D-Audit-9** "Governing Dynamic" section in all ADRs not defined in ADR-0001 template.
 - [ ] **D-Audit-10** SearchFilter type: ADR-0006 says SearchFilter, code uses Map<String, String>.
@@ -211,6 +211,13 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] MSG-0002 Total Recall trigger redesigned: Mind decides, not Recall. Recall assembles and returns -- it has no judgment. The mind evaluates results (prefrontal cortex in humans, forced prompt in LLMs) and signals through Cortex. Advisory event stays, but origin moves from Recall to Mind → Cortex. Added Important note: decision to recollect is mind-adapter-specific (humans: native prefrontal cortex or UI; LLMs: forced prompt, different per model). Core provides the port, adapter decides how.
 - [x] F-Audit-1 resolved: MemoryAccessedEvent fires on retrieval in MSG-0002.
 - [x] F-Audit-2 resolved: two-speed architecture is now two diagrams (MSG-0002 fast path, MSG-0007 deep path).
+- [x] MSG-0003 (Claim Memory) rewritten: follows MSG-0001 pattern exactly. activate/deactivate, OnInit, Event Store, par blocks, publish/consume verbs.
+- [x] MSG-0004 (Decay Sweep) rewritten: Subconscious-driven (no Mind). Timer-triggered. Salience publishes TierDemotedEvent per memory through MES. Hippocampus consumes and moves memories.
+- [x] MSG-0005 (Session Lifecycle) rewritten: two phases (connect/disconnect). SessionStart broadcasts to Subconscious AND distributes config to Salience. SessionAuditPrompt through NES → NotificationPort. Adapter-specific claiming note. F-Audit-3 resolved.
+- [x] MSG-0006 (Reflect/Dreaming) rewritten: unique conversation pattern. Query phase (Recall assembles candidates) then interactive loop (Mind issues AssociateCommand/ReclassifyCommand per memory). MemoryReclassifiedEvent broadcasts through MES.
+- [x] All 7 sequence diagrams complete (MSG-0001 through MSG-0007).
+- [x] Trivial impact fixes across codebase: TotalRecallAdvisory added to Event.kt, TotalRecallNotification added to Notification.kt, ADR-0006 query routing fixed (Recall not Hippocampus/Synapse), event count 13→16, notification count 2→3, "five actors"→"six actors" in hexagonal page, messages page Total Recall section corrected (Mind decides via Cortex not Recall), Salience TierDemoted/TierPromoted clarified (via MES), Recall design doc updated with Reflect conversation pattern, ADR-0005 MemoryRetrieved flagged as classification under review (F-Audit-6). Build verified green.
+- [x] Data flow diagrams decided: NOT NEEDED. Sequence diagrams carry all data flow information.
 
 ---
 
@@ -283,13 +290,13 @@ MemoryAccessedEvent now fires on retrieval in MSG-0002. Feeds Salience decay mod
 
 Two-speed architecture is now two diagrams: MSG-0002 (fast path) and MSG-0007 (deep path / Total Recall).
 
-### F-Audit-3. MSG-0005 missing SessionStart broadcast (HIGH)
+### F-Audit-3. ~~MSG-0005 missing SessionStart broadcast~~ RESOLVED
 
-Design E5 (Cortex) says "Cortex broadcasts SessionStart to all contexts." The diagram only shows Cortex → Hippocampus. Missing: Subconscious needs SessionStart to begin tracking session duration. Cortex needs to read IDENTITY_CORE config and distribute thresholds to Salience.
+SessionStart now broadcasts to Subconscious and distributes config to Salience in MSG-0005.
 
-### F-Audit-4. MSG-0006 missing async deep-path (MEDIUM)
+### F-Audit-4. ~~MSG-0006 missing async deep-path~~ RESOLVED (NOT APPLICABLE)
 
-Reflect diagram doesn't show that deeper association traversals continue in background through NotificationPort, same pattern as search.
+Reflect is mind-initiated and mind-driven. The mind is present reviewing memories. No async deep-path needed -- that pattern applies to search (MSG-0007) where the mind has moved on.
 
 ### F-Audit-5. Transaction context absent from all messages (CRITICAL)
 
@@ -421,12 +428,12 @@ Line 90: `cmd.memoryIds.first shouldBe cmd.memoryIds.first` -- tests nothing. Sh
 
 ## What's NOT Decided
 
-| Question                     | Status                                                                                                                         |
-|------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| Container image approach     | NOT STARTED                                                                                                                    |
-| CI/CD build workflow         | NOT STARTED                                                                                                                    |
-| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only                                                   |
-| BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                              |
-| TransactionContext shape     | IDENTIFIED -- sessionId, requestId, stepId, sequenceId, timestamps minimum. Needs design doc.                                  |
-| Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext. |
+| Question                     | Status                                                                                                                                                                                                         |
+|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Container image approach     | NOT STARTED                                                                                                                                                                                                    |
+| CI/CD build workflow         | NOT STARTED                                                                                                                                                                                                    |
+| Who owns Association storage | RESOLVED -- Synapse is a dependent aggregate with own storage, internal only                                                                                                                                   |
+| BackingServicePort design    | UNDER DISCUSSION -- depends on TransactionContext design (step 3)                                                                                                                                              |
+| TransactionContext shape     | IDENTIFIED -- sessionId, requestId, stepId, sequenceId, timestamps minimum. Needs design doc.                                                                                                                  |
+| Message identity crisis      | IDENTIFIED -- MemoryRetrieved/SalienceScored/AssociationsFound: events or response payloads? Resolves with TransactionContext.                                                                                 |
 | Data flow diagrams           | DECIDED -- Not needed. Sequence diagrams (MSG-0001 through MSG-0007) now carry all data flow information: producers, consumers, payloads, ordering, branching. Separate data flow diagrams would be redundant. |
