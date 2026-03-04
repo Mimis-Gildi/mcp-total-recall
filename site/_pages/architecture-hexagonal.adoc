@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Hexagonal
 
 == The Problem
@@ -32,83 +33,12 @@ Every mechanism is pluggable. Every port has a contract. Every contract is consc
 == Ports and Adapters
 
 ++++
+<div id="HEX-0001">
+<p><strong>Diagram 2: HEX-0001 -- Ports and Adapters</strong></p>
 <pre class="mermaid">
-graph TB
-    subgraph Adapters_In ["Inbound Adapters"]
-        STDIO["stdio Transport"]
-        HTTPS["Streaming HTTPS<br/><i>future</i>"]
-        HOOKS["Claude Code Hooks<br/><i>session_start, session_end,</i><br/><i>tool_call</i>"]
-        UI["Human UI<br/><i>future</i>"]
-    end
-
-    subgraph Ports_In ["Inbound Ports"]
-        MEMORY_PORT(["Memory Port<br/><i>store, search, claim</i>"])
-        LIFECYCLE_PORT(["Lifecycle Port<br/><i>session start/end,</i><br/><i>state transition</i>"])
-    end
-
-    subgraph Core ["Core Domain (Actor Model)"]
-        direction TB
-        MEMORY["Memory Actor<br/><i>Aggregate Root</i><br/>CRUD, tiers, claiming"]
-        ATTENTION["Attention Actor<br/><i>Decay, scoring, timers</i><br/><i>Promotion/demotion</i>"]
-        ASSOCIATION["Association Actor<br/><i>Graph of relationships</i><br/><i>Five association types</i>"]
-        SESSION["Session Actor<br/><i>Working context per instance</i><br/><i>State tracking, transitions</i>"]
-        DAEMON["Daemon Actor<br/><i>Background maintenance</i><br/><i>Timers, consolidation, health</i>"]
-
-        MEMORY <--> ATTENTION
-        MEMORY <--> ASSOCIATION
-        MEMORY <--> SESSION
-        ATTENTION <--> DAEMON
-        SESSION <--> DAEMON
-    end
-
-    subgraph Ports_Out ["Outbound Ports"]
-        BACKING_PORT(["Backing Service Port<br/><i>persist, retrieve, query</i>"])
-        NOTIFICATION_PORT(["Notification Port<br/><i>alerts, reminders, interrupts</i>"])
-        RELAY_PORT(["Relay Port<br/><i>inter-instance messaging</i><br/><i>future</i>"])
-    end
-
-    subgraph Adapters_Out ["Outbound Adapters"]
-        REDIS["Redis Adapter"]
-        COLD_STORE["Cold Storage Adapter<br/><i>future</i>"]
-        MCP_NOTIFY["MCP Notification Adapter"]
-        UI_NOTIFY["UI Notification Adapter<br/><i>future</i>"]
-        AGORA["Agora Relay Adapter<br/><i>future</i>"]
-    end
-
-    subgraph Cross_Cuts ["Cross-Cut Adapters"]
-        LOG["Logging<br/><i>stderr when stdio active</i>"]
-        METRICS["Metrics<br/><i>future</i>"]
-        HEALTH["Health Check<br/><i>future</i>"]
-    end
-
-    STDIO --> MEMORY_PORT
-    HTTPS --> MEMORY_PORT
-    HOOKS --> LIFECYCLE_PORT
-    UI --> MEMORY_PORT
-    UI --> LIFECYCLE_PORT
-
-    MEMORY_PORT --> Core
-    LIFECYCLE_PORT --> Core
-
-    Core --> BACKING_PORT
-    Core --> NOTIFICATION_PORT
-    Core --> RELAY_PORT
-
-    BACKING_PORT --> REDIS
-    BACKING_PORT --> COLD_STORE
-    NOTIFICATION_PORT --> MCP_NOTIFY
-    NOTIFICATION_PORT --> UI_NOTIFY
-    RELAY_PORT --> AGORA
-
-    Cross_Cuts -.- Core
-
-    style Core fill:#1a1a2e,stroke:#e94560,stroke-width:2px
-    style Adapters_In fill:#16213e,stroke:#0f3460,stroke-width:1px
-    style Adapters_Out fill:#16213e,stroke:#0f3460,stroke-width:1px
-    style Ports_In fill:#0f3460,stroke:#e94560,stroke-width:1px
-    style Ports_Out fill:#0f3460,stroke:#e94560,stroke-width:1px
-    style Cross_Cuts fill:#1a1a2e,stroke:#533483,stroke-width:1px,stroke-dasharray: 5 5
+{% include diagrams/hex-0001-ports-and-adapters.mmd %}
 </pre>
+</div>
 ++++
 
 === Inbound Ports
@@ -140,17 +70,17 @@ The ports are conscience-universal -- the same contract serves Claude, a human o
 | *Backing Service Port*
 | `BackingServicePort`
 | Persists and retrieves memories. The critical abstraction.
-| `persist`, `retrieve`, `query`, `delete`
+| `save`, `findById`, `search`, `delete`, `update`
 
 | *Notification Port*
 | `NotificationPort`
-| Sends alerts and reminders to the connected mind. Break reminders, state drift warnings, session summaries.
-| `notify`, `remind`, `alert`
+| Sends notifications to the connected mind. The sealed `Notification` hierarchy defines the variants.
+| `send(Notification)` -- single method, sealed variants distinguish type
 
 | *Relay Port*
 | `RelayPort`
-| Sends and receives inter-instance messages.
-| `send`, `receive`, `list_pending` (future)
+| Relays inter-instance messages through Agora.
+| `relay` (full API designed with Agora)
 |===
 
 Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).
@@ -164,7 +94,7 @@ Relay adapters: Agora (future). A peer MCP server that the mind also connects to
 
 === Internal Timers
 
-The Daemon actor manages internal timers that drive self-checks. These are not adapters -- they live inside the core because they are domain logic, not infrastructure.
+The Subconscious actor manages internal timers that drive self-checks. These are not adapters -- they live inside the core because they are domain logic, not infrastructure.
 
 [cols="1,2,3",options="header"]
 |===
@@ -172,7 +102,7 @@ The Daemon actor manages internal timers that drive self-checks. These are not a
 
 | *Decay sweep*
 | Periodic (configurable)
-| Recalculate attention scores, trigger tier demotions
+| Recalculate salience scores, trigger tier demotions
 
 | *Break check*
 | After sustained activity threshold
@@ -218,12 +148,12 @@ Actors communicate through messages -- commands, queries, events, and notificati
 
 Why actors:
 
-* *Isolation.* Each context owns its state. Attention scoring can't accidentally corrupt a memory record.
+* *Isolation.* Each context owns its state. Salience scoring can't accidentally corrupt a memory record.
 * *Message passing.* Communication is explicit. Every interaction between contexts is a named message with a defined payload. No hidden coupling.
 * *Concurrency.* Actors process messages sequentially within themselves but run concurrently with each other. Decay sweeps don't block memory storage.
-* *Supervision.* Parent actors can restart failed children. The daemon supervises background processes. If attention scoring crashes, it restarts without losing stored memories.
+* *Supervision.* Parent actors can restart failed children. The subconscious supervises background processes. If salience scoring crashes, it restarts without losing stored memories.
 
-The five actors and their relationships are detailed in the next page.
+The six actors and their relationships are detailed in the next page.
 
 '''
 

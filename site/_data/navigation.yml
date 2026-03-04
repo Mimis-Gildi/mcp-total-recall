@@ -35,3 +35,33 @@ architecture:
         url: /decisions/0006-events-and-commands-as-message-types/
       - title: "ADR-0007: Bio Memory"
         url: /decisions/0007-biological-memory-as-reference-model/
+  - title: "Design"
+    children:
+      - title: "About Detailed Design"
+        url: /design/0000-about-detailed-design/
+      - title: "A: What is a Port?"
+        url: /design/0001-what-is-a-port/
+      - title: "B: What is an Adapter?"
+        url: /design/0002-what-is-an-adapter/
+      - title: "C: What is an ACL?"
+        url: /design/0003-what-is-an-acl/
+      - title: "D: Hexagon Sides"
+        url: /design/0004-hexagon-sides/
+      - title: "E1: Hippocampus (Vault)"
+        url: /design/0005-tiered-memory/
+      - title: "E2: Salience (Focus)"
+        url: /design/0006-salience/
+      - title: "E3: Synapse (Matrix)"
+        url: /design/0007-association-graph/
+      - title: "E4: Recall (Stream)"
+        url: /design/0008-recall/
+      - title: "E5: Cortex (Inception)"
+        url: /design/0009-cortex/
+      - title: "E6: Subconscious (Dream)"
+        url: /design/0010-subconscious/
+      - title: "F: TransactionContext"
+        url: /design/0011-transaction-context/
+  - title: "Catalog"
+    children:
+      - title: "Traceability Matrix"
+        url: /catalog/0000-catalog/

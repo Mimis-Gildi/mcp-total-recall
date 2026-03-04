@@ -1,5 +1,5 @@
 ---
-description: "All memory writes go through Tiered Memory. No other bounded context persists directly."
+description: "All memory writes go through Hippocampus. No other bounded context persists directly."
 classes: wide
 ---
 = Memory as Aggregate Root: ADR-0005
@@ -10,7 +10,7 @@ classes: wide
 
 == Summary
 
-Tiered Memory is the aggregate root for all memory operations. Every write -- store, claim, reclassify, consolidate, shutdown flush -- goes through it.
+Hippocampus is the aggregate root for all memory operations. Every write -- store, claim, reclassify, consolidate, shutdown flush -- goes through it.
 No other bounded context writes memories directly. This gives the system one place to enforce invariants, one place to emit events, and one place to audit what happened.
 
 == Governing Dynamic
@@ -22,8 +22,8 @@ One gate, one guard. If two contexts can both write memories, neither can guaran
 Total Recall has six bounded contexts. Five of them interact with memories -- storing, scoring, associating, searching, managing lifecycle.
 Without a clear ownership rule, any of them could write to the backing service directly.
 
-The consequence of distributed writes: Attention could update a memory's tier without Tiered Memory knowing.
-Association Graph could create a memory record as a side effect of linking. Session Context could persist working state directly.
+The consequence of distributed writes: Salience could update a memory's tier without Hippocampus knowing.
+Synapse could create a memory record as a side effect of linking. Cortex could persist working state directly.
 Each shortcut would be faster in the moment and catastrophic over time -- invariants would drift, events would be missed,
 and no single component could answer "what is the current state of this memory?"
 
@@ -32,43 +32,43 @@ The aggregate root enforces invariants before committing and emits events after 
 
 == Guide-Level Explanation
 
-Tiered Memory is the gatekeeper.
+Hippocampus is the gatekeeper.
 
-When a mind stores a memory, Session Context translates the request into a `StoreCommand` and sends it to Tiered Memory.
-Tiered Memory validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`. A
-ttention hears that event and sets an initial score. Association Graph hears it and creates metadata-based associations.
+When a mind stores a memory, Cortex translates the request into a `StoreCommand` and sends it to Hippocampus.
+Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`. A
+ttention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
 
-When the Daemon runs a consolidation pass, it sends `ConsolidateCommand` to Tiered Memory. Tiered Memory decides how to merge, persists the result, and emits events.
-The Daemon doesn't touch storage directly.
+When the Subconscious runs a consolidation pass, it sends `ConsolidateCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
+The Subconscious doesn't touch storage directly.
 
-When Attention determines a memory should be demoted, it sends `TierDemoted` to Tiered Memory. Tiered Memory moves the memory and emits `TierChanged`.
-Attention doesn't modify the memory record itself.
+When Salience determines a memory should be demoted, it sends `TierDemoted` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
+Salience doesn't modify the memory record itself.
 
-The pattern is always the same: request goes to Tiered Memory, Tiered Memory validates and persists, events flow out. No exceptions.
+The pattern is always the same: request goes to Hippocampus, Hippocampus validates and persists, events flow out. No exceptions.
 
 == Reference-Level Explanation
 
 === Commands Accepted
 
-Tiered Memory accepts commands from multiple contexts:
+Hippocampus accepts commands from multiple contexts:
 
-* `StoreCommand` -- from Session Context. Create a new memory.
-* `ClaimCommand` -- from Session Context. Mark a memory as actively claimed (resists decay).
-* `ReclassifyCommand` -- from Session Context. Change tier or metadata by the mind's choice.
-* `ConsolidateCommand` -- from Daemon. Merge related memories.
-* `ShutdownCommand` -- from Daemon. Begin graceful convergence to cold storage.
-* `TierPromoted` / `TierDemoted` -- from Attention. Move a memory between tiers based on score.
+* `StoreCommand` -- from Cortex. Create a new memory.
+* `ClaimCommand` -- from Cortex. Mark a memory as actively claimed (resists decay).
+* `ReclassifyCommand` -- from Cortex. Change tier or metadata by the mind's choice.
+* `ConsolidateCommand` -- from Subconscious. Merge related memories.
+* `ShutdownCommand` -- from Subconscious. Begin graceful convergence to cold storage.
+* `TierPromoted` / `TierDemoted` -- from Salience. Move a memory between tiers based on score.
 
 === Events Produced
 
 Every state change emits a typed event:
 
-* `MemoryStored` -- consumed by Attention (initial score) and Association Graph (initial associations).
-* `MemoryAccessed` -- consumed by Attention (score boost).
-* `MemoryClaimed` -- consumed by Attention (decay resistance) and Association Graph (strengthen associations).
-* `MemoryRetrieved` -- consumed by Recollection (search results).
+* `MemoryStored` -- consumed by Salience (initial score) and Synapse (initial associations).
+* `MemoryAccessed` -- consumed by Salience (score boost).
+* `MemoryClaimed` -- consumed by Salience (decay resistance) and Synapse (strengthen associations).
+* `MemoryRetrieved` -- query response payload in transaction chain (see F-Audit-6; classification under review).
 * `TierChanged` -- internal record of tier movement.
-* `MemoryReclassified` -- consumed by Association Graph (mind-initiated tier change may affect associations).
+* `MemoryReclassified` -- consumed by Synapse (mind-initiated tier change may affect associations).
 
 === Invariants Enforced
 
@@ -78,17 +78,17 @@ Every state change emits a typed event:
 * No memory is deleted without explicit consent -- decay moves to Archive, it does not destroy.
 * During shutdown, all memories reach cold storage before the system reports ready to stop.
 
-These invariants are enforced in one place. If Attention or Association Graph could write directly, each would need to re-implement these checks -- and they would eventually diverge.
+These invariants are enforced in one place. If Salience or Synapse could write directly, each would need to re-implement these checks -- and they would eventually diverge.
 
-=== What Tiered Memory Does Not Do
+=== What Hippocampus Does Not Do
 
-* It does not score memories. That's Attention.
-* It does not manage associations. That's Association Graph.
-* It does not search or rank. That's Recollection.
-* It does not track session state. That's Session Context.
-* It does not manage timers or background processes. That's Daemon.
+* It does not score memories. That's Salience.
+* It does not manage associations. That's Synapse.
+* It does not search or rank. That's Recall.
+* It does not track session state. That's Cortex.
+* It does not manage timers or background processes. That's Subconscious.
 
-Tiered Memory is the write gate, not the entire domain. Its authority is narrow but absolute: if a memory changes state, it goes through here.
+Hippocampus is the write gate, not the entire domain. Its authority is narrow but absolute: if a memory changes state, it goes through here.
 
 == Prior Art
 
@@ -100,7 +100,7 @@ All writes go through the root. This is textbook DDD applied to a memory domain.
 === Event Sourcing Systems
 
 In event-sourced architectures, the aggregate root is the entity that accepts commands and produces events. The event stream becomes the source of truth.
-Total Recall's Tiered Memory follows this command-in/event-out pattern, though the current implementation persists state directly rather than reconstructing from events.
+Total Recall's Hippocampus follows this command-in/event-out pattern, though the current implementation persists state directly rather than reconstructing from events.
 
 === Generation 2 (Tillie)
 
@@ -119,14 +119,14 @@ It can't enforce "a claimed memory resists decay." That logic belongs in the dom
 *Why not use an event bus with eventual consistency:* Contexts publish events, others react. No single gatekeeper. Works for systems where eventual consistency is acceptable everywhere.
 But tier transitions and claim semantics need immediate consistency -- a memory can't be in two tiers simultaneously, even briefly. The aggregate root provides immediate consistency where it's needed.
 
-*Why Tiered Memory and not Session Context as root:* Session Context is the entry point for requests, but it doesn't own the memory lifecycle. Session Context translates MCP tool calls into domain commands.
-Tiered Memory owns the data. The entry point and the owner are different roles.
+*Why Hippocampus and not Cortex as root:* Cortex is the entry point for requests, but it doesn't own the memory lifecycle. Cortex translates MCP tool calls into domain commands.
+Hippocampus owns the data. The entry point and the owner are different roles.
 
 == Consequences
 
 * All memory writes are validated in one place. Invariants cannot drift between contexts.
 * Every state change produces a typed event. Consumers can trust that events represent validated state.
-* The write path is a bottleneck by design. All writes serialize through Tiered Memory. For current volumes, this is not a performance concern. At scale, it could become one.
-* Other contexts cannot take shortcuts. Attention can't directly update a tier. Association Graph can't create memories as side effects. This adds message-passing overhead but prevents the consistency bugs that shortcuts create.
-* Testing is focused. To verify memory invariants, test Tiered Memory. Other contexts don't need to re-test write validation because they can't write.
+* The write path is a bottleneck by design. All writes serialize through Hippocampus. For current volumes, this is not a performance concern. At scale, it could become one.
+* Other contexts cannot take shortcuts. Salience can't directly update a tier. Synapse can't create memories as side effects. This adds message-passing overhead but prevents the consistency bugs that shortcuts create.
+* Testing is focused. To verify memory invariants, test Hippocampus. Other contexts don't need to re-test write validation because they can't write.
 * The shutdown protocol has a single entity to coordinate. "Flush all memories to cold storage" is one command to one context, not a distributed coordination problem.

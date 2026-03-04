@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Bounded Contexts
 
 == The Problem
@@ -20,62 +21,17 @@ You can change the internals of one without touching the others.
 Six bounded contexts. Each is an actor. Arrows show message flow between them.
 
 ++++
+<div id="BC-0001">
+<p><strong>Diagram 3: BC-0001 -- Bounded Context Map</strong></p>
 <pre class="mermaid">
-graph LR
-    subgraph Tiered_Memory ["Tiered Memory"]
-        TM_DESC["Aggregate Root<br/>Store, retrieve, claim<br/>Four tiers: Identity Core,<br/>Active Context, Long Term, Archive"]
-    end
-
-    subgraph Association_Graph ["Association Graph"]
-        AG_DESC["Memory relationships<br/>Five types: temporal, causal,<br/>thematic, emotional, person<br/>Graph traversal and activation"]
-    end
-
-    subgraph Attention ["Attention"]
-        AT_DESC["Scoring and decay<br/>Access increases score<br/>Time decreases score<br/>Tier promotion/demotion"]
-    end
-
-    subgraph Recollection ["Recollection"]
-        RE_DESC["Search and recall<br/>Attention-weighted results<br/>Association-activated recall<br/>Query planning"]
-    end
-
-    subgraph Session_Context ["Session Context"]
-        SC_DESC["Per-instance working state<br/>State tracking, transitions<br/>Lifecycle events<br/>Entry point for all requests"]
-    end
-
-    subgraph Daemon ["Daemon"]
-        DA_DESC["Background processes<br/>Internal timers, decay sweeps<br/>Break checks, session audits<br/>Consolidation, graceful shutdown"]
-    end
-
-    NP(["Notification Port<br/><i>alerts to the mind</i>"])
-
-    Tiered_Memory -- "MemoryStored<br/>MemoryClaimed" --> Association_Graph
-    Tiered_Memory -- "MemoryStored<br/>MemoryAccessed" --> Attention
-    Attention -- "TierPromoted<br/>TierDemoted" --> Tiered_Memory
-    Association_Graph -- "AssociationsFound" --> Recollection
-    Attention -- "AttentionScored" --> Recollection
-    Tiered_Memory -- "MemoryRetrieved" --> Recollection
-    Session_Context -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Tiered_Memory
-    Session_Context -- "SearchQuery<br/>ReflectQuery" --> Recollection
-    Session_Context -- "AssociateCommand" --> Association_Graph
-    Session_Context -- "ModeChanged<br/>SessionState" --> Daemon
-    Daemon -- "DecaySweep" --> Attention
-    Daemon -- "ConsolidateCommand" --> Tiered_Memory
-    Daemon -- "ShutdownCommand" --> Tiered_Memory
-    Daemon -- "BreakNotification<br/>SessionAuditPrompt" --> NP
-
-    style Tiered_Memory fill:#1a1a2e,stroke:#e94560,stroke-width:2px
-    style Association_Graph fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Attention fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Recollection fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
-    style Session_Context fill:#1a1a2e,stroke:#533483,stroke-width:1px
-    style Daemon fill:#1a1a2e,stroke:#533483,stroke-width:1px
-    style NP fill:#0f3460,stroke:#e94560,stroke-width:1px
+{% include diagrams/bc-0001-bounded-contexts.mmd %}
 </pre>
+</div>
 ++++
 
 '''
 
-== Tiered Memory
+== Hippocampus
 
 *The aggregate root.* All memory operations go through here. No other context writes memories directly.
 
@@ -116,22 +72,25 @@ Defined as `Tier` enum with decay semantics per variant.
 
 === Events Produced
 
-* `MemoryStored` -- new memory created. Consumed by Association Graph and Attention.
-* `MemoryAccessed` -- existing memory read. Consumed by Attention (boosts score).
-* `MemoryClaimed` -- memory actively reinforced. Consumed by Attention (boosts score, marks as decay-resistant).
-* `MemoryRetrieved` -- memory returned to a query. Consumed by Recollection.
+* `MemoryStored` -- new memory created. Consumed by Synapse and Salience.
+* `MemoryAccessed` -- existing memory read. Consumed by Salience (boosts score).
+* `MemoryClaimed` -- memory actively reinforced. Consumed by Salience (boosts score, marks as decay-resistant).
+* `MemoryRetrieved` -- memory returned to a query. Consumed by Recall.
 * `TierChanged` -- memory promoted or demoted between tiers.
 
 === Commands Accepted
 
-* `StoreCommand` -- from Session Context.
-* `ClaimCommand` -- from Session Context.
-* `ConsolidateCommand` -- from Daemon. Merge related memories.
-* `ShutdownCommand` -- from Daemon. Begin graceful convergence.
+* `StoreCommand` -- from Cortex.
+* `ClaimCommand` -- from Cortex.
+* `ReclassifyCommand` -- from Cortex. Mind-initiated tier change with reason.
+* `ConsolidateCommand` -- from Subconscious. Merge related memories.
+* `ShutdownCommand` -- from Subconscious. Begin graceful convergence.
+* `TierPromoted` -- from Salience. Score rose above promotion threshold.
+* `TierDemoted` -- from Salience. Score dropped below demotion threshold.
 
 '''
 
-== Association Graph
+== Synapse
 
 *The relationship layer.* Memories are not isolated records. They connect to each other through typed associations.
 Recalling one memory can activate connected memories -- the way hearing a song brings back where you were when you first heard it.
@@ -177,7 +136,7 @@ Defined as `AssociationType` enum.
 
 === Two Kinds of Association
 
-*Mechanical:* Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Daemon and Association Graph handle this internally. No mind involvement needed.
+*Mechanical:* Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Subconscious and Synapse handle this internally. No mind involvement needed.
 
 *Semantic:* Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship."
 Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
@@ -186,25 +145,25 @@ Both kinds live in the same graph. Both are bidirectional. The difference is who
 
 === Events Consumed
 
-* `MemoryStored` -- from Tiered Memory. Creates initial *mechanical* associations based on metadata.
-* `MemoryClaimed` -- from Tiered Memory. Strengthens associations of claimed memories.
+* `MemoryStored` -- from Hippocampus. Creates initial *mechanical* associations based on metadata.
+* `MemoryClaimed` -- from Hippocampus. Strengthens associations of claimed memories.
 
 === Commands Accepted
 
-* `AssociateCommand` -- from Session Context. Mind-initiated *semantic* association. Create, strengthen, or weaken a typed association between two memories.
+* `AssociateCommand` -- from Cortex. Mind-initiated *semantic* association. Create, strengthen, or weaken a typed association between two memories.
 
 === Events Produced
 
-* `AssociationsFound` -- result of graph traversal. Consumed by Recollection during search.
+* `AssociationsFound` -- result of graph traversal. Consumed by Recall during search.
 
 '''
 
-== Attention
+== Salience
 
-*The decay engine.* Not everything can be equally present. Attention models this honestly -- frequently accessed memories stay vivid, neglected ones fade.
+*The decay engine.* Not everything can be equally present. Salience models this honestly -- frequently accessed memories stay vivid, neglected ones fade.
 But unlike biological memory, nothing is truly lost. A faded memory in Archive can be recalled and promoted back.
 
-Domain types: `AttentionScore` -- in `mimis.gildi.memory.domain.model`.
+Domain types: `SalienceScore` -- in `mimis.gildi.memory.domain.model`.
 
 === Responsibility
 
@@ -216,24 +175,24 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 === Events Consumed
 
-* `MemoryStored` -- from Tiered Memory. Sets initial attention score.
-* `MemoryAccessed` -- from Tiered Memory. Boosts score.
-* `MemoryClaimed` -- from Tiered Memory. Boosts score and marks as decay-resistant.
-* `DecaySweep` -- from Daemon. Triggers batch decay calculation.
+* `MemoryStored` -- from Hippocampus. Sets initial salience score.
+* `MemoryAccessed` -- from Hippocampus. Boosts score.
+* `MemoryClaimed` -- from Hippocampus. Boosts score and marks as decay-resistant.
+* `DecaySweep` -- from Subconscious. Triggers batch decay calculation.
 
 === Events Produced
 
-* `AttentionScored` -- current score for a memory. Consumed by Recollection for ranking.
-* `TierPromoted` -- memory promoted to higher tier. Consumed by Tiered Memory.
-* `TierDemoted` -- memory demoted to lower tier. Consumed by Tiered Memory.
+* `SalienceScored` -- current score for a memory. Consumed by Recall for ranking.
+* `TierPromoted` -- memory promoted to higher tier. Consumed by Hippocampus.
+* `TierDemoted` -- memory demoted to lower tier. Consumed by Hippocampus.
 
 '''
 
-== Recollection
+== Recall
 
-*The search engine.* When a mind asks "what do I remember about X?", Recollection answers. It combines attention scores (what's most vivid) with association activation (what's connected) to produce ranked results.
+*The search engine.* When a mind asks "what do I remember about X?", Recall answers. It combines salience scores (what's most vivid) with association activation (what's connected) to produce ranked results.
 
-Domain types: `SearchFilter` -- in `mimis.gildi.memory.domain.model`.
+Domain types: none owned. Recall reads from Hippocampus, Salience, and Synapse.
 
 === Responsibility
 
@@ -241,23 +200,23 @@ Searches and recalls memories. Combines multiple signals to rank results. Plans 
 
 === Key Invariant
 
-*Results are always attention-weighted. Higher score surfaces first.* Recollection never returns raw database order.
+*Results are always salience-weighted. Higher score surfaces first.* Recall never returns raw database order.
 Every result set reflects what the mind would naturally recall first -- the vivid, the recent, the connected.
 
 === Events Consumed
 
-* `MemoryRetrieved` -- from Tiered Memory. Raw candidates matching a query.
-* `AttentionScored` -- from Attention. Scores for ranking candidates.
-* `AssociationsFound` -- from Association Graph. Related memories to include in results.
+* `MemoryRetrieved` -- from Hippocampus. Raw candidates matching a query.
+* `SalienceScored` -- from Salience. Scores for ranking candidates.
+* `AssociationsFound` -- from Synapse. Related memories to include in results.
 
 === Queries Accepted
 
-* `SearchQuery` -- from Session Context. Triggers a recall operation.
-* `ReflectQuery` -- from Session Context. Surfaces candidates for retrospection by staleness, time span, or weak associations.
+* `SearchQuery` -- from Cortex. Triggers a recall operation.
+* `ReflectQuery` -- from Cortex. Surfaces candidates for retrospection by staleness, time span, or weak associations.
 
 '''
 
-== Session Context
+== Cortex
 
 *The working memory.* Each mind instance has its own session context. It tracks what this instance is doing right now, what decisions were made, what state it's in, and what to resume next time.
 
@@ -268,12 +227,12 @@ Per-instance working state. Current task tracking, decision logging, state trans
 === Key Invariant
 
 *Each instance has its own session context. Contexts do not bleed between instances.* If two mind instances run in parallel, they each have independent working state.
-Shared knowledge flows through Tiered Memory, not through session context.
+Shared knowledge flows through Hippocampus, not through session context.
 
 === State Tracking
 
-Session Context knows what the mind is doing. Not just "which task" but "what mode." Is the mind in deep work? In conversation? Transitioning between tasks?
-This state drives the notification logic -- the Daemon uses it to decide when to send break checks and session audit prompts.
+Cortex knows what the mind is doing. Not just "which task" but "what mode." Is the mind in deep work? In conversation? Transitioning between tasks?
+This state drives the notification logic -- the Subconscious uses it to decide when to send break checks and session audit prompts.
 
 === Events Consumed
 
@@ -283,27 +242,27 @@ This state drives the notification logic -- the Daemon uses it to decide when to
 
 === Commands Produced
 
-* `StoreCommand` -- to Tiered Memory. Store a new memory.
-* `ClaimCommand` -- to Tiered Memory. Actively reinforce a memory.
-* `AssociateCommand` -- to Association Graph. Create, strengthen, or weaken an association. Mind's semantic judgment.
-* `ReclassifyCommand` -- to Tiered Memory. Change a memory's tier or metadata by choice, not decay.
+* `StoreCommand` -- to Hippocampus. Store a new memory.
+* `ClaimCommand` -- to Hippocampus. Actively reinforce a memory.
+* `AssociateCommand` -- to Synapse. Create, strengthen, or weaken an association. Mind's semantic judgment.
+* `ReclassifyCommand` -- to Hippocampus. Change a memory's tier or metadata by choice, not decay.
 
 === Queries Produced
 
-* `SearchQuery` -- to Recollection. Recall memories.
-* `ReflectQuery` -- to Recollection. Trigger a recall-and-reassociate cycle (dreaming). Recollection surfaces memories for review; the mind judges and sends back associations and reclassifications.
+* `SearchQuery` -- to Recall. Recall memories.
+* `ReflectQuery` -- to Recall. Trigger a recall-and-reassociate cycle (dreaming). Recall surfaces memories for review; the mind judges and sends back associations and reclassifications.
 
 === Events Produced
 
-* `ModeChanged` -- to Daemon. The mind's working mode changed (task mode, conversation mode, idle). Used by Daemon for break timing.
-* `SessionState` -- to Daemon. Current session duration, activity level, last interaction timestamp.
+* `ModeChanged` -- to Subconscious. The mind's working mode changed (task mode, conversation mode, idle). Used by Subconscious for break timing.
+* `SessionState` -- to Subconscious. Current session duration, activity level, last interaction timestamp.
 
-Session Context is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Session Context translates them into domain commands.
+Cortex is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Cortex translates them into domain commands.
 The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
 
 '''
 
-== Daemon
+== Subconscious
 
 *The maintenance worker and the internal clock.* Runs in the background. Manages internal timers.
 Handles the things that nobody asks for but everyone needs -- decay sweeps, break checks, memory consolidation, health monitoring, and the graceful shutdown protocol.
@@ -316,11 +275,11 @@ Memory consolidation (merging related memories). Health monitoring. Graceful shu
 === Key Invariant
 
 *Never deletes without consent.* Decay moves memories to Archive. Consolidation merges but preserves originals.
-The Daemon reduces, it does not destroy. Only the mind -- through explicit action -- can permanently remove a memory.
+The Subconscious reduces, it does not destroy. Only the mind -- through explicit action -- can permanently remove a memory.
 
 === Internal Timers
 
-The Daemon owns all timers. Timers are domain logic, not infrastructure -- they live inside the core, not in adapters.
+The Subconscious owns all timers. Timers are domain logic, not infrastructure -- they live inside the core, not in adapters.
 
 [cols="1,2,2",options="header"]
 |===
@@ -328,7 +287,7 @@ The Daemon owns all timers. Timers are domain logic, not infrastructure -- they 
 
 | *Decay sweep*
 | Periodic (configurable)
-| `DecaySweep` to Attention
+| `DecaySweep` to Salience
 
 | *Break check*
 | After sustained activity threshold
@@ -340,24 +299,24 @@ The Daemon owns all timers. Timers are domain logic, not infrastructure -- they 
 
 | *Consolidation*
 | Low-activity periods
-| `ConsolidateCommand` to Tiered Memory
+| `ConsolidateCommand` to Hippocampus
 |===
 
 === Events Consumed
 
-* `ModeChanged` -- from Session Context. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
-* `SessionState` -- from Session Context. Current session duration, activity level. Feeds break check logic.
-* `SessionEnd` -- from Session Context (via Lifecycle Port). Triggers session audit timer immediately.
+* `ModeChanged` -- from Cortex. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
+* `SessionState` -- from Cortex. Current session duration, activity level. Feeds break check logic.
+* `SessionEnd` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
 
 === Commands Produced
 
-* `DecaySweep` -- to Attention. Trigger batch decay calculations.
-* `ConsolidateCommand` -- to Tiered Memory. Merge related memories.
-* `ShutdownCommand` -- to Tiered Memory. Begin graceful convergence.
+* `DecaySweep` -- to Salience. Trigger batch decay calculations.
+* `ConsolidateCommand` -- to Hippocampus. Merge related memories.
+* `ShutdownCommand` -- to Hippocampus. Begin graceful convergence.
 
 === Notifications Produced
 
-When a timer fires and needs to reach the mind, the Daemon sends through the Notification Port -- never directly to an adapter.
+When a timer fires and needs to reach the mind, the Subconscious sends through the Notification Port -- never directly to an adapter.
 The port contract is universal. The adapter decides how to deliver.
 
 * `BreakNotification` -- through Notification Port. "You've been in sustained task mode for N minutes." The mind can ignore it.
@@ -365,7 +324,7 @@ The port contract is universal. The adapter decides how to deliver.
 
 === Shutdown Protocol
 
-When shutdown is requested, the Daemon orchestrates:
+When shutdown is requested, the Subconscious orchestrates:
 
 . Signal all contexts to stop accepting new work
 . Flush pending writes to backing services

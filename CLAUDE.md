@@ -38,7 +38,7 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
-## Current State (0.4.0)
+## Current State (0.7.0)
 
 MCP server with contract skeleton. All tools registered as teapot stubs -- callable but returning placeholder responses until backing services are wired.
 
@@ -46,8 +46,8 @@ What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
 - MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - 8 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, associate_memories, reclassify_memory, reflect
-- Domain model: Memory, Tier, AssociationType, Association, AttentionScore, SearchFilter
-- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (13 sealed variants), Notification (2 sealed variants)
+- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
+- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants)
 - Inbound ports: MemoryPort, LifecyclePort
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort
 - Programmatic logback configuration (stderr for stdio transport)
@@ -79,24 +79,24 @@ What does NOT exist yet:
 
 ## Naming Convention
 
-| Concept | Value |
-|---------|-------|
-| Group (Gradle) | `memory.gildi.mimis` |
-| Package (source) | `mimis.gildi.memory` |
-| Artifact | `total-recall` |
-| Entry point | `mimis.gildi.memory.TotalRecallKt` |
+| Concept          | Value                              |
+|------------------|------------------------------------|
+| Group (Gradle)   | `memory.gildi.mimis`               |
+| Package (source) | `mimis.gildi.memory`               |
+| Artifact         | `total-recall`                     |
+| Entry point      | `mimis.gildi.memory.TotalRecallKt` |
 
 Packages use forward domain order; groups use reversed. This is Java convention.
 
 ## Key Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `build.gradle.kts` | Gradle build configuration |
-| `gradle.properties` | Group, version, JVM settings |
+| File                        | Purpose                          |
+|-----------------------------|----------------------------------|
+| `build.gradle.kts`          | Gradle build configuration       |
+| `gradle.properties`         | Group, version, JVM settings     |
 | `gradle/libs.versions.toml` | Version catalog for dependencies |
-| `.sdkmanrc` | SDK Manager tool versions |
-| `.editorconfig` | Editor formatting rules |
+| `.sdkmanrc`                 | SDK Manager tool versions        |
+| `.editorconfig`             | Editor formatting rules          |
 
 ## Logging
 
@@ -129,12 +129,12 @@ Ask. A 30-second question prevents hours of wasted work.
 
 ## Team
 
-| Person | Role | GitHub Username |
-|--------|------|-----------------|
-| Vadim Kuhay | Lead, Benefactor | `rdd13r` |
-| Anton Kuhay | Contributor | `CaptainLugaru` |
-| Artem Lytvynov | Contributor | `violog` |
-| Claude | Contributor | -- |
+| Person         | Role             | GitHub Username |
+|----------------|------------------|-----------------|
+| Vadim Kuhay    | Lead, Benefactor | `rdd13r`        |
+| Anton Kuhay    | Contributor      | `CaptainLugaru` |
+| Artem Lytvynov | Contributor      | `violog`        |
+| Claude         | Contributor      | --              |
 
 ## License
 

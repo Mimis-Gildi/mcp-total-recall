@@ -1,0 +1,184 @@
+---
+description: "What an adapter is, how it translates at a boundary, and what that looks like in Total Recall."
+classes: wide
+---
+= What is an Adapter?
+
+An adapter is a waitress. An *Active Structure.*
+
+She has a job description. She has behavior. She takes orders, delivers plates, handles complaints, remembers who asked for extra napkins. She does things.
+
+The link:/mcp-total-recall/design/0001-what-is-a-port/[port] is the counter -- a Passive Structure, inanimate, no behavior. The adapter is the living thing that works at the counter.
+
+This document uses the same restaurant to show what adapters do on both sides of the counter, then shows the same pattern in Total Recall.
+
+== Example 1: The Waitress (Inbound Adapter)
+
+The customer says: "I'd like the ribeye, medium-rare, with mashed potatoes. And can we get some extra napkins?"
+
+The waitress listens. She translates. She writes on the slip: "Ribeye, med-rare. Side mash. Xtra nap."
+
+That translation is her job. The customer spoke *customer language* -- conversational, vague, polite.
+The waitress wrote *order slip language* -- compressed, standardized, what the counter accepts.
+She did not write "the gentleman at the window would appreciate a nicely prepared steak." She wrote what fits the slip.
+
+She walks to the counter, clips the slip, calls "ordering!" and walks away. She is done with this step of her process. The counter takes it from here.
+
+The waitress is the inbound adapter. Her job:
+
+* **Listen** to the outside world (customer)
+* **Translate** from outside language to the object shape the port accepts (order slip)
+* **Place** the object on the counter
+* **Walk away** -- she does not follow the slip into the kitchen
+
+She does not know what the cook will do with the slip. She does not need to. Her job ends at the counter.
+
+A different waitress works the same counter. She has her own style -- maybe she abbreviates differently, maybe she chats more with customers.
+But she writes the same slip format, because the counter demands it. The adapter is replaceable. The port stays the same.
+
+== Example 2: The Cook (Outbound Adapter)
+
+The cook hears "order up!" He pulls the slip from the rail. He reads "Ribeye, med-rare."
+
+Now he translates. The slip said "med-rare." He thinks: 130-135 degrees internal. Cast iron, screaming hot.
+Four minutes per side. Rest for five. He is translating *order slip language* into *kitchen language* -- temperatures, techniques, timing.
+
+He was not told how to cook. The slip does not say "use the cast iron." The slip defines WHAT, the cook decides HOW. That is his job description. That is his behavior.
+
+When the dish is done, the same cook works the outbound side.
+He plates the ribeye, slides it onto the counter, calls "ribeye up, med-rare!"
+He translated *kitchen language* (his plating technique, his quality assessment) into *counter language* (a plated dish in the shape the counter expects).
+
+The cook is the outbound adapter on the kitchen side. His job:
+
+* **Pick up** the object from the counter (order slip)
+* **Translate** from the port's object shape into his own working language (kitchen operations)
+* **Do the work** -- the actual cooking, the thing only he knows how to do
+* **Put the result back** on the counter in the shape it expects (plated dish)
+
+A different cook works the same counter. He has his own techniques -- maybe he prefers a grill to cast iron, maybe he rests for seven minutes instead of five.
+But he reads the same slip format and plates to the same standard, because the counter demands it. The adapter is replaceable. The port stays the same.
+
+== The Pattern
+
+An adapter has four properties:
+
+. **It is an Active Structure.** It has behavior. It does things. The waitress takes orders. The cook cooks. They have job descriptions.
+. **It plugs into a port.** The waitress works AT the counter, not somewhere else. She must conform to the counter's contract -- the slip format, the call-out protocol. If she cannot work the counter, she is replaced.
+. **It translates between languages.** Customer language to slip language. Slip language to kitchen language. Each adapter speaks two languages: the port's language (the slip) and its own world's language (the customer, the kitchen).
+. **It is replaceable.** A new waitress works the same counter. A new cook reads the same slips. The port does not change when the adapter changes.
+
+An adapter without a port is a person standing in an empty room with no counter to work at. A port without an adapter is an empty counter -- correctly shaped, but nothing crosses it. They need each other.
+
+== Total Recall: MCP Tool Handler as Inbound Adapter
+
+The MCP tool handler is the waitress.
+
+A mind calls `store_memory` through the MCP protocol. The call arrives as JSON: tool name, arguments, session context. That is *customer language* -- the outside world speaking in its own terms.
+
+The MCP tool handler listens. It translates. It takes the JSON arguments and assembles the object shape the MemoryPort accepts: content, metadata, suggested tier, session ID. It places that object on the counter.
+
+The handler does not know what happens inside the domain. It does not know about salience scoring, association triggers, or tier rules. It does not follow the object into the kitchen. Its job ends at the counter.
+
+A different transport adapter -- streaming HTTPS, a human UI, a future protocol -- works the same MemoryPort.
+Different outside language (HTTP headers instead of JSON-RPC, form fields instead of tool arguments), same object shape on the counter. The adapter is replaceable. The port stays the same.
+
+The MCP tool handler's job description:
+
+* Parse the incoming MCP tool call
+* Validate arguments against the tool schema
+* Translate from MCP/JSON into the port's object shape
+* Place the object on the MemoryPort
+* Return the result to the caller
+
+Every one of those is a verb. Active Structure behavior. None of it belongs on the port.
+
+== Total Recall: Redis Adapter as Outbound Adapter
+
+The Redis adapter is the cook on the storage side.
+
+Hippocampus finishes processing a `StoreCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, salience score. The domain is done. It walks away.
+
+The Redis adapter picks up the `Memory` object. It translates. It thinks in *storage language*: which Redis data structure? `HSET` for the memory fields.
+What key pattern? `memory:\{id\}`. What TTL? Tier-dependent. What serialization? JSON. It takes the port's object and turns it into Redis operations.
+
+The adapter does the work. `save`, `findById`, `search`, `delete`, `update` -- those are its verbs, its job description, its behavior.
+The cook decides cast iron or grill. The Redis adapter decides `HSET` or `ZADD`.
+
+A different storage adapter -- Postgres, a file system, cold storage -- works the same BackingServicePort.
+Different storage language (SQL instead of Redis commands, file paths instead of key patterns), same object shape on the counter.
+The adapter is replaceable. The port stays the same.
+
+The Redis adapter's job description:
+
+* Pick up the domain object from the BackingServicePort
+* Translate from the port's object shape into Redis operations
+* Execute the storage operations
+* Return results in the port's object shape
+
+Again, all verbs. All behavior. All Active Structure. This is where `save()` lives -- not on the port.
+
+== What an Adapter Is NOT
+
+An adapter is not a port. The waitress is not the counter. She works AT the counter.
+She is animated, it is not. She is replaceable, it is not. link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] covers the port.
+
+An adapter is not a message. The waitress is not the order slip. She writes the slip.
+She carries the plate. But the slip and the plate are objects that cross the counter -- they are neither the counter nor the waitress.
+
+An adapter is not business logic. The waitress does not decide what is on the menu.
+The cook does not decide the prices. The menu is domain logic. Adapters translate and transport.
+They do not make business decisions.
+
+== Adapters in Total Recall
+
+*Important:* Inbound versus Outbound is ALWAYS from the perspective on the *_Root Domain_*.
+For example, outbound to a restaurant is what a delivery driver does.
+Because inbound and outbound are relative, when stated canonically, like here,
+it is from the perspective of link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[Core Domain (Actor Model) - see HEX-0001,window=_blank].
+
+[cols="1,1,2,2,2",options="header"]
+|===
+| Adapter | Side | Port Object | Ubiquitous Language | Verbs (Job Description)
+
+| MCP Tool Handler
+| Inbound (at MemoryPort)
+| Inbound Command / Query Object
+| JSON-RPC, tool schemas, MCP protocol
+| parse, validate, translate, place on port
+
+| Lifecycle Hook Handler
+| Inbound (at LifecyclePort)
+| Inbound Lifecycle Objects
+| Claude Code hooks, transport signals
+| detect event, translate, place on port
+
+| Redis Adapter
+| Outbound (at BackingServicePort)
+| Memory Command or Query Object
+| Redis commands, key patterns, TTLs
+| save, findById, search, delete, update
+
+| MCP Notification Adapter
+| Outbound (at NotificationPort)
+| Message Object
+| MCP server notifications, JSON
+| format, send, confirm delivery
+
+| Agora Adapter (future)
+| Outbound (at RelayPort)
+| Message Object
+| Agora protocol, network messages
+| serialize, relay, acknowledge
+
+|===
+
+Every adapter has verbs. Every adapter plugs into exactly one port.
+Every adapter is replaceable without changing the port it plugs into.
+Every adapter accepts a Boundary Contract Object and makes sense of it autonomously.
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0001-what-is-a-port/[What is a Port?]* -- the Passive Structure, the counter.
+
+*Next: link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?]* -- the full assembly: Adapter + Port + Adapter.

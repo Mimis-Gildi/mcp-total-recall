@@ -113,18 +113,33 @@ jobs:
           echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
 
 
-      - name: Update SECURITY.md version references
+      - name: Update CLAUDE.md version reference
         if: steps.branch-guard.outputs.feature == 'true'
         run: |
           OLD_VERSION="${{ steps.version-bump.outputs.old }}"
           NEW_VERSION="${{ steps.version-bump.outputs.new }}"
 
-          if [[ -f SECURITY.md ]]; then
-            echo "::notice title=Security Policy Version Update::$OLD_VERSION -> $NEW_VERSION"
-            sed -i "s/v$OLD_VERSION/v$NEW_VERSION/g" SECURITY.md
-          else
-            echo "::notice title=No SECURITY.md::Skipping version reference update"
+          OLD_PATTERN="## Current State (${OLD_VERSION})"
+          NEW_PATTERN="## Current State (${NEW_VERSION})"
+
+          if [[ ! -f CLAUDE.md ]]; then
+            echo "::error title=Missing CLAUDE.md::CLAUDE.md not found in repository root"
+            exit 1
           fi
+
+          if ! grep -qF "$OLD_PATTERN" CLAUDE.md; then
+            echo "::error title=Version Pattern Not Found::Expected '${OLD_PATTERN}' in CLAUDE.md but not found"
+            exit 1
+          fi
+
+          sed -i "s|${OLD_PATTERN}|${NEW_PATTERN}|" CLAUDE.md
+
+          if ! grep -qF "$NEW_PATTERN" CLAUDE.md; then
+            echo "::error title=Version Update Failed::Expected '${NEW_PATTERN}' in CLAUDE.md after sed but not found"
+            exit 1
+          fi
+
+          echo "::notice title=CLAUDE.md Version Update::${OLD_PATTERN} -> ${NEW_PATTERN}"
 
 
       - name: Commit and push version bump
@@ -132,7 +147,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/commit-and-push-files
         with:
-          files: gradle.properties SECURITY.md
+          files: gradle.properties CLAUDE.md
           message: "Auto bump version to ${{ steps.version-bump.outputs.new }}"
           token: ${{ secrets.GITHUB_TOKEN }}
 

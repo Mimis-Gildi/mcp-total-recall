@@ -1,0 +1,199 @@
+---
+description: "What a port is, how it translates meaning at a boundary, and what that looks like in Total Recall."
+classes: wide
+---
+= What is a Port?
+
+A port is a counter. A *Passive Structure.*
+
+Not the abstract kind from design pattern textbooks. A physical counter -- the long narrow table between a restaurant kitchen and the dining room.
+Things cross it in both directions. Every time something crosses, it changes meaning.
+
+This document uses two restaurant examples to build intuition, then shows the same pattern in Total Recall.
+
+== Example 1: The Order Goes In (Inbound)
+
+A waitress takes an order at table 7. She writes on a slip: "Ribeye, medium-rare. Side of mashed. Extra napkins."
+She walks to the counter, clips the slip to the rail, and calls out "ordering!"
+
+The cook pulls the slip. He reads "Ribeye, medium-rare" and starts thinking: sear temperature, rest time, internal temp target, which cut from the walk-in.
+He does not think about table 7. He does not think about extra napkins. "Medium-rare" means 130-135 degrees to him. To the waitress it meant nothing more than what the customer said.
+
+The slip is the same piece of paper on both sides of the counter. But it means different things.
+The waitress wrote it in *dining room language* -- tables, courses, customer requests. The cook reads it in *kitchen language* -- ingredients, technique, timing.
+
+The counter is where that translation happens. Not the waitress. Not the cook. The counter.
+
+The waitress is the adapter on the dining room side -- an *Active Structure*, a thing with behavior. The cook is the adapter on the kitchen side -- also an Active Structure. The counter between them is the port -- a *Passive Structure*, an inanimate thing with no behavior of its own.
+
+== Example 2: The Dish Goes Out (Outbound)
+
+The cook finishes the ribeye. He plates it -- sear marks at 2 o'clock, mashed at 10, sauce pooled not drizzled.
+He slides the plate onto the counter and calls "ribeye up, medium-rare!"
+
+To the cook, this plate is the completion of a process. He is thinking: did the sear hold? Is the temp right? Is the presentation clean? He is *done*.
+He marks himself done. He was composing from ingredients.
+
+The waitress picks up the plate. She does not think about sear temperature. She does not evaluate the sauce technique.
+To her, this plate is one step in delivering table 7's order -- course two of three. She is thinking: table 7, seat 2, the gentleman who asked for steak knives.
+She is NOT _done_, but merely somewhere *in the middle* of her process.
+
+The same plate, the same physical object crossing the same counter -- different meaning on each side.
+
+The cook spoke *kitchen language* when he put the plate up: "ribeye up, medium-rare."
+The waitress heard *dining room language*: "table 7's entree is ready."
+
+Again -- the counter is the port. The place where meaning changes hands.
+
+== The Pattern
+
+A port has three properties:
+
+. **It is a boundary.** Kitchen on one side, dining room on the other. Each side has its own concerns, its own language, its own way of thinking.
+. **The same item crosses it, but with different meaning on each side.** The order slip. The plate. The physical object does not change. The interpretation does.
+. **Neither side needs to understand the other.** The cook does not need to know table numbers. The waitress does not need to know sear temperatures.
+Each side reads *_only what matters to them_* -- *only what they can understand*.
+
+In Domain-Driven Design, this is called *ubiquitous language translation*.
+Each bounded context has its own language -- words that mean precise things within that context. At the boundary between contexts, meaning must be translated.
+The port is where that translation happens.
+
+The port does not DO the translation. It defines the *shape of what crosses* -- a border patrol officer says "show me your passport."
+The border owns the contract, i.e., passport, not the border patrol officer.
+The order slip format for the restaurant is such a contract. The plating standard. The call-out protocol.
+Both sides agree on the shape. Each side interprets it in their own language.
+
+_Have you ever thought why there never is a border both directly country to country, but only country to nothing ("international space," example: duty-free) and then nothing to country?_
+
+== Ubiquitous Language
+
+It is the language shared by a group of actors ("animated things") within the same Bounded Context -- an area with an invisible border where living things, human and otherwise, do the same thing.
+For example, a waitress shares her language with the bus person -- "table" has exactly the same meaning to both.
+Similarly, the cook shares a language with the sous-chef and short-order cook.
+But the bus person does not share a language with the short-order cook: they have different words and the same words have different meaning.
+
+The place where a word changes meaning is a BOUNDARY.
+
+And the boundary through which objects move is a PORT.
+
+A port is an inanimate thing -- a Passive Structure.
+
+== Total Recall: MemoryPort as Inbound Counter
+
+Now the same pattern in our system.
+
+A mind (Claude, a human, any future conscious system) wants to store a memory.
+It calls `store_memory` through the MCP protocol, passing content, metadata, and a suggested tier.
+
+That call hits the *MemoryPort* -- our inbound counter.
+
+On the outside (the dining room), the MCP adapter speaks *tool language*: JSON arguments, tool names, session IDs. The adapter is the waitress.
+It takes the request, formats it into what the counter expects, and slides it across.
+
+On the inside (the kitchen), the domain speaks *memory language*: `StoreCommand`, `Tier.ACTIVE_CONTEXT`, salience scoring, association triggers. The domain is the cook.
+It reads the command and starts working: persist the memory, calculate an initial salience score, check for related memories to associate.
+
+The MemoryPort defines the shape of what crosses -- the order slip:
+
+....
+content:        String            -- the memory content
+metadata:       Map<String,String> -- tags, source, context
+suggested_tier: String            -- IDENTITY_CORE | ACTIVE_CONTEXT | LONG_TERM | ARCHIVE
+session_id:     String            -- which instance is storing this
+....
+
+That is the slip. Not a verb. Not an action. The shape of the object that both sides can read.
+
+The MCP adapter does not know about salience scores. The domain does not know about JSON or tool schemas. Each side reads only what matters to them.
+*_The port defines the contract between them._*
+
+_The inanimate thing "port" owns a contract for the things that pass through it._
+A country's border booth is such a port, and it defines a contract on the "ID" such as a passport that can pass through it.
+
+"Pass-port" -- passport. See?
+
+== Total Recall: BackingServicePort as Outbound Counter
+
+The outbound direction works the same way.
+
+Hippocampus (the domain) finishes processing a `StoreCommand`. The memory needs to be persisted.
+The domain speaks *memory language*: a `Memory` object with tier, content, metadata, salience score.
+
+Hippocampus slides this across the *BackingServicePort* -- our outbound counter. It puts the `Memory` object on the counter and is done.
+It was thinking about aggregate consistency, tier rules, event production. It marks itself done.
+
+On the other side, the Redis adapter picks up the `Memory` object. It does not think about aggregate consistency.
+It thinks about *storage language*: which Redis data structure, what key pattern, what TTL, what serialization format.
+To the adapter, this is a write operation. To the domain, it was the completion of a business rule.
+
+Same object crosses the counter. Different meaning on each side.
+
+What crosses the BackingServicePort is an object -- a message. That message is a command ("persist this memory") or a query ("find this memory"). Both sides understand the object correctly, and differently. The domain sees a business operation completing. The adapter sees a storage operation beginning.
+
+The port defines the shape of that object. What the adapter *does* with it -- `save`, `findById`, `search` -- that is the adapter's behavior, the adapter's job description. Not the port's.
+
+The domain does not know it is talking to Redis. It could be Postgres, a file system, cold storage. The port does not care.
+*_It defines what crosses, not how the other side handles it._*
+
+== What a Port Is NOT
+
+A port is not an adapter. An adapter is an Active Structure -- it has behavior, like a job description for a waitress.
+The port is a Passive Structure -- an inanimate boundary, like the kitchen counter in the restaurant above.
+The waitress is not a counter. She works AT the counter, handling objects between the customer and the kitchen.
+And she is replaceable -- a different waitress works the same counter with the same slips and handles them the same way.
+The same applies for adapters: swap Redis for Postgres, the port stays the same.
+
+A port is not a message. The order slip is not the counter. Slips cross the counter. The counter defines what shape slips can have.
+
+A port is not business logic. The counter does not cook. It does not seat guests. It is the boundary where one world ends and another begins.
+
+A port is not an ACL. The ACL is the full assembly: Active Structure (adapter) → Passive Structure (port) → Active Structure (adapter). The port is the middle piece -- the neutral space between two living things. Just as international borders always have neutral space between countries (the duty-free zone, the international concourse), the ACL always has a passive boundary between active translators. link:/mcp-total-recall/design/0002-what-is-an-adapter/[What is an Adapter?] and link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?] examine the active structures and the full assembly.
+
+=== On Translation and Contracts (Ubiquitous Language)
+
+Translation is an action. It changes something. Actions can only happen by the animated things -- Active Structures.
+And the contract is an inanimate thing -- a Passive Structure -- that "conforms" objects to itself.
+For example, the order-slip in the restaurant. What actually happens?
+
+Waitress translates the customer's order into the order slip.
+And the special power of that order slip is that both parties divided by the port understand it adequately for each to do their job.
+
+Agreement is implied here, just like countries agreeing on what kind of passport is acceptable for a border crosser and what is inside that object, the passport.
+
+== Ports in Total Recall
+
+[cols="1,1,2,2",options="header"]
+|===
+| Port | Direction | Outside Language | Inside Language
+
+| `MemoryPort`
+| Inbound
+| MCP tool calls, JSON, session IDs
+| Commands, queries, domain types AS Objects
+
+| `LifecyclePort`
+| Inbound
+| Hook events, transport signals
+| Session events, state transitions
+
+| `BackingServicePort`
+| Outbound
+| Redis keys, SQL queries, file paths
+| Memory objects, domain queries
+
+| `NotificationPort`
+| Outbound
+| MCP notifications, push messages
+| Domain notifications (break, audit) objects
+
+| `RelayPort`
+| Outbound
+| Agora protocol, network messages
+| Inter-instance commands AS Objects
+|===
+
+Every port is a counter. Inside language on one side, outside language on the other. The same object crosses, meaning changes.
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0000-about-detailed-design/[About Detailed Design]* -- why we front-load design before implementation.

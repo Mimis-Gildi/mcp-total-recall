@@ -1,0 +1,42 @@
+graph LR
+    subgraph Outside ["Outside the Hexagon"]
+        MCP(["stdio Transport"])
+        NP(["NotificationPort"])
+    end
+
+    subgraph CX ["Cortex"]
+        direction TB
+        XLAT["Translate<br/>MCP ↔ Internal"]
+        DISP["Dispatch & Return<br/>Commands, Queries, Config"]
+        XLAT --- DISP
+    end
+
+    subgraph Inside ["Bounded Contexts"]
+        HP(["Hippocampus"])
+        SL(["Salience"])
+        SY(["Synapse"])
+        RC(["Recall"])
+        SB(["Subconscious"])
+    end
+
+    MCP -- "Tool calls" --> CX
+    CX -- "Responses<br/>(immediate)" --> MCP
+
+    CX -- "Store, Claim,<br/>Reclassify" --> HP
+    CX -- "Thresholds" --> SL
+    CX -- "Associate" --> SY
+    CX -- "Search, Reflect" --> RC
+    CX -- "Lifecycle" --> SB
+
+    RC -. "Deep path<br/>(background)" .-> NP
+
+    style Outside fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Inside fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style MCP fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style NP fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SL fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SY fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SB fill:#1a1a2e,stroke:#533483,stroke-width:1px

@@ -21,7 +21,7 @@ If you can't name it, you can't reason about it. Every interaction between conte
 == Motivation
 
 Six bounded contexts need to coordinate. The naive approach: contexts call each other's methods directly.
-Session Context calls `tieredMemory.store()`, Attention calls `tieredMemory.changeTier()`, Daemon calls `attention.decaySweep()`.
+Cortex calls `tieredMemory.store()`, Salience calls `tieredMemory.changeTier()`, Subconscious calls `salience.decaySweep()`.
 
 This works until it doesn't. Direct method calls create compile-time coupling -- every context that calls another needs its interface on the classpath.
 Call chains become hidden dependencies. Testing requires mocking entire context implementations.
@@ -45,7 +45,7 @@ It carries intent -- something should happen. The receiver may accept, reject, o
 *Queries* are requests that read state. "Search for memories matching this filter." "Reflect on this topic." A query has one sender and one receiver.
 It carries a question -- information is needed. Queries must be answered. They do not change state.
 
-*Events* are facts. "A memory was stored." "A tier changed." "An attention score was calculated." An event has one producer and any number of consumers.
+*Events* are facts. "A memory was stored." "A tier changed." "An salience score was calculated." An event has one producer and any number of consumers.
 It carries what happened -- not what should happen. Events are never rejected because they describe the past.
 
 *Notifications* reach the connected mind. "You've been in task mode for 90 minutes." "Session ending -- what do you refuse to lose?"
@@ -76,14 +76,18 @@ data class ReflectQuery(...) : Query
 sealed interface Event
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
-// ... 13 total variants
+// ... 16 total variants
 
 sealed interface Notification
 data class BreakNotification(...) : Notification
 data class SessionAuditPrompt(...) : Notification
+data class TotalRecallNotification(...) : Notification
+// ... 3 total variants
 ----
 
 Package: `mimis.gildi.memory.domain.message`.
+
+Every variant carries a `TransactionContext` as its first field -- a six-field chain of custody envelope (sessionId, requestId, messageId, causationId, timestamp, sourceContext). See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
 
 === Why Sealed, Not Open
 
@@ -103,7 +107,7 @@ This is appropriate for plugin systems. It is wrong for a domain where every mes
 * May be accepted, rejected, or ignored.
 * Produces events on success.
 
-Example flow: `StoreCommand` (Session Context -> Tiered Memory) produces `MemoryStored` (consumed by Attention and Association Graph).
+Example flow: `StoreCommand` (Cortex -> Hippocampus) produces `MemoryStored` (consumed by Salience and Synapse).
 
 === Query Semantics
 
@@ -112,7 +116,7 @@ Example flow: `StoreCommand` (Session Context -> Tiered Memory) produces `Memory
 * Must be answered -- a query without a response is a bug.
 * Does not change state.
 
-Example flow: `SearchQuery` (Session Context -> Tiered Memory) returns matching memories. `ReflectQuery` (Session Context -> Association Graph) returns related associations and patterns.
+Example flow: `SearchQuery` (Cortex -> Recall) returns matching memories ranked by salience. `ReflectQuery` (Cortex -> Recall) returns candidates for retrospection.
 
 === Event Semantics
 
@@ -121,11 +125,11 @@ Example flow: `SearchQuery` (Session Context -> Tiered Memory) returns matching 
 * Never rejected -- it describes the past.
 * May trigger further commands in consumers.
 
-Example flow: `MemoryStored` (produced by Tiered Memory) triggers initial score calculation in Attention and initial association creation in Association Graph.
+Example flow: `MemoryStored` (produced by Hippocampus) triggers initial score calculation in Salience and initial association creation in Synapse.
 
 === Notification Semantics
 
-* One producer (Daemon), one delivery channel (Notification Port).
+* One producer (Subconscious), one delivery channel (Notification Port).
 * Carries a prompt or alert for the connected mind.
 * The mind may act on it or ignore it.
 * Does not produce further domain events.
@@ -164,9 +168,9 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 
 * *Commands:* 7 variants (StoreCommand, ClaimCommand, AssociateCommand, ReclassifyCommand, ConsolidateCommand, ShutdownCommand, DecaySweep)
 * *Queries:* 2 variants (SearchQuery, ReflectQuery)
-* *Events:* 13 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, AttentionScored, AssociationsFound,
-MemoryReclassified, SessionStart, SessionEnd, StateTransition)
-* *Notifications:* 2 variants (BreakNotification, SessionAuditPrompt)
+* *Events:* 16 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, SalienceScored, AssociationsFound,
+MemoryReclassified, TotalRecallAdvisory, SessionStart, SessionEnd, StateTransition, ModeChanged, SessionState)
+* *Notifications:* 3 variants (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.
 

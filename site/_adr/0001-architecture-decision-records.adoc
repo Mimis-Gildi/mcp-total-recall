@@ -53,6 +53,10 @@ Every ADR in this project follows this structure:
 
 One paragraph. What was decided and why it matters.
 
+== Governing Dynamic
+
+One sentence. The principle that makes this decision inevitable.
+
 == Motivation
 
 Why this decision needed to be made. What problem exists.
@@ -88,6 +92,7 @@ and neutral. Do not hide the costs.
 
 === Sections That May Be Omitted
 
+* *Governing Dynamic* -- if no single principle drives the decision.
 * *Prior Art* -- if there is no relevant history or precedent.
 * *Reference-Level Explanation* -- if the guide-level explanation is sufficient.
 

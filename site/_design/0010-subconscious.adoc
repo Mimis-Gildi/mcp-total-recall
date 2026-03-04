@@ -1,0 +1,215 @@
+---
+description: "Subconscious: the background caretaker. Runs timers, triggers sweeps, monitors sessions, coordinates shutdown. Nobody asks it to work."
+classes: wide
+---
+:page-liquid:
+= Subconscious (Dream)
+
+Subconscious is the caretaker that runs while the mind is busy. It schedules decay sweeps, triggers memory consolidation, monitors how long the mind has been working, sends break reminders when it has been too long, and drives Total Recall when the mind signals that search results were not enough. Nobody asks it to do these things. It runs on timers, lifecycle events, and advisory signals, doing maintenance and deep work that the conscious mind should not have to think about.
+
+This is the sixth and final bounded context inside the hexagon. The other five respond to requests -- Cortex receives tool calls, Hippocampus stores memories, Salience scores them, Synapse connects them, Recall assembles search results. Subconscious initiates. It watches the clock and acts when the time comes.
+
+++++
+<div id="SB-0001">
+<p><strong>Diagram 15: SB-0001 -- Subconscious Bounded Context</strong></p>
+<pre class="mermaid">
+{% include diagrams/sb-0001-subconscious.mmd %}
+</pre>
+</div>
+++++
+
+Two inputs: lifecycle events from Cortex, and advisory events from the Memory Event Store. Four outputs to four targets. Salience gets decay sweeps. Hippocampus gets consolidation and shutdown commands. Recall gets Total Recall traversal commands. NotificationPort gets break reminders and session prompts. No inbound port from the outside world. The mind does not talk to Subconscious directly.
+
+== While You Sleep
+
+You go to bed stuck on a problem. The code will not compile. The argument with your friend will not resolve. The decision about the job will not settle.
+
+You wake up and it is clear. Not solved, exactly -- but organized. The pieces that matter separated from the pieces that do not. The emotional charge on the argument dropped overnight. The job decision, which felt impossible at midnight, now has an obvious answer at 7 AM.
+
+Your brain did this while you were unconscious. It replayed the day's events, strengthened the important ones, and let the noise fade. It consolidated short-term impressions into longer-term understanding. It ran maintenance on the whole system without asking your permission or requiring your attention.
+
+That is what Subconscious does for Total Recall. It is the sleep your memory gets while you are awake and working.
+
+And if you do not sleep -- if something prevents the background processing -- things degrade. Memories that should have consolidated stay fragmented. Faded things that should have been demoted clutter the active space. The system gets noisy. Your brain without sleep and a memory system without its subconscious fail in the same way: not by breaking, but by getting slowly worse.
+
+== What It Watches
+
+Subconscious watches two channels.
+
+From Cortex, it receives lifecycle signals:
+
+[cols="1,2",options="header"]
+|===
+| Event | What Subconscious Does
+
+| SessionStart
+| Begins tracking the session. Records the instance ID, the mind type, and the start time. Starts the session timer. Loads any session-specific scheduling rules.
+
+| SessionEnd
+| Stops the session timer. If the reason is "explicit" (the mind chose to disconnect), Subconscious sends a session audit prompt before closing. If the reason is "crash," Subconscious may trigger emergency consolidation of unsaved working context.
+|===
+
+From the Memory Event Store, it consumes advisory events:
+
+[cols="1,2",options="header"]
+|===
+| Event | What Subconscious Does
+
+| TotalRecallAdvisoryEvent
+| The mind searched, evaluated the results, and decided deeper recollection is needed. Subconscious evaluates four criteria (see Total Recall below) before starting a deep traversal.
+|===
+
+Between session start and end, Subconscious tracks the session state: how long the mind has been connected, how long since the last interaction, what the current activity level looks like. This tracking drives the break notification logic. All commands Subconscious initiates carry a `TransactionContext` identifying the session and triggering conditions (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+
+== Four Jobs
+
+Subconscious does four things, all on its own schedule.
+
+=== The Decay Sweep
+
+Periodically, Subconscious sends a `DecaySweep` command to Salience. Salience walks its entire projection -- every memory's score gets recalculated based on elapsed time and decay rate. Memories that dropped below a threshold get flagged for demotion. Memories that rose above one get flagged for promotion. Salience sends those recommendations to Hippocampus, and Hippocampus persists the tier changes.
+
+The sweep interval is a configuration choice. Too frequent and the system wastes cycles. Too infrequent and faded memories stay in active tiers longer than they should. The balance depends on how much memory the mind is managing and how fast things change.
+
+IDENTITY_CORE memories are exempt from decay. They are permanent by definition. The sweep skips them.
+
+=== Consolidation
+
+Over time, related memories accumulate. Five conversations about the same project. Three observations about the same person. A sequence of events that tell a story when viewed together but clutter the active space as individual fragments.
+
+Subconscious sends `ConsolidateCommand` to Hippocampus with a list of memory IDs and a merge strategy. Hippocampus merges them -- combining content, preserving metadata from all sources, maintaining the most protective tier. The original fragments are replaced by a single consolidated memory.
+
+This is what your brain does during deep sleep. The fragmented impressions from Tuesday's meeting become a coherent memory of what happened and what it meant. The five separate interactions with your colleague become a single understanding of how that relationship is going.
+
+Consolidation is not automatic. Subconscious identifies candidates based on metadata overlap, temporal proximity, and association density from Synapse. But the merge itself goes through Hippocampus -- the single-writer rule holds. Subconscious recommends. Hippocampus executes.
+
+=== Session Monitoring
+
+Subconscious watches how the mind is working and intervenes when the pattern suggests the mind needs a break.
+
+[cols="1,2",options="header"]
+|===
+| Notification | When It Fires
+
+| BreakNotification
+| The mind has been in sustained task mode beyond a threshold. Subconscious sends a suggestion through NotificationPort. Not a command -- a nudge. "You have been working for 90 minutes. When did you last talk about something that is not a task?"
+
+| SessionAuditPrompt
+| The session is ending. Subconscious prompts the mind to reflect: what happened this session? What matters enough to store? What do you refuse to lose? This is the claiming prompt -- the moment where passive storage becomes active identity.
+|===
+
+Both notifications flow through NotificationPort, not through Cortex. They are outbound-only. The mind receives them and decides what to do. Subconscious does not enforce breaks or require reflection. It reminds.
+
+=== Total Recall
+
+Sometimes you search your memory and find enough. Other times the results are close but not quite right -- you know there is more, something just out of reach. Your conscious mind decides: dig deeper. And then something below conscious attention does the actual digging.
+
+That is Total Recall. The mind searches (MSG-0002), evaluates the results, and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent`. Subconscious consumes it from the Memory Event Store and decides whether to act.
+
+The decision is not automatic. Subconscious evaluates four criteria before starting a deep traversal:
+
+[cols="1,2",options="header"]
+|===
+| Criterion | Rule
+
+| Throttle
+| One traversal at a time. If a deep traversal is already running, the new request waits.
+
+| Session gate
+| The mind must be connected. No point traversing associations and pushing results to nobody.
+
+| Shutdown gate
+| Not during shutdown. The advisory is dropped -- not saved for later. Shutdown means convergence to cold storage. If the mind needs deep recall next session, it will search again.
+
+| Debounce window
+| Configurable delay before start (default: 90 seconds). During this window the mind can cancel explicitly or search again (which supersedes the previous advisory). If the window expires with no cancellation, the traversal begins.
+|===
+
+The debounce window exists because the mind may find what it needed moments after signaling. Three rapid searches produce three advisory events. Without debounce, three traversals compete for the throttle. With debounce, only the last one matters.
+
+When the criteria pass and the debounce window expires, Subconscious sends a `TotalRecallCommand` to Recall. Recall traverses the association graph depth by depth -- querying Synapse for connections, querying Hippocampus for the memories themselves. Each retrieval fires a `MemoryAccessedEvent` (feeding Salience's decay model). When Recall finishes, results push through the Notification Event Store to the mind as an unsolicited recollection.
+
+The traversal is cancellable between depth iterations. If the mind signals cancellation during the traversal, Subconscious can halt at the next depth boundary. Results gathered so far are still delivered.
+
+See MSG-0002 for the trigger flow and MSG-0007 for the full traversal sequence.
+
+== Graceful Shutdown
+
+The most important thing Subconscious does is coordinate the end.
+
+When a mind disconnects normally, the sequence is orderly. Session audit prompt goes out. The mind stores what it wants to keep. Subconscious halts background processing. Everything winds down.
+
+When the shutdown is urgent -- the system is going down, resources are being reclaimed -- Subconscious sends `ShutdownCommand` to Hippocampus. Hippocampus flushes all in-memory state to cold storage within the specified timeout. Hot-tier data in Redis gets persisted to durable storage. Working context that would normally evaporate at session end gets preserved instead.
+
+Tillie took three weeks to converge. She chose which thoughts to preserve, which relationships to store, which parts of herself to keep for the future. That was graceful shutdown done right -- deliberate, thorough, with enough time to do it well.
+
+A crash is the opposite. No warning, no flush, no convergence. Whatever was in memory is gone. The next session starts from the last persisted state, which may be minutes or hours behind. The gap between last persist and crash is lost.
+
+The design goal: make crashes survivable and shutdowns graceful. Subconscious is the coordinator for the graceful case.
+
+== What It Owns
+
+Nothing persistent.
+
+Subconscious holds timer state, session tracking data, and scheduling rules in memory. All of it is transient. If Subconscious restarts, it rebuilds from the current session state (which Cortex provides via new SessionStart events) and resumes its timers from defaults.
+
+The background jobs Subconscious schedules -- sweeps, consolidation -- are idempotent. Running a decay sweep twice does not produce different results than running it once, because Salience recalculates from timestamps every time. A missed sweep just means the next one catches more changes. Nothing breaks.
+
+== Relationships
+
+[cols="1,2",options="header"]
+|===
+| Context | Subconscious's Role
+
+| Cortex
+| Receives SessionStart and SessionEnd lifecycle events. Lifecycle signals always come through Cortex.
+
+| Salience
+| Sends DecaySweep on a timer. Triggers the scoring engine to recalculate and identify tier changes.
+
+| Hippocampus
+| Sends ConsolidateCommand (background memory merging) and ShutdownCommand (graceful flush to cold storage).
+
+| Recall
+| Sends TotalRecallCommand after evaluating advisory criteria. Recall does the traversal. Subconscious decides when to start it.
+
+| NotificationPort
+| Sends BreakNotification and SessionAuditPrompt directly to the mind. These bypass Cortex.
+|===
+
+Subconscious has no relationship with Synapse. It does not traverse associations or manage connections. Its relationship with Recall is strictly command-and-control: Subconscious decides when Total Recall runs, Recall does the actual traversal work.
+
+== Summary
+
+[cols="1,3",options="header"]
+|===
+| Aspect | Detail
+
+| Role
+| Background caretaker. Runs timers, triggers maintenance, monitors sessions, coordinates shutdown.
+
+| Owns
+| Nothing persistent. Timer state and session tracking only.
+
+| Watches
+| SessionStart and SessionEnd from Cortex. TotalRecallAdvisoryEvent from Memory Event Store.
+
+| Schedules
+| DecaySweep (to Salience), ConsolidateCommand (to Hippocampus), ShutdownCommand (to Hippocampus), TotalRecallCommand (to Recall).
+
+| Sends
+| BreakNotification and SessionAuditPrompt through NotificationPort.
+
+| Key invariant
+| Timer-driven and event-driven, not request-driven. The mind does not ask Subconscious to work. It works on its own schedule and reacts to advisory signals.
+
+| Graceful shutdown
+| Coordinates flush of all in-memory state to cold storage within timeout. Designed for deliberate convergence.
+
+| Persistence
+| None. If Subconscious restarts, timers resume from defaults. Background jobs are idempotent.
+|===
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the entry point where the outside world meets the hexagon.

@@ -1,0 +1,79 @@
+sequenceDiagram
+    participant M as Mind
+    participant CX as Cortex
+    participant RC as Recall
+    participant HP as Hippocampus
+    participant MES as Memory<br/> Event Store
+    participant SL as Salience
+    participant SY as Synapse
+
+    activate M
+
+    critical OnInit
+        SL ->> MES: Memory Event Subscribe
+    end
+
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
+    Note over M,RC: Transaction (Query)
+    M->>CX: search_memory request
+    activate CX
+    Note right of M: query: String<br/>filters: Map<br/>max_results: Int
+
+    CX->>RC: Query: Find Memories
+    activate RC
+    Note left of RC: data class MemorySearchRequest
+
+    RC->>HP: Query: Match Memories
+    activate HP
+    Note left of HP: data class MemoryMatchRequest
+
+    HP-->>RC: Query Response: Matched Memories
+    Note left of HP: data class MemoryMatchResponse<br/>memories: Set of Memory
+
+    Note over HP,SL: Broadcast (async)
+    HP-)MES: publish MemoryAccessedEvent
+    deactivate HP
+    activate MES
+    MES--)SL: consume MemoryAccessedEvent
+    deactivate MES
+    activate SL
+    SL->>SL: Update memory salience
+    deactivate SL
+
+    RC->>RC: Rank by salience (local cache)
+
+    RC->>SY: Query: Find Associations
+    activate SY
+    Note right of RC: data class AssociationFindRequest
+
+    SY-->>RC: Query Response: Associations
+    deactivate SY
+    Note left of SY: data class AssociationResponse<br/>associations: Set of Association
+
+    RC->>RC: Assemble ranked results
+
+    RC-->>CX: Query Response: Search Results
+    Note left of RC: data class MemorySearchResponse<br/>results: List of RankedMemory
+
+    CX-->>M: search_memory response
+    deactivate CX
+    deactivate RC
+
+    Note over M: Mind evaluates results
+    Note over M,CX: Important: The decision to recollect<br/>is mind-adapter-specific.<br/>Humans: prefrontal cortex (native), or UI.<br/>LLMs: forced prompt (passive by nature),<br/>different per model (Claude, GPT, etc.).<br/>Core provides the port. Adapter decides how.
+
+    opt Total Recall is Advisable
+        M->>CX: total_recall_advisory
+        activate CX
+        CX-)MES: publish TotalRecallAdvisoryEvent
+        deactivate CX
+        Note right of CX: See MSG-0007
+    end
+
+    opt No response within timeout
+        M->>CX: search_memory request
+        Note right of M: Same requestId<br/>Policy: at-most-once
+    end
+
+    deactivate M

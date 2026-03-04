@@ -1,0 +1,86 @@
+sequenceDiagram
+    participant M as Mind
+    participant CX as Cortex
+    participant RC as Recall
+    participant HP as Hippocampus
+    participant ES as Memory<br/> Event Store
+    participant SL as Salience
+    participant SY as Synapse
+
+    activate M
+
+    critical OnInit
+        SL ->> ES: Memory Event Subscribe
+        SY ->> ES: Memory Event Subscribe
+    end
+
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
+    Note over M,RC: Transaction (Query)
+    M->>CX: reflect request
+    activate CX
+    Note right of M: criteria: staleness, time span,<br/>weak associations<br/>scope: Tier or All
+
+    CX->>RC: Query: Reflect
+    activate RC
+    Note left of RC: data class ReflectQuery
+
+    RC->>HP: Query: Find Candidates
+    activate HP
+    HP-->>RC: Query Response: Candidate Memories
+    deactivate HP
+
+    RC->>SY: Query: Find Weak Associations
+    activate SY
+    SY-->>RC: Query Response: Associations
+    deactivate SY
+
+    RC->>RC: Assemble reflection set
+
+    RC-->>CX: Query Response: Reflection Set
+    deactivate RC
+    CX-->>M: reflect response
+    deactivate CX
+    Note left of CX: Memories needing judgment
+
+    Note over M: Mind reviews candidates
+    Note over M,CX: This is a conversation, not a single call.<br/>The mind makes semantic judgments<br/>that only the same mind can make.
+
+    loop Mind reviews each memory
+        opt New or stronger associations
+            M->>CX: associate_memories command
+            activate CX
+            CX->>SY: Command: Associate
+            activate SY
+            Note left of SY: data class AssociateCommand
+            SY->>SY: Create or strengthen association
+            SY-->>CX: Command Response
+            CX-->>M: associate_memories response
+            deactivate SY
+            deactivate CX
+        end
+
+        opt Reclassification needed
+            M->>CX: reclassify_memory command
+            activate CX
+            CX->>HP: Command: Reclassify
+            activate HP
+            Note left of HP: data class ReclassifyCommand
+            HP->>HP: Move memory, update metadata
+            HP-->>CX: Command Response
+            CX-->>M: reclassify_memory response
+
+            Note over HP,SY: Broadcast (async)
+            HP-)ES: publish MemoryReclassifiedEvent
+            deactivate HP
+            deactivate CX
+            activate ES
+            ES--)SY: consume MemoryReclassifiedEvent
+            deactivate ES
+            activate SY
+            SY->>SY: Update associations for new tier
+            deactivate SY
+        end
+    end
+
+    deactivate M

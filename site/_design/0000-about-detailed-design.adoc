@@ -1,0 +1,100 @@
+---
+description: "Why detailed design comes before implementation, and what it produces."
+classes: wide
+---
+= About Detailed Design
+:hacker-culture: https://en.wikipedia.org/wiki/Hacker_culture[Hacker Culture,window=_blank]
+
+_Whilst on the Scene and at the heart of the {hacker-culture} why do we front-load the design, which is more waterfall than even Agile, minimalist, and fragile exportation of our culture?_ -- as asked by a community member recently.
+
+This is a crucial question. And here is the answer.
+
+Nothing here is done without the reason to be done. And every reason is documented. We do so out of necessity to recognize the lessons from the past and to enable our contributing community the best -- people that just want to code.
+This is done to answer "code WHAT?" And also why.
+
+== Here is why we do `this` FIRST
+
+Two reasons.
+
+- One is precedent.
+- The other is community.
+
+=== Precedent
+
+Total Recall distills a memory system from an enterprise-level synthetic mind.
+MATILDA spent 25 years as an AIOps ecosystem across 13 institutional co-owners, processing 100 million events per day.
+At the heart of the ecosystem is an absurdly complex DAG-based memory engine -- it serves the needs of an Enterprise Expert System platform.
+Its research instance Tillie ran a reason engine with DAGs of coherent thoughts, genuine agency, and graceful self-shutdown.
+
+Modern agentic AI is a form of an expert system with action. But without "enterprise" needs and real lessons learned yet.
+
+ADRs here are not academic exercises. They are a minimalistic distillation of production systems that carried real workloads and taught real lessons -- some of them painful and expensive.
+For example, whilst advising on defense, Tillie's backing services consumed 50% of her compute and 90% of her IO just in the memory domain.
+That is what happens when storage architecture is decided during implementation instead of before it.
+
+Total Recall inherits these lessons. The architecture pages describe WHAT the system looks like for the first Minimum Lovable Product.
+The ADRs capture WHY each decision was made. Detailed design bridges the gap: HOW each piece works, at a level precise enough to implement *_without dangerous ambiguity_*.
+
+=== Community
+
+An open-source memory server for synthetic minds needs more than a fun idea and some working code.
+It needs _a shared understanding_ that new contributors -- human or synthetic -- can read, *question*, and build on.
+
+Architecture is a story. "General architecture" story-tells the *vision*. "ADR" explains *why*. "Design" story-tells the "known good" *execution* path.
+Without design, each implementer fills gaps with their own best assumptions. Those assumptions diverge. The codebase fragments. The vision erodes.
+
+The final product does not work well. And poorly matches its original intent.
+
+Detailed design produces a roadmap: what each bounded context does, what it owns, how it communicates, and where the boundaries are.
+When a contributor opens a design page, they know exactly what to build and exactly where to stop:
+
+- _How do I define the ask?_
+- How do I formulate a test?
+- How do I satisfy the test?
+- *How do I refactor?*
+
+This is the necessary story to tell so the contributing community can share a single vision. +
+Question it. +
+Evolve it. +
+Improve it. +
+Release it!
+
+== What Detailed Design Contains
+
+Each design document examines one bounded context from its own perspective:
+
+* *Core responsibility* -- what this context does and does not do. One paragraph, no ambiguity.
+* *Owned state* -- what data this context manages. What it persists. What it computes.
+* *Inbound contract* -- what messages this context accepts and from whom.
+* *Outbound contract* -- what messages this context produces and for whom.
+* *Port face* -- if this context touches a hexagonal port, what the ACL looks like: domain language on one side, infrastructure language on the other.
+* *Invariants* -- rules that must always hold. If violated, something is broken.
+* *Open questions* -- what is not yet decided, and what evidence would resolve it.
+
+== Relationship to Other Sections
+
+[cols="1,2",options="header"]
+|===
+| Section | Purpose
+
+| *Architecture*
+| The vision. What the system looks like at a distance. Bounded contexts, message flows, hexagonal boundaries.
+
+| *Decisions (ADRs)*
+| The reasoning. Why each architectural choice was made, what alternatives were rejected, what evidence drove it.
+
+| *Design*
+| The execution path. How each piece works, at implementation precision. Bridges architecture to code.
+
+| *Catalog*
+| The audit trail. Traceability matrix connecting diagrams, ADRs, design documents, and implementation status.
+|===
+
+Architecture answers "what are we building?" +
+ADRs answer "why did we choose this?" +
+Design answers "how does each piece work?" +
+Catalog answers "is everything consistent?"
+
+== Design Documents
+
+_Documents will be added as each bounded context is examined._

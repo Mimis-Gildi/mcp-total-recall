@@ -8,7 +8,11 @@
 package mimis.gildi.memory.domain.message
 
 import mimis.gildi.memory.domain.model.Association
+import mimis.gildi.memory.domain.model.SalienceScore
+import mimis.gildi.memory.domain.model.SessionEndReason
 import mimis.gildi.memory.domain.model.Tier
+import mimis.gildi.memory.domain.model.WorkingMode
+import kotlin.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -18,9 +22,10 @@ import java.util.UUID
  */
 sealed interface Event
 
-// -- Tiered Memory events --
+// -- Hippocampus events --
 
 data class MemoryStored(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val content: String,
     val metadata: Map<String, String>,
@@ -29,79 +34,98 @@ data class MemoryStored(
 ) : Event
 
 data class MemoryAccessed(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val accessTimestamp: Instant
 ) : Event
 
 data class MemoryClaimed(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val claimTimestamp: Instant
 ) : Event
 
 data class MemoryRetrieved(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val content: String,
     val metadata: Map<String, String>,
     val tier: Tier
 ) : Event
 
+/** Internal record of any tier change (Salience-driven or mind-initiated). */
 data class TierChanged(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val oldTier: Tier,
     val newTier: Tier,
     val reason: String
 ) : Event
 
+/** Mind-initiated reclassification only. Consumed by Synapse to update associations. */
 data class MemoryReclassified(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val oldTier: Tier,
     val newTier: Tier,
     val reason: String
 ) : Event
 
-// -- Attention events --
+// -- Salience events --
 
 data class TierPromoted(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val newTier: Tier,
     val score: Double
 ) : Event
 
 data class TierDemoted(
+    val tx: TransactionContext,
     val memoryId: UUID,
     val newTier: Tier,
     val score: Double
 ) : Event
 
-data class AttentionScored(
-    val memoryId: UUID,
-    val score: Double,
-    val lastAccessed: Instant,
-    val decayRate: Double,
-    val claimed: Boolean
+data class SalienceScored(
+    val tx: TransactionContext,
+    val salienceScore: SalienceScore
 ) : Event
 
-// -- Association Graph events --
+// -- Synapse events --
 
 data class AssociationsFound(
+    val tx: TransactionContext,
     val sourceId: UUID,
     val associations: List<Association>
+) : Event
+
+// -- Total Recall events --
+
+data class TotalRecallAdvisory(
+    val tx: TransactionContext,
+    val sourceMemoryIds: Set<UUID>,
+    val originRequestId: UUID,
+    val timestamp: Instant
 ) : Event
 
 // -- Lifecycle events --
 
 data class SessionStart(
+    val tx: TransactionContext,
     val instanceId: String,
     val mindType: String,
     val resumptionData: Map<String, String> = emptyMap()
 ) : Event
 
 data class SessionEnd(
+    val tx: TransactionContext,
     val instanceId: String,
-    val reason: String
+    val reason: SessionEndReason
 ) : Event
 
 data class StateTransition(
+    val tx: TransactionContext,
     val instanceId: String,
     val oldState: String,
     val newState: String,
@@ -109,14 +133,22 @@ data class StateTransition(
 ) : Event
 
 data class ModeChanged(
+    val tx: TransactionContext,
     val instanceId: String,
-    val oldMode: String,
-    val newMode: String
+    val oldMode: WorkingMode,
+    val newMode: WorkingMode
+) : Event
+
+data class HeartbeatReceived(
+    val tx: TransactionContext,
+    val instanceId: String,
+    val timestamp: Instant
 ) : Event
 
 data class SessionState(
+    val tx: TransactionContext,
     val instanceId: String,
-    val duration: Long,
+    val duration: Duration,
     val activityLevel: String,
     val lastInteraction: Instant
 ) : Event

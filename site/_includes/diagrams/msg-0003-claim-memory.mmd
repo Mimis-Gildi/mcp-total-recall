@@ -1,0 +1,62 @@
+sequenceDiagram
+    participant M as Mind
+    participant CX as Cortex
+    participant HP as Hippocampus
+    participant ES as Memory<br/> Event Store
+    participant SL as Salience
+    participant SY as Synapse
+
+    activate M
+
+    critical OnInit
+        SL ->> ES: Memory Event Subscribe
+        SY ->> ES: Memory Event Subscribe
+    end
+
+    Note over M,SY: All internal messages carry TransactionContext (Design F)
+
+    Note over M,HP: Transaction
+    M->>CX: claim_memory command
+    activate CX
+    Note right of M: memory_id: UUID
+
+    CX->>HP: Command: Claim Memory
+    activate HP
+    Note left of HP: data class ClaimCommand
+
+    HP->>HP: Mark as claimed, update metadata
+    HP-->>CX: Command Response: Memory Claimed
+    Note left of HP: data class ClaimCommand<br/>memory_id: UUID<br/>claim_timestamp: Instant
+    CX-->>M: claim_memory response
+
+    deactivate CX
+
+    Note over HP,SY: Broadcast (async)
+    HP-)ES: publish MemoryClaimedEvent
+    deactivate HP
+    activate ES
+
+    par Salience consumes events
+        ES--)SL: consume MemoryClaimedEvent
+        activate SL
+    and Synapse consumes events
+        ES--)SY: consume MemoryClaimedEvent
+        activate SY
+    end
+
+    deactivate ES
+
+    par Salience operates Ranking
+        SL->>SL: Boost score, mark decay-resistant
+        deactivate SL
+    and Synapse operates Relation
+        SY->>SY: Strengthen associations
+        deactivate SY
+    end
+
+    opt No response within timeout
+        M->>CX: claim_memory command
+        Note right of M: Same requestId<br/>Policy: at-most-once
+    end
+
+    deactivate M

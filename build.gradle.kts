@@ -34,6 +34,12 @@ application {
     mainClass.set("mimis.gildi.memory.TotalRecallKt")
 }
 
+tasks.processResources {
+    filesMatching("version.properties") {
+        expand("version" to project.version)
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }

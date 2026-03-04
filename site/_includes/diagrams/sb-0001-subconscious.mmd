@@ -1,0 +1,39 @@
+graph LR
+    subgraph Input ["Inputs"]
+        CX(["Cortex"])
+        MES(["Memory Event Store"])
+    end
+
+    subgraph SB ["Subconscious"]
+        direction TB
+        TIMER["Timers & Schedules<br/>Decay sweeps, consolidation"]
+        WATCH["Session Monitor<br/>Activity, breaks, shutdown"]
+        TR["Total Recall Gate<br/>Throttle, debounce, criteria"]
+        TIMER --- WATCH
+        WATCH --- TR
+    end
+
+    subgraph Dispatch ["Dispatches To"]
+        SL(["Salience"])
+        HP(["Hippocampus"])
+        RC(["Recall"])
+        NP(["NotificationPort"])
+    end
+
+    CX -- "SessionStart,<br/>SessionEnd" --> SB
+    MES -- "TotalRecallAdvisory" --> SB
+
+    SB -- "DecaySweep" --> SL
+    SB -- "Consolidate,<br/>Shutdown" --> HP
+    SB -- "TotalRecallCommand" --> RC
+    SB -- "Break reminders,<br/>Session prompts" --> NP
+
+    style Input fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SB fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Dispatch fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style MES fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style SL fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style NP fill:#1a1a2e,stroke:#533483,stroke-width:1px

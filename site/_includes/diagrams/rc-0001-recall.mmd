@@ -1,0 +1,34 @@
+graph LR
+    subgraph Sources ["Assembly Sources"]
+        HP(["Hippocampus"])
+        SL(["Salience"])
+        SY(["Synapse"])
+    end
+
+    subgraph RC ["Recall"]
+        direction TB
+        ASSY["Read-Only Assembler<br/>No state, no storage"]
+        RANK["Ranking & Assembly<br/>Memories + Scores + Associations"]
+        ASSY --- RANK
+    end
+
+    subgraph Consumers ["Result Consumers"]
+        CX(["Cortex"])
+        NP(["NotificationPort"])
+    end
+
+    HP -- "MemoryRetrieved" --> RC
+    SL -- "SalienceScored" --> RC
+    SY -- "AssociationsFound" --> RC
+
+    RC -- "Search results<br/>(immediate)" --> CX
+    RC -- "Deeper associations<br/>(background)" --> NP
+
+    style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style RC fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Consumers fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style HP fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SL fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style SY fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style CX fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style NP fill:#1a1a2e,stroke:#0f3460,stroke-width:1px

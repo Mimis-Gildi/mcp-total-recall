@@ -1,0 +1,67 @@
+sequenceDiagram
+    participant M as Mind
+    participant CX as Cortex
+    participant HP as Hippocampus
+    participant ES as Memory<br/> Event Store
+    participant SL as Salience
+    participant SY as Synapse
+
+    activate M
+
+    critical OnInit
+        SL ->> ES: Memory Event Subscribe
+        SY ->> ES: Memory Event Subscribe
+    end
+
+    Note over M,SY: TransactionContext: every internal message carries<br/>sessionId, requestId, messageId, causationId,<br/>timestamp, sourceContext. See Design F.
+
+    Note over M,HP: Transaction
+    M->>CX: store_memory command
+    activate CX
+    Note right of M: content: String<br/>metadata: Map<br/>suggested_tier: Tier
+
+
+    CX->>HP: Command: Store Memory
+    activate HP
+    Note left of HP: data class MemoryStoreCommand
+
+    HP->>HP: Validate, assign tier, persist
+    HP-->>CX: Command Response: Memory Stored
+    Note left of HP: data class MemoryStoreCommand<br/> memory_id: UUID<br/>content: String<br/>metadata: Map<br/>tier: Tier<br/>timestamp: Instant
+    CX-->>M: store_memory response
+
+    deactivate CX
+
+    Note over HP,SY: Broadcast (async)
+    Note right of HP: tx propagation:<br/>same sessionId, requestId<br/>new messageId<br/>causationId = command messageId
+    HP-)ES: publish MemoryStoredEvent
+    deactivate HP
+    activate ES
+
+
+    par Salience consumes events
+        ES--)SL: consume MemoryStoredEvent
+        activate SL
+
+    and Synapse consumes events
+        ES--)SY: consume MemoryStoredEvent
+        activate SY
+
+    end
+
+    deactivate ES
+
+    par Salience operates Ranking
+        SL->>SL: Compute initial salience
+        deactivate SL
+    and Synapse operates Relation
+        SY->>SY: Create associations
+        deactivate SY
+    end
+
+    opt No response within timeout
+        M->>CX: store_memory command
+        Note right of M: Same requestId<br/>Policy: at-most-once
+    end
+
+    deactivate M

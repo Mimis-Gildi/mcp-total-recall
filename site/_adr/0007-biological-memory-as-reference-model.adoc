@@ -102,7 +102,7 @@ The individual who holds it serves the community by holding it. When the communi
 | Human Structure | Total Recall Component | How It Maps
 
 | Working memory
-| Session Context (ACTIVE_CONTEXT tier)
+| Cortex (ACTIVE_CONTEXT tier)
 | Per-instance working state. Limited to current session. Fast access, fast decay. Gone when session ends, unless promoted.
 
 | Episodic memory
@@ -122,19 +122,19 @@ The individual who holds it serves the community by holding it. When the communi
 | Not gone, just hard to reach. Can be recalled with enough association signal. Ebbinghaus' long tail -- what survived initial decay but hasn't been accessed.
 
 | Attention gating
-| Attention Context (scoring)
+| Salience Context (scoring)
 | What gets attended to gets a higher score. What doesn't, fades. The scoring mechanism is the computational analog of selective attention.
 
 | Decay / forgetting
-| Attention Context (decay sweeps)
-| Scores decrease over time. The Daemon runs periodic decay sweeps. Rate varies by tier -- ACTIVE_CONTEXT decays fast, LONG_TERM decays slowly, IDENTITY_CORE doesn't decay.
+| Salience Context (decay sweeps)
+| Scores decrease over time. The Subconscious runs periodic decay sweeps. Rate varies by tier -- ACTIVE_CONTEXT decays fast, LONG_TERM decays slowly, IDENTITY_CORE doesn't decay.
 
 | Consolidation
-| Daemon (ConsolidateCommand)
-| During low-activity periods, the Daemon merges related memories. Episodic detail may be lost, but the consolidated insight persists. Analogous to sleep consolidation.
+| Subconscious (ConsolidateCommand)
+| During low-activity periods, the Subconscious merges related memories. Episodic detail may be lost, but the consolidated insight persists. Analogous to sleep consolidation.
 
 | Associative networks
-| Association Graph
+| Synapse
 | Five typed associations (temporal, causal, thematic, emotional, person). Bidirectional. Activation spreads along connections during recall. Hearing one memory activates its neighbors.
 
 | Reconsolidation
@@ -206,7 +206,7 @@ Total Recall's LONG_TERM tier holds both, with consolidation as the mechanism th
 === Baddeley (1974)
 
 Working memory as active manipulation, not passive storage.
-Total Recall's Session Context follows this -- it doesn't just hold current state, it actively tracks mode, transitions, and cross-session continuity.
+Total Recall's Cortex follows this -- it doesn't just hold current state, it actively tracks mode, transitions, and cross-session continuity.
 
 === Ebbinghaus (1885)
 

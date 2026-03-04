@@ -14,6 +14,7 @@ package mimis.gildi.memory.domain.message
 sealed interface Query
 
 data class SearchQuery(
+    val tx: TransactionContext,
     val query: String,
     val filters: Map<String, String> = emptyMap(),
     val maxResults: Int = 10,
@@ -22,6 +23,7 @@ data class SearchQuery(
 ) : Query
 
 data class ReflectQuery(
+    val tx: TransactionContext,
     val criteria: Map<String, String>,
     val scope: String
 ) : Query

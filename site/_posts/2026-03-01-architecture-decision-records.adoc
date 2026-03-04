@@ -39,7 +39,7 @@ If you don't document the reason a decision was made, the decision becomes a mys
 | Multiple backing services behind one interface. Live and cold storage simultaneously. Tillie's shutdown protocol requires this.
 
 | link:/mcp-total-recall/decisions/0005-memory-as-aggregate-root/[ADR-0005]
-| All writes go through Tiered Memory. No other context persists directly. One aggregate root, one source of truth.
+| All writes go through Hippocampus. No other context persists directly. One aggregate root, one source of truth.
 
 | link:/mcp-total-recall/decisions/0006-events-and-commands-as-message-types/[ADR-0006]
 | Four message types: Commands change state, Queries read it, Events carry facts, Notifications reach the mind. Sealed hierarchies, not open classes.

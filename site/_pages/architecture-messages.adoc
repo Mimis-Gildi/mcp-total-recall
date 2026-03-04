@@ -5,6 +5,7 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
+:page-liquid:
 = Architecture: Message Catalog
 
 == The Problem
@@ -14,9 +15,59 @@ Undocumented messages become mysteries that only the original author understands
 
 This page names every message. Types it. Says who produces it, who consumes it, and what it carries.
 
+== Diagram Conventions
+
+These conventions apply to all sequence diagrams on this page.
+
+=== Arrow Types
+
+[cols="1,2",options="header"]
+|===
+| Arrow | Meaning
+
+| Solid, filled (→)
+| Command or Query -- transactional, expects response
+
+| Dashed, filled (⇢)
+| Response -- return in transaction chain
+
+| Solid, open (↝)
+| Event -- fire-and-forget, async, no response
+|===
+
+=== Naming
+
+External arrows (Mind ↔ Cortex) use `snake_case`: `store_memory_command`, `store_memory_response`.
+
+Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreCommand`, `MemoryStoreResponse`.
+
+Cortex translates at the boundary. The ACL is visible in every diagram.
+
+=== Payloads
+
+Command responses return the *same payload* enriched with ID, metadata, and timestamps.
+
+Query responses are a *separate type* -- they may return collections, empty results, or errors.
+
+=== Event Source
+
+Publishers emit to a named event source (topic). Subscribers listen. The publisher does not know its consumers.
+
+=== Retry
+
+When a response does not arrive within timeout, the emitter retries per a named policy shown in the diagram.
+
+=== TransactionContext
+
+Every domain message carries a `TransactionContext` -- six fields that form a chain of custody through the system. sessionId, requestId, messageId, causationId, timestamp, sourceContext. Zero nullable. When a bounded context receives a message and produces a new one, the new message gets the same sessionId and requestId, a fresh messageId, and the incoming message's messageId as its causationId. This reconstructs the full causal tree of any request.
+
+Every bounded context that touches a message records a touch -- even if it produces no outbound message. The trace must show the complete causal tree, including terminal leaves.
+
+Full specification: link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
+
 == Message Flows
 
-Five flows cover the core operations. Each shows the full path through the domain.
+Seven flows cover the core operations. Each shows the full path through the domain.
 The participant labeled "Mind" is conscience-universal -- it could be Claude, a human with a UI, or any future conscious system.
 
 === Store Memory
@@ -24,126 +75,64 @@ The participant labeled "Mind" is conscience-universal -- it could be Claude, a 
 A mind stores a new memory. The memory gets persisted, scored, and connected to related memories.
 
 ++++
+<div id="MSG-0001">
+<p><strong>Diagram 4: MSG-0001 -- Store Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: store_memory
-    SP->>TM: StoreCommand
-    TM->>TM: Validate, assign tier, persist
-    TM-->>AT: MemoryStored
-    TM-->>AG: MemoryStored
-    AT->>AT: Set initial attention score
-    AG->>AG: Create associations from metadata
-    TM-->>SP: Acknowledgment
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0001-store-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Search Memory
 
-A mind searches for memories. Results come back ranked by attention score, with association-activated memories included.
+A mind searches for memories. Results come back ranked by salience score, with association-activated memories included.
 
 ++++
+<div id="MSG-0002">
+<p><strong>Diagram 5: MSG-0002 -- Search Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: search_memory
-    SP->>RE: SearchQuery
-    RE->>TM: Query matching memories
-    TM-->>RE: MemoryRetrieved (candidates)
-    RE->>AT: Request scores for candidates
-    AT-->>RE: AttentionScored (scores)
-    RE->>AG: Request associations for top candidates
-    AG-->>RE: AssociationsFound (related memories)
-    RE->>RE: Rank by score, include activated
-    RE-->>SP: Ranked results
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0002-search-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Claim Memory
 
-A mind claims a memory -- actively reinforcing it. This boosts its attention score and makes it resist decay.
+A mind claims a memory -- actively reinforcing it. This boosts its salience score and makes it resist decay.
 
 ++++
+<div id="MSG-0003">
+<p><strong>Diagram 6: MSG-0003 -- Claim Memory</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant AT as Attention
-    participant AG as Association Graph
-
-    C->>SP: claim_memory
-    SP->>TM: ClaimCommand
-    TM->>TM: Mark as claimed, update metadata
-    TM-->>AT: MemoryClaimed
-    TM-->>AG: MemoryClaimed
-    AT->>AT: Boost score, mark decay-resistant
-    AG->>AG: Strengthen associations
-    TM-->>SP: Acknowledgment
-    SP-->>C: MCP tool response
+{% include diagrams/msg-0003-claim-memory.mmd %}
 </pre>
+</div>
 ++++
 
 === Decay Sweep
 
-The Daemon triggers a periodic decay sweep. Attention recalculates scores. Memories that fall below tier thresholds get demoted.
+The Subconscious triggers a periodic decay sweep. Salience recalculates scores. Memories that fall below tier thresholds get demoted.
 
 ++++
+<div id="MSG-0004">
+<p><strong>Diagram 7: MSG-0004 -- Decay Sweep</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant DA as Daemon
-    participant AT as Attention
-    participant TM as Tiered Memory
-
-    DA->>AT: DecaySweep
-    AT->>AT: Recalculate all scores (time decay)
-    AT->>AT: Identify memories below tier thresholds
-    AT-->>TM: TierDemoted (for each demotion)
-    TM->>TM: Move memory to lower tier
-    TM-->>TM: TierChanged (internal record)
+{% include diagrams/msg-0004-decay-sweep.mmd %}
 </pre>
+</div>
 ++++
 
 === Session Lifecycle
 
-A mind connects and disconnects. On connect, Session Context loads identity and last session state. On disconnect, the Daemon triggers a session audit through the Notification Port.
+A mind connects and disconnects. On connect, Cortex loads identity and last session state. On disconnect, the Subconscious triggers a session audit through the Notification Port.
 
 ++++
+<div id="MSG-0005">
+<p><strong>Diagram 8: MSG-0005 -- Session Lifecycle</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant TM as Tiered Memory
-    participant DA as Daemon
-    participant NP as Notification Port
-
-    C->>SP: session_start
-    SP->>TM: SearchQuery (load identity + last state)
-    TM-->>SP: MemoryRetrieved (identity, last session)
-    SP-->>C: Welcome back. Here's your context.
-
-    Note over C,NP: ... session activity ...
-
-    C->>SP: session_end
-    SP->>DA: SessionEnd
-    DA->>NP: SessionAuditPrompt
-    NP-->>C: What do you refuse to lose?
-    C->>SP: store_memory (session summary)
-    SP->>TM: StoreCommand
+{% include diagrams/msg-0005-session-lifecycle.mmd %}
 </pre>
+</div>
 ++++
 
 === Reflect (Dreaming)
@@ -155,39 +144,34 @@ This is not a single tool call -- it's a conversation between the mind and its m
 This operation requires the same mind. A different mind classifying your memories would impose its understanding of the connections, not yours.
 
 ++++
+<div id="MSG-0006">
+<p><strong>Diagram 9: MSG-0006 -- Reflect (Dreaming)</strong></p>
 <pre class="mermaid">
-sequenceDiagram
-    participant C as Mind
-    participant SP as Session Context
-    participant RE as Recollection
-    participant TM as Tiered Memory
-    participant AG as Association Graph
-
-    C->>SP: reflect (criteria, scope)
-    SP->>RE: ReflectQuery
-    RE->>TM: Query candidates (by staleness, time span, weak associations)
-    TM-->>RE: MemoryRetrieved (candidates for review)
-    RE-->>SP: Reflection set (memories needing judgment)
-    SP-->>C: Here are memories to review
-
-    loop Mind reviews each memory
-        C->>SP: associate_memories (A, B, type, strength)
-        SP->>AG: AssociateCommand
-        AG->>AG: Create/strengthen semantic association
-
-        C->>SP: reclassify_memory (ID, new tier)
-        SP->>TM: ReclassifyCommand
-        TM->>TM: Move memory, update metadata
-        TM-->>AG: MemoryReclassified
-    end
-
-    C->>SP: reflect complete
+{% include diagrams/msg-0006-reflect.mmd %}
 </pre>
+</div>
+++++
+
+=== Total Recall
+
+The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+
+The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model). The core provides the port. The adapter decides how.
+
+This is what makes the memory system active instead of passive. The mind does not ask for the deep traversal. Once triggered, the system executes it and delivers results.
+
+++++
+<div id="MSG-0007">
+<p><strong>Diagram 10: MSG-0007 -- Total Recall</strong></p>
+<pre class="mermaid">
+{% include diagrams/msg-0007-total-recall.mmd %}
+</pre>
+</div>
 ++++
 
 === Where Claiming Intelligence Lives
 
-The Claim Memory flow above shows the protocol -- `ClaimCommand` through Session Context to Tiered Memory. But the protocol is the easy part.
+The Claim Memory flow above shows the protocol -- `ClaimCommand` through Cortex to Hippocampus. But the protocol is the easy part.
 The hard part is deciding *what* to claim, *when*, and *why*.
 
 That intelligence does not live in the core. The core provides `ClaimCommand` through its ports.
@@ -206,7 +190,7 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 Every message in the system. Named, typed, with producer and consumer.
 
 All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
-`Event` (13 sealed variants), `Notification` (2 sealed variants).
+`Event` (17 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
 
@@ -217,38 +201,38 @@ Commands are requests to change state. They carry intent. A command has exactly 
 | Command | Producer | Consumer | Payload
 
 | `StoreCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | content, metadata, suggested tier
 
 | `ClaimCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | memory ID
 
 | `ConsolidateCommand`
-| Daemon
-| Tiered Memory
+| Subconscious
+| Hippocampus
 | memory IDs to merge, merge strategy
 
 | `ShutdownCommand`
-| Daemon
-| Tiered Memory
+| Subconscious
+| Hippocampus
 | cold storage target, flush timeout
 
 | `AssociateCommand`
-| Session Context
-| Association Graph
+| Cortex
+| Synapse
 | memory IDs, association type, strength, direction (create/strengthen/weaken)
 
 | `ReclassifyCommand`
-| Session Context
-| Tiered Memory
+| Cortex
+| Hippocampus
 | memory ID, new tier, new metadata, reason
 
 | `DecaySweep`
-| Daemon
-| Attention
+| Subconscious
+| Salience
 | timestamp, scope (all tiers or specific tier)
 |===
 
@@ -261,19 +245,19 @@ Queries are requests to read state without changing it. A query has exactly one 
 | Query | Producer | Consumer | Payload
 
 | `SearchQuery`
-| Session Context
-| Recollection
+| Cortex
+| Recall
 | query, filters, max results
 
 | `ReflectQuery`
-| Session Context
-| Recollection
+| Cortex
+| Recall
 | criteria (staleness, time span, weak associations), scope
 |===
 
 === Lifecycle Events
 
-Lifecycle events flow from the Lifecycle Port through Session Context.
+Lifecycle events flow from the Lifecycle Port through Cortex.
 They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system.
 Defined as part of `sealed interface Event`.
 
@@ -283,28 +267,33 @@ Defined as part of `sealed interface Event`.
 
 | `SessionStart`
 | Lifecycle Port
-| Session Context
+| Cortex
 | instance ID, mind type, resumption data
 
 | `SessionEnd`
 | Lifecycle Port
-| Session Context, Daemon
+| Cortex, Subconscious
 | instance ID, reason (explicit, timeout, crash)
 
 | `StateTransition`
 | Lifecycle Port
-| Session Context
+| Cortex
 | instance ID, old state, new state, context
 
 | `ModeChanged`
-| Session Context
-| Daemon
+| Cortex
+| Subconscious
 | instance ID, old mode, new mode (task, conversation, idle)
 
 | `SessionState`
-| Session Context
-| Daemon
+| Cortex
+| Subconscious
 | instance ID, duration, activity level, last interaction
+
+| `HeartbeatReceived`
+| Lifecycle Port
+| Cortex
+| instance ID, timestamp
 |===
 
 === Notifications
@@ -317,14 +306,19 @@ The adapter decides delivery -- MCP server notification for Claude, push notific
 | Notification | Producer | Consumer | Payload
 
 | `BreakNotification`
-| Daemon
+| Subconscious
 | Notification Port -> Mind
 | minutes in task mode, suggestion
 
 | `SessionAuditPrompt`
-| Daemon
+| Subconscious
 | Notification Port -> Mind
 | session duration, memories stored this session, prompt
+
+| `TotalRecallNotification`
+| Recall (via Notification Event Store)
+| Notification Port -> Mind
+| recalled memories, depth reached, origin request ID
 |===
 
 === Domain Events
@@ -336,57 +330,64 @@ Events are facts about something that happened. An event can have multiple consu
 | Event | Producer | Consumer(s) | Payload
 
 | `MemoryStored`
-| Tiered Memory
-| Attention, Association Graph
+| Hippocampus
+| Salience, Synapse
 | memory ID, content, metadata, tier
 
 | `MemoryAccessed`
-| Tiered Memory
-| Attention
+| Hippocampus
+| Salience
 | memory ID, access timestamp
 
 | `MemoryClaimed`
-| Tiered Memory
-| Attention, Association Graph
+| Hippocampus
+| Salience, Synapse
 | memory ID, claim timestamp
 
 | `MemoryRetrieved`
-| Tiered Memory
-| Recollection
+| Hippocampus
+| Recall
 | memory ID, content, metadata, tier
 
 | `TierChanged`
-| Tiered Memory
+| Hippocampus
 | (internal record)
 | memory ID, old tier, new tier, reason
 
 | `TierPromoted`
-| Attention
-| Tiered Memory
+| Salience
+| Hippocampus
 | memory ID, new tier, score
 
 | `TierDemoted`
-| Attention
-| Tiered Memory
+| Salience
+| Hippocampus
 | memory ID, new tier, score
 
-| `AttentionScored`
-| Attention
-| Recollection
+| `SalienceScored`
+| Salience
+| Recall
 | memory ID, score, last access, decay rate
 
 | `AssociationsFound`
-| Association Graph
-| Recollection
+| Synapse
+| Recall
 | source memory ID, associated memory IDs with types and strengths
 
 | `MemoryReclassified`
-| Tiered Memory
-| Association Graph
+| Hippocampus
+| Synapse
 | memory ID, old tier, new tier, reason (mind-initiated)
+
+| `TotalRecallAdvisory`
+| Cortex
+| Subconscious (via Memory Event Store)
+| source memory IDs, origin request ID, timestamp
 |===
 
 === Message Payload Details
+
+Every message carries a `TransactionContext` as its first field. The envelope fields are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the six envelope fields.
 
 ==== StoreCommand
 
@@ -402,7 +403,7 @@ timestamp:      Instant      -- when the store was requested
 
 ....
 query:          String       -- search text or pattern
-filters:        SearchFilter -- tier, time range, association type, tags
+filters:        Map          -- tier, time range, association type, tags
 max_results:    Int          -- cap on returned memories
 include_associations: Boolean -- whether to activate association graph
 session_id:     String       -- which instance is searching
@@ -411,18 +412,18 @@ session_id:     String       -- which instance is searching
 ==== MemoryStored
 
 ....
-memory_id:      UUID         -- assigned by Tiered Memory
+memory_id:      UUID         -- assigned by Hippocampus
 content:        String       -- the stored content
 metadata:       Map          -- tags, source, context
 tier:           Tier         -- assigned tier (may differ from suggested)
 timestamp:      Instant      -- when storage completed
 ....
 
-==== AttentionScored
+==== SalienceScored
 
 ....
 memory_id:      UUID         -- which memory
-score:          Double       -- current attention score (0.0 - 1.0)
+score:          Double       -- current salience score (0.0 - 1.0)
 last_accessed:  Instant      -- when last accessed
 decay_rate:     Double       -- current decay rate (tier-dependent)
 claimed:        Boolean      -- whether this memory is claimed
@@ -457,7 +458,7 @@ associations:   List<Association>
 
 | Consolidation details
 | How `ConsolidateCommand` merge strategies work
-| When Daemon behavior is specified
+| When Subconscious behavior is specified
 
 | Heartbeat details
 | Keep-alive semantics, timeout thresholds
@@ -465,7 +466,7 @@ associations:   List<Association>
 
 | Additional notification types
 | Context drift warnings, memory capacity alerts
-| When Daemon behavior is specified
+| When Subconscious behavior is specified
 |===
 
 '''

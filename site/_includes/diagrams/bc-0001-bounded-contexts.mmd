@@ -1,0 +1,49 @@
+graph LR
+    subgraph Hippocampus ["Hippocampus"]
+        HP_DESC["Aggregate Root<br/>Store, retrieve, claim<br/>Four tiers: Identity Core,<br/>Active Context, Long Term, Archive"]
+    end
+
+    subgraph Synapse ["Synapse"]
+        SY_DESC["Memory relationships<br/>Five types: temporal, causal,<br/>thematic, emotional, person<br/>Graph traversal and activation"]
+    end
+
+    subgraph Salience ["Salience"]
+        SL_DESC["Scoring and decay<br/>Access increases score<br/>Time decreases score<br/>Tier promotion/demotion"]
+    end
+
+    subgraph Recall ["Recall"]
+        RC_DESC["Search and recall<br/>Salience-weighted results<br/>Association-activated recall<br/>Query planning"]
+    end
+
+    subgraph Cortex ["Cortex"]
+        CX_DESC["Per-instance working state<br/>State tracking, transitions<br/>Lifecycle events<br/>Entry point for all requests"]
+    end
+
+    subgraph Subconscious ["Subconscious"]
+        SB_DESC["Background processes<br/>Internal timers, decay sweeps<br/>Break checks, session audits<br/>Consolidation, graceful shutdown"]
+    end
+
+    NP(["Notification Port<br/><i>alerts to the mind</i>"])
+
+    Hippocampus -- "MemoryStored<br/>MemoryClaimed" --> Synapse
+    Hippocampus -- "MemoryStored<br/>MemoryAccessed" --> Salience
+    Salience -- "TierPromoted<br/>TierDemoted" --> Hippocampus
+    Synapse -- "AssociationsFound" --> Recall
+    Salience -- "SalienceScored" --> Recall
+    Hippocampus -- "MemoryRetrieved" --> Recall
+    Cortex -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Hippocampus
+    Cortex -- "SearchQuery<br/>ReflectQuery" --> Recall
+    Cortex -- "AssociateCommand" --> Synapse
+    Cortex -- "ModeChanged<br/>SessionState" --> Subconscious
+    Subconscious -- "DecaySweep" --> Salience
+    Subconscious -- "ConsolidateCommand" --> Hippocampus
+    Subconscious -- "ShutdownCommand" --> Hippocampus
+    Subconscious -- "BreakNotification<br/>SessionAuditPrompt" --> NP
+
+    style Hippocampus fill:#1a1a2e,stroke:#e94560,stroke-width:2px
+    style Synapse fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Salience fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Recall fill:#1a1a2e,stroke:#0f3460,stroke-width:1px
+    style Cortex fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style Subconscious fill:#1a1a2e,stroke:#533483,stroke-width:1px
+    style NP fill:#0f3460,stroke:#e94560,stroke-width:1px
