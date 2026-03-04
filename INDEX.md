@@ -125,16 +125,16 @@ Designs are the source of truth. Sequence diagrams (MSG-0001 through MSG-0006) w
 
 Fix mismatches between ADRs, architecture pages, and design documents.
 
-- [ ] **D-Audit-1** BackingServicePort operation names -- DESIGN DECISION NEEDED. Port has adapter verbs (save, findById, search). Design A says ports are passive structures. Either redefine port as passive contract or document exception. Code change required.
-- [ ] **D-Audit-2** NotificationPort: architecture says notify/remind/alert, code has single send(). Align.
-- [ ] **D-Audit-3** RelayPort: architecture says send/receive/list_pending, code has single relay(). Align (Agora-dependent, lower priority).
+- [x] **D-Audit-1** ~~BackingServicePort operation names~~ RESOLVED: architecture-hexagonal.adoc aligned with code (save, findById, search, delete, update).
+- [x] **D-Audit-2** ~~NotificationPort~~ RESOLVED: architecture-hexagonal.adoc aligned with code (single `send(Notification)` method, sealed variants).
+- [x] **D-Audit-3** ~~RelayPort~~ RESOLVED: architecture-hexagonal.adoc aligned with code (single `relay` method, Agora-dependent).
 - [x] **D-Audit-4** ~~ADR-0006 event count~~ FIXED: 13→16 (added ModeChanged, SessionState, TotalRecallAdvisory). Notifications 2→3 (added TotalRecallNotification).
 - [x] **D-Audit-5** ~~ADR-0006 SearchQuery routing~~ FIXED: Hippocampus → Recall.
 - [x] **D-Audit-6** ~~ADR-0006 ReflectQuery routing~~ FIXED: Synapse → Recall.
 - [x] **D-Audit-7** ~~"five actors"~~ FIXED: → "six actors" in architecture-hexagonal.adoc.
-- [ ] **D-Audit-8** architecture-contexts.adoc: Hippocampus command list missing ReclassifyCommand, TierPromoted, TierDemoted.
-- [ ] **D-Audit-9** "Governing Dynamic" section in all ADRs not defined in ADR-0001 template.
-- [ ] **D-Audit-10** SearchFilter type: ADR-0006 says SearchFilter, code uses Map<String, String>.
+- [x] **D-Audit-8** ~~Hippocampus command list~~ RESOLVED: ReclassifyCommand, TierPromoted, TierDemoted added to architecture-contexts.adoc.
+- [x] **D-Audit-9** ~~Governing Dynamic~~ RESOLVED: added to ADR-0001 template (and "may be omitted" list).
+- [x] **D-Audit-10** ~~SearchFilter type~~ RESOLVED: architecture-messages.adoc, architecture-contexts.adoc, msg-0002 diagram all updated to Map.
 
 ### 6. Resolve Code Audit Gaps (C-Audit)
 
@@ -224,6 +224,8 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Step 3.2 -- TransactionContext in docs: architecture-messages.adoc (convention section, fixed event count 13→16, notification count 2→3, added TotalRecallNotification and TotalRecallAdvisory to tables). ADR-0006 (TotalRecallNotification in hierarchy, TransactionContext paragraph). All 6 design docs E1-E6 (one-sentence cross-references to Design F).
 - [x] F-Audit-5 resolved: TransactionContext designed, implemented, and documented.
 - [x] T-Audit-2 fixed: self-referential assertion replaced with proper UUID comparison.
+- [x] Step 4 complete: TransactionContext annotations on all 7 sequence diagrams. Full propagation example on MSG-0001, brief Design F reference on MSG-0002 through MSG-0007.
+- [x] Step 5 complete: All D-Audit items resolved. architecture-hexagonal.adoc port operations aligned with code (D-Audit-1,2,3). Hippocampus commands completed (D-Audit-8). Governing Dynamic in ADR template (D-Audit-9). SearchFilter→Map everywhere (D-Audit-10). Design D NotificationPort updated: 2→3 shapes (TotalRecallNotification), 13→14 total object shapes.
 
 ---
 
@@ -269,7 +271,7 @@ No Jekyll plugins needed. One JS file in `assets/js/`, two CDN script tags.
 - **Adapter** = Active Structure (the waitress, the cook). Has verbs, job description, behavior. Replaceable.
 - **ACL** = Adapter + Port + Adapter. Convenience construct. Not a class. Emerges from the assembly. Contract lives in core domain.
 
-**D. Hexagon Sides** -- DONE. Five faces (2 inbound, 3 outbound), 17 object shapes, all adapters named.
+**D. Hexagon Sides** -- DONE. Five faces (2 inbound, 3 outbound), 14 object shapes, all adapters named.
 
 **E1. Hippocampus** -- DONE. Aggregate root, single-writer invariant. Walk-in cooler metaphor (four shelves = four tiers). Seven commands from three sources (Cortex, Subconscious, Salience). Six events to four consumers. Claiming = active identity choice vs passive storage.
 

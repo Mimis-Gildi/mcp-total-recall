@@ -18,7 +18,7 @@ sequenceDiagram
     Note over M,RC: Transaction (Query)
     M->>CX: search_memory request
     activate CX
-    Note right of M: query: String<br/>filters: SearchFilter<br/>max_results: Int
+    Note right of M: query: String<br/>filters: Map<br/>max_results: Int
 
     CX->>RC: Query: Find Memories
     activate RC

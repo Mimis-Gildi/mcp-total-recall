@@ -82,8 +82,11 @@ Defined as `Tier` enum with decay semantics per variant.
 
 * `StoreCommand` -- from Cortex.
 * `ClaimCommand` -- from Cortex.
+* `ReclassifyCommand` -- from Cortex. Mind-initiated tier change with reason.
 * `ConsolidateCommand` -- from Subconscious. Merge related memories.
 * `ShutdownCommand` -- from Subconscious. Begin graceful convergence.
+* `TierPromoted` -- from Salience. Score rose above promotion threshold.
+* `TierDemoted` -- from Salience. Score dropped below demotion threshold.
 
 '''
 
@@ -189,7 +192,7 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 *The search engine.* When a mind asks "what do I remember about X?", Recall answers. It combines salience scores (what's most vivid) with association activation (what's connected) to produce ranked results.
 
-Domain types: `SearchFilter` -- in `mimis.gildi.memory.domain.model`.
+Domain types: none owned. Recall reads from Hippocampus, Salience, and Synapse.
 
 === Responsibility
 

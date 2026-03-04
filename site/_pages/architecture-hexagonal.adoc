@@ -70,17 +70,17 @@ The ports are conscience-universal -- the same contract serves Claude, a human o
 | *Backing Service Port*
 | `BackingServicePort`
 | Persists and retrieves memories. The critical abstraction.
-| `persist`, `retrieve`, `query`, `delete`
+| `save`, `findById`, `search`, `delete`, `update`
 
 | *Notification Port*
 | `NotificationPort`
-| Sends alerts and reminders to the connected mind. Break reminders, state drift warnings, session summaries.
-| `notify`, `remind`, `alert`
+| Sends notifications to the connected mind. The sealed `Notification` hierarchy defines the variants.
+| `send(Notification)` -- single method, sealed variants distinguish type
 
 | *Relay Port*
 | `RelayPort`
-| Sends and receives inter-instance messages.
-| `send`, `receive`, `list_pending` (future)
+| Relays inter-instance messages through Agora.
+| `relay` (full API designed with Agora)
 |===
 
 Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).

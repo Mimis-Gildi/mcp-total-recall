@@ -144,9 +144,12 @@ The PA system. This is where the domain talks back to the mind -- not in respons
 
 | Session audit prompt
 | session duration, memories stored this session, prompt text
+
+| Total Recall notification
+| recalled memories, depth reached, origin request ID
 |===
 
-Two object shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
+Three object shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
 
 **Outside adapters:**
 
@@ -208,7 +211,7 @@ Cross-cuts attach as adapters but never live inside the domain. The core is test
 
 == The Full Hexagon
 
-Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
+Five faces. Two inbound, three outbound. Fourteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
 
 [cols="1,1,1,1,1",options="header"]
 |===
@@ -235,7 +238,7 @@ Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. 
 | 4
 | NotificationPort
 | Outbound
-| 2 shapes
+| 3 shapes
 | MCP Notifications, UI Notifications (future)
 
 | 5

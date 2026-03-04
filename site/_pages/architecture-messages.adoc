@@ -398,7 +398,7 @@ timestamp:      Instant      -- when the store was requested
 
 ....
 query:          String       -- search text or pattern
-filters:        SearchFilter -- tier, time range, association type, tags
+filters:        Map          -- tier, time range, association type, tags
 max_results:    Int          -- cap on returned memories
 include_associations: Boolean -- whether to activate association graph
 session_id:     String       -- which instance is searching
