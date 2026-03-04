@@ -5,6 +5,99 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-03-04
+
+Architecture completion release. Twelve detailed design documents, sixteen
+diagrams, TransactionContext as a first-class message envelope, full skeptic
+audit (code, docs, tests), and issue backlog alignment to the new vocabulary.
+
+### Added
+
+- Design documents (12 total, published on Jekyll site):
+  - A: What is a Port? (Passive Structure -- the restaurant counter)
+  - B: What is an Adapter? (Active Structure -- the waitress, the cook)
+  - C: What is an ACL? (Adapter + Port + Adapter -- convenience construct)
+  - D: Hexagon Sides (5 faces: 2 inbound, 3 outbound, 17 object shapes)
+  - E1: Hippocampus (Vault) -- aggregate root, single-writer, walk-in cooler
+  - E2: Salience (Focus) -- scoring engine, computes never persists
+  - E3: Synapse (Matrix) -- dependent aggregate, five connection types
+  - E4: Recall (Stream) -- CQRS read side, fast path + deep path
+  - E5: Cortex (Inception) -- entry point, MCP ↔ internal translator
+  - E6: Subconscious (Dream) -- timer-driven background caretaker
+  - F: TransactionContext -- chain of custody, six fields, zero nullable
+  - 0000: About Detailed Design (landing page)
+- Bounded context diagrams (6): HP-0001, SL-0001, SY-0001, RC-0001,
+  CX-0001, SB-0001.
+- MSG-0007: Total Recall sequence diagram (the deep-path feature the project
+  is named after). Subconscious-driven, Recall-assembled, NotificationPort-
+  delivered.
+- TransactionContext data class (`TransactionContext.kt`): sessionId,
+  requestId, messageId, causationId, timestamp, sourceContext. All 28
+  message variants carry `val tx: TransactionContext` as first parameter.
+- Domain model additions: WorkingMode enum (TASK, CONVERSATION, IDLE),
+  SessionEndReason enum (EXPLICIT, TIMEOUT, CRASH), HeartbeatReceived event,
+  TotalRecallAdvisory event, TotalRecallNotification.
+- Two Event Stores established: MES (Memory Event Store) for domain events,
+  NES (Notification Event Store) for mind-facing notifications.
+- Site: Design section (`_design/` collection), Catalog section (`_catalog/`
+  collection with traceability matrix), Design and Catalog sidebar nav groups.
+- Site: Fullscreen lightbox for Mermaid diagrams (svg-pan-zoom + click-to-
+  expand, replaced inline pan-zoom).
+- Site: All 16 diagrams extracted to `_includes/diagrams/` with Liquid
+  includes and div anchors.
+- Message conventions section in architecture-messages.adoc: arrow types,
+  naming, payload conventions, event source pattern.
+- Version golden source: build-time injection from gradle.properties via
+  processResources (replaced hardcoded `const val VERSION`).
+
+### Changed
+
+- Bounded contexts renamed to biological memory vocabulary:
+  Tiered Memory → Hippocampus, Association Graph → Synapse,
+  Attention → Salience, Recollection → Recall, Session Context → Cortex,
+  Daemon → Subconscious. 29+ files updated across site, code, diagrams,
+  ADRs, blog posts.
+- Domain model: AttentionScore → SalienceScore, AttentionScored →
+  SalienceScored. SalienceScored refactored to wrap SalienceScore model.
+- Domain model: DecaySweep.scope changed from String to Tier? (null = all).
+  Temporal fields (ShutdownCommand.flushTimeout, SessionState.duration,
+  BreakNotification.timeInTaskMode, SessionAuditPrompt.sessionDuration)
+  changed from Long to kotlin.time.Duration.
+- MSG-0002 (Search Memory) rewritten: fast path only. Deep path split to
+  MSG-0007. MemoryAccessedEvent added on retrieval.
+- MSG-0003 through MSG-0006 rewritten to match MSG-0001 pattern (activate/
+  deactivate lifelines, OnInit, Event Store, par blocks, publish/consume).
+- AssociationDirection moved from message package to domain/model.
+- associate_memories handler: removed fallback defaults, errors on missing
+  required params.
+- ADR-0006: event count 13→17, notification count 2→3, query routing
+  fixed (Recall not Hippocampus/Synapse).
+- Architecture-hexagonal.adoc: port operations aligned with code, actor
+  count 5→6, SearchFilter references → Map<String, String>.
+- GitHub Action: replaced dead SECURITY.md step with CLAUDE.md step.
+- GitHub issue backlog (#22 and 18 sub-issues): vocabulary aligned to
+  architecture, design document cross-references added, acceptance criteria
+  updated for event distinctions (TierDemoted vs MemoryReclassified) and
+  Cortex routing.
+
+### Removed
+
+- SearchFilter.kt -- dead code, replaced by Map<String, String>.
+- Inline svg-pan-zoom on diagrams (replaced by fullscreen lightbox).
+
+### Fixed
+
+- TotalRecallTest.kt: rewritten from smoke-only to 10 real tests (tool
+  registration, schema validation, handler invocation).
+- MessageTest.kt: expanded from 6 to 17 tests covering all message variants.
+- Self-referential assertion in MessageTest (T-Audit-2).
+
+### Deferred
+
+- C-Audit-9: TotalRecall.kt refactoring pass (deferred to implementation).
+- F-Audit-6: MemoryRetrieved/SalienceScored/AssociationsFound identity
+  crisis (response payloads vs domain events -- resolve during implementation).
+
 ## [0.6.0] - 2026-03-01
 
 Repository governance and CI/CD foundation. Continuous integration, security
