@@ -145,7 +145,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Synapse
 | Typed relationships between memories. Graph traversal.
-| `Association.kt`, `AssociationType.kt`
+| `Association.kt`, `AssociationType.kt`, `AssociationDirection.kt`
 | Model defined
 
 | Salience
@@ -160,7 +160,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Cortex
 | Per-instance working state. Entry point for all requests.
-| `LifecyclePort`, `TotalRecall.kt` (tool handlers)
+| `LifecyclePort`, `TotalRecall.kt` (tool handlers), `WorkingMode.kt`, `SessionEndReason.kt`
 | Stubs
 
 | Subconscious
@@ -186,8 +186,8 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 | `Query.kt`
 
 | Events
-| 16
-| 16
+| 17
+| 17
 | `Event.kt`
 
 | Notifications
@@ -196,7 +196,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 | `Notification.kt`
 |===
 
-NOTE: Event and notification counts updated after D-Audit-4 fix. ADR-0006 now matches code (16 events, 3 notifications).
+NOTE: Event count 17 includes HeartbeatReceived (added in C-Audit-7). Notification count 3 includes TotalRecallNotification. All counts match code.
 
 == Ports to Code
 
@@ -216,31 +216,36 @@ NOTE: Event and notification counts updated after D-Audit-4 fix. ADR-0006 now ma
 
 | `BackingServicePort`
 | Outbound
-| persist, retrieve, query, delete
+| save, findById, search, delete, update
 | `save`, `findById`, `search`, `delete`, `update`
 
 | `NotificationPort`
 | Outbound
-| notify, remind, alert
+| send
 | `send`
 
 | `RelayPort`
 | Outbound
-| send, receive, list_pending
+| relay
 | `relay`
 |===
 
-NOTE: Outbound port operations diverge from documentation. See audit findings D-Audit-1, D-Audit-2, D-Audit-3. Resolution deferred to detailed design pass.
+NOTE: Outbound port operations aligned with code in D-Audit-1, D-Audit-2, D-Audit-3. Documentation and code now match.
 
 == Known Inconsistencies
 
-Open audit findings tracked in `INDEX.md`. Summary:
+Audit findings tracked in `INDEX.md`.
 
-* *10 documentation mismatches* (D-Audit-1 through 10) -- port names, event counts, routing, actor count
-* *9 code issues* (C-Audit-1 through 9) -- dead code, duplicate events, wrong packages, stringly-typed fields
-* *3 test gaps* (T-Audit-1 through 3) -- smoke-only server test, self-referential assertion, low coverage
+=== Resolved
 
-These will be resolved through the detailed design pass (steps A through D6).
+* *10 documentation mismatches* (D-Audit-1 through 10) -- all resolved. Port names aligned, event counts corrected, routing fixed, actor count fixed.
+* *8 of 9 code issues* (C-Audit-1 through 8) -- dead code removed, events documented, packages fixed, schemas aligned, enums created, Duration types, HeartbeatReceived added, SalienceScored wrapping.
+* *3 test gaps* (T-Audit-1 through 3) -- all resolved. Server tests expanded (10 tests), self-referential assertion fixed, full message coverage (17 tests).
+
+=== Open
+
+* *C-Audit-9* -- TotalRecall.kt refactoring pass. Deferred to rdd13r.
+* *F-Audit-6* -- MemoryRetrieved/SalienceScored/AssociationsFound identity crisis (events or response payloads?). Resolves with TransactionContext usage patterns.
 
 == Design Documents
 

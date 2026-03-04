@@ -152,18 +152,18 @@ Fix code to match designs.
 
 ### 7. Resolve Test Audit Gaps (T-Audit)
 
-- [ ] **T-Audit-1** Server test is smoke-only. Add tool invocation and schema checks.
-- [ ] **T-Audit-2** Self-referential assertion in MessageTest line 90. Fix.
-- [ ] **T-Audit-3** Low message coverage (4/7 commands, 0/2 queries, 4/15 events untested).
+- [x] **T-Audit-1** ~~Server test smoke-only~~ RESOLVED: TotalRecallTest.kt rewritten with 10 tests: server creation, all 8 tool names, 4 schema validations (required params), 5 handler invocations (teapot responses, error responses, defaults). Zero warnings.
+- [x] **T-Audit-2** ~~Self-referential assertion~~ FIXED (previous session).
+- [x] **T-Audit-3** ~~Low message coverage~~ RESOLVED: MessageTest.kt expanded from 6 to 17 tests. All 7 commands tested (added ReclassifyCommand, ConsolidateCommand, ShutdownCommand with Duration). Both queries tested (SearchQuery defaults, ReflectQuery). All 17 events tested (Hippocampus 5, Salience 3 including SalienceScored wrapping SalienceScore, Synapse+TotalRecall 2, Lifecycle 5 with SessionEndReason/WorkingMode/Duration). All 3 notifications tested (added TotalRecallNotification). Enum entry counts verified (4 enums). DecaySweep scope default tested. Zero warnings.
 
 ### 8. Verify Catalog Matrix
 
-- [ ] **7.1** Diagram inventory matches actual diagrams (15 total).
-- [ ] **7.2** Design Documents table is current (all Done).
-- [ ] **7.3** Bounded Contexts to Code mapping is accurate after code fixes.
-- [ ] **7.4** Messages to Code counts are correct after event/command changes.
-- [ ] **7.5** Ports to Code operations match after port redesign.
-- [ ] **7.6** Known Inconsistencies section updated (resolved items removed, new items if any).
+- [x] **8.1** Diagram inventory: 16 `.mmd` files match 16 catalog entries. ✓
+- [x] **8.2** Design Documents: 12 entries (0000, A-D, E1-E6, F), all Done. ✓
+- [x] **8.3** Bounded Contexts to Code: Synapse row added `AssociationDirection.kt`. Cortex row added `WorkingMode.kt`, `SessionEndReason.kt`.
+- [x] **8.4** Messages to Code: Event count 16→17 (HeartbeatReceived). NOTE updated.
+- [x] **8.5** Ports to Code: Documented Operations column aligned with resolved D-Audit values. Documentation and code match. NOTE updated.
+- [x] **8.6** Known Inconsistencies: Resolved/Open split. 10 D-Audit + 8 C-Audit + 3 T-Audit resolved. Open: C-Audit-9 (Vadim's refactoring pass), F-Audit-6 (message identity crisis).
 
 By then we have working examples from gap resolution to accelerate design writing.
 
@@ -227,6 +227,8 @@ By then we have working examples from gap resolution to accelerate design writin
 - [x] Step 4 complete: TransactionContext annotations on all 7 sequence diagrams. Full propagation example on MSG-0001, brief Design F reference on MSG-0002 through MSG-0007.
 - [x] Step 5 complete: All D-Audit items resolved. architecture-hexagonal.adoc port operations aligned with code (D-Audit-1,2,3). Hippocampus commands completed (D-Audit-8). Governing Dynamic in ADR template (D-Audit-9). SearchFilter→Map everywhere (D-Audit-10). Design D NotificationPort updated: 2→3 shapes (TotalRecallNotification), 13→14 total object shapes.
 - [x] Step 6 complete (8 of 9): SearchFilter deleted (C-Audit-1). TierChanged/MemoryReclassified documented (C-Audit-2). AssociationDirection moved to domain/model (C-Audit-3). associate_memories defaults removed (C-Audit-4). WorkingMode, SessionEndReason enums created, DecaySweep.scope→Tier? (C-Audit-5). Long→Duration for all temporal fields (C-Audit-6). HeartbeatReceived event added (C-Audit-7). SalienceScored wraps SalienceScore model (C-Audit-8). C-Audit-9 skipped (Vadim's refactoring pass). All references updated: CHANGELOG, README, CLAUDE.md, catalog, blog post, architecture-messages.adoc. Build green.
+- [x] Step 7 complete: T-Audit-1 -- TotalRecallTest.kt rewritten (10 tests: tool registration, schemas, handler invocation). T-Audit-3 -- MessageTest.kt expanded from 6 to 17 tests covering all 7 commands, 2 queries, 17 events, 3 notifications, 4 enum counts, Duration fields, SalienceScored wrapping, DecaySweep scope default. Zero warnings. Build green.
+- [x] Step 8 complete: Catalog matrix verified and updated. Diagram inventory (16/16). Design docs (12, all Done). BC→Code updated (AssociationDirection.kt, WorkingMode.kt, SessionEndReason.kt). Event count 16→17. Ports operations aligned with D-Audit resolution. Known Inconsistencies rewritten: resolved/open split, 2 items remain open (C-Audit-9, F-Audit-6).
 
 ---
 
@@ -422,17 +424,17 @@ TotalRecall.kt line 51: "reviewed and accepted by rdd13r AND needs full refactor
 
 ## Audit Findings -- Test Gaps
 
-### T-Audit-1. Server test is smoke-only
+### T-Audit-1. ~~Server test is smoke-only~~ RESOLVED
 
-TotalRecallTest only verifies `createServer()` returns non-null. No tool invocation, no schema verification, no teapot response check.
+TotalRecallTest.kt rewritten: 10 tests covering tool registration (all 8 names), schema validation (4 tools' required params), handler invocation (teapot responses, error on missing params, default values).
 
 ### T-Audit-2. ~~Self-referential assertion in MessageTest~~ FIXED
 
 Was `cmd.memoryIds.first shouldBe cmd.memoryIds.first`. Now compares against known UUID variable `id1`.
 
-### T-Audit-3. Low message coverage
+### T-Audit-3. ~~Low message coverage~~ RESOLVED
 
-4 of 7 Command variants untested. Both Query variants untested. 11 of 15 Event variants untested.
+MessageTest.kt expanded from 6 to 17 tests. All 7 commands, 2 queries, 17 events, 3 notifications covered. Duration fields, enum entry counts, SalienceScored wrapping, DecaySweep scope default all tested.
 
 ---
 
