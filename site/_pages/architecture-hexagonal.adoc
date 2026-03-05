@@ -86,8 +86,8 @@ The ports are conscience-universal -- the same contract serves Claude, a human o
 Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).
 Both can run simultaneously -- graceful shutdown depends on this.
 
-Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans). T
-he notification port is how Total Recall talks back -- not just responding to requests, but proactively alerting the mind. "You've been in task mode for 90 minutes."
+Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans).
+The notification port is how Total Recall talks back -- not just responding to requests, but proactively alerting the mind. "You've been in task mode for 90 minutes."
 "Session ending -- what do you want to remember?"
 
 Relay adapters: Agora (future). A peer MCP server that the mind also connects to directly.
