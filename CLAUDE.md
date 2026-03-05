@@ -40,7 +40,7 @@ See `README.md` for full lineage and architectural rationale.
 
 ## Current State (0.8.0)
 
-MCP server with contract skeleton. All tools registered as teapot stubs -- callable but returning placeholder responses until backing services are wired.
+Architecture complete, implementation next. MCP server runs on stdio with 8 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
 
 What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
@@ -48,17 +48,22 @@ What exists:
 - 8 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, associate_memories, reclassify_memory, reflect
 - Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
 - Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants)
+- TransactionContext on every message (sessionId, requestId, messageId, causationId, timestamp, sourceContext)
 - Inbound ports: MemoryPort, LifecyclePort
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort
+- 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
+- 12 design documents (A-D foundations, E1-E6 bounded contexts, F TransactionContext)
+- 16 Mermaid diagrams (10 sequence/architecture + 6 bounded context)
+- Traceability catalog linking architecture, ADRs, designs, diagrams, and code
 - Programmatic logback configuration (stderr for stdio transport)
+- CI/CD: verify workflow (build + test on push/PR), Qodana security scanning, Renovate dependency updates
 - Full governance file set
 - Yggdrasil project board (#6)
-- Jekyll site with 4 architecture pages
+- Jekyll site with 4 architecture pages, 12 design pages, catalog
 
 What does NOT exist yet:
 - Backing service implementations (no Redis, no persistence)
 - Container images (approach TBD -- not Dockerfile)
-- CI/CD build and test workflow (publish workflow exists, runs build as gate)
 
 ## Build Commands
 

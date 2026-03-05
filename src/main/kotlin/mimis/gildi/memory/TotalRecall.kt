@@ -121,7 +121,7 @@ private fun Server.registerMemoryTools() {
 
     addTool(
         name = "search_memory",
-        description = "Search for memories. Results ranked by attention score with association-activated memories included.",
+        description = "Search for memories. Results ranked by salience score with association-activated memories included.",
         inputSchema = ToolSchema(
             properties = buildJsonObject {
                 put("query", buildJsonObject {
@@ -134,7 +134,7 @@ private fun Server.registerMemoryTools() {
                 })
                 put("include_associations", buildJsonObject {
                     put("type", "boolean")
-                    put("description", "Whether to activate association graph (default true)")
+                    put("description", "Whether to activate associations (default true)")
                 })
             },
             required = listOf("query")
@@ -149,7 +149,7 @@ private fun Server.registerMemoryTools() {
 
     addTool(
         name = "claim_memory",
-        description = "Claim a memory -- actively reinforce it. Boosts attention score and resists decay.",
+        description = "Claim a memory -- actively reinforce it. Boosts salience score and resists decay.",
         inputSchema = ToolSchema(
             properties = buildJsonObject {
                 put("memory_id", buildJsonObject {
