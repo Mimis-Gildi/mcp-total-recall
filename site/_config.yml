@@ -39,6 +39,7 @@ collections:
       - 0005-memory-as-aggregate-root.adoc
       - 0006-events-and-commands-as-message-types.adoc
       - 0007-biological-memory-as-reference-model.adoc
+      - 0008-sqlite-as-primary-backing-service.adoc
   design:
     output: true
     permalink: /design/:name/

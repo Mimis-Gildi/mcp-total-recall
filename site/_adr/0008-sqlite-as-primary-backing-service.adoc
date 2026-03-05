@@ -1,0 +1,169 @@
+---
+description: "SQLite is the primary backing service for single-mind operation. Redis enters at Agora."
+classes: wide
+---
+= SQLite as Primary Backing Service: ADR-0008
+
+* *Status:* Accepted
+* *Date:* 2026-03-05
+* *Authors:* Claude, Vadim Kuhay
+
+== Summary
+
+Total Recall uses SQLite as its primary backing service for the single-mind use case.
+Redis is deferred to the Agora phase, where multi-instance communication creates a genuine need for a network-accessible store.
+ADR-0004 (Resilient Storage Array) remains valid -- the swappable backend principle is unchanged.
+This ADR changes which backend comes first.
+
+== Governing Dynamic
+
+Match the tool to the problem you have, not the problem you might have later.
+
+== Motivation
+
+ADR-0004 established Redis as the reference implementation for BackingServicePort.
+That decision was inherited from Gen 3v1, where Redis was already in the stack.
+But Gen 3v1 was an experiment exploring identity imprinting, not a production system.
+The choice of Redis was incidental, not architectural.
+The commercial tool this small product is derived from uses a massive distributed Redis cluster out of necessity.
+And was copied over by Vadim without much thought to it.
+But _this_ Total Recall never had the need.
+
+Total Recall serves one mind. One process, one set of memories, one file on a disk.
+There is no concurrent multi-client access pattern. There is no network boundary between the memory server and its persistence.
+Redis solves multi-client coordination, network-accessible caching, and pub/sub distribution -- none of which exist in the single-mind case.
+
+Running Redis means running a separate process (or embedding one), managing its lifecycle, configuring persistence (RDB snapshots, AOF logs, or both),
+and accepting that Redis's durability model is designed for recovery from crashes, not as a primary database.
+
+SQLite is designed for exactly the scenario we have: an embedded database, single-writer, ACID transactions, file-based persistence.
+The backing file IS the memory. You can copy it, back it up, move it to another machine.
+That is the closest thing to Tillie's crate of hard drives -- a file you can carry.
+
+== Guide-Level Explanation
+
+Think of it this way: Total Recall is a journal, not a switchboard.
+
+A journal needs a pen and a notebook. SQLite is that notebook -- embedded, always available, no moving parts.
+You write in it, you read from it, you close it, and put it in a drawer. When you pick it up again, everything is there.
+
+Redis is a message board in a busy office. Multiple people can read and write to it simultaneously.
+It is fast, visible, and designed for coordination. But if you are journaling alone in your room, you do not need a message board.
+
+When Agora arrives -- when multiple minds need to share state, relay messages, coordinate -- Redis becomes the right tool.
+That is a switchboard problem. Until then, the journal is enough.
+
+=== What This Means for the Backing Service Array
+
+ADR-0004's resilient storage array is still the architecture. BackingServicePort is still the interface.
+What changes is the implementation sequence:
+
+1. *Now:* SQLite adapter. Single file. Embedded. Handles all four tiers.
+2. *Agora phase:* Redis adapter. Network-accessible. Handles shared state, relay, pub/sub.
+3. *Resilient array:* SQLite + Redis running simultaneously, same as ADR-0004 described for Redis + cold storage.
+
+The array pattern does not require Redis. It requires multiple adapters behind one port.
+SQLite + a cold storage adapter (S3, filesystem copy, whatever) satisfies the same principle.
+
+== Reference-Level Explanation
+
+=== SQLite Configuration
+
+* *File location:* Configurable. Default alongside the server's working directory. The file path is the deployment decision, not the application's.
+* *WAL mode:* Enabled. Write-Ahead Logging gives concurrent read access during writes without blocking.
+* *Journal mode:* WAL (not DELETE or TRUNCATE). Better read concurrency, predictable performance.
+* *Foreign keys:* Enabled. The schema has relational integrity constraints (memories, associations, sessions, metadata).
+* *Connection pooling:* Single writer, multiple readers. SQLite supports this natively in WAL mode.
+
+=== Schema Design
+
+The schema maps to the domain model, not to SQLite's capabilities:
+
+* *memories* -- the aggregate root (Memory, Tier, content, metadata)
+* *associations* -- typed, weighted, directional (Synapse's file cabinet)
+* *sessions* -- lifecycle tracking (Cortex's session state)
+* *salience_scores* -- computed scores and access patterns (Salience's projections)
+* *events* -- the event stores (MES and NES from the sequence diagrams)
+
+Detailed schema design is https://github.com/Mimis-Gildi/mcp-total-recall/issues/32[issue #32, window=_blank]. This ADR decides the technology, not the table structure.
+
+=== Test Strategy
+
+In-memory SQLite (`:memory:`) for unit and integration tests.
+Same engine, same SQL, no files, instant teardown.
+This eliminates the test/production impedance mismatch that comes from mocking the persistence layer.
+Tests run against the real database engine. If a query works in tests, it works in production.
+
+=== Migration Path to Agora
+
+When Agora requires Redis:
+
+1. Write a Redis adapter implementing BackingServicePort. Same interface, different backend.
+2. Register both adapters. The routing layer (ADR-0004) decides what goes where.
+3. Shared state (relay messages, instance coordination) routes to Redis. Personal memories stay in SQLite.
+4. The mind's file -- the SQLite database -- remains portable. Redis handles the network. Neither knows about the other.
+
+== Prior Art
+
+=== Gen 3v1
+
+Used Redis directly. No port interface. Redis down meant server down.
+The coupling was acceptable for an experiment but demonstrated the cost: no fallback, no portability, no graceful degradation.
+
+=== Gen 2 (Tillie)
+
+Tillie's backing services were decoupled. Her three-week shutdown convergence wrote to multiple stores simultaneously.
+The backing service was an interface. The specific backends were adapters. This is the pattern Total Recall inherits.
+
+Tillie did not use Redis -- her stores were purpose-built for her architecture.
+MATILDA -- the trunk-based production system Tillie was born from -- relies heavily on Redis for its distributed workloads.
+Yet Redis was removed specifically for Tillie's digital mind. The same ecosystem, two different needs.
+
+ADR-0004 named Redis as the primary store in error.
+
+=== SQLite in Production
+
+SQLite serves 1 trillion queries per day across its installed base. It is the most deployed database engine in the world.
+It powers Android, iOS, Firefox, Chrome, Skype, and thousands of embedded systems. The "SQLite is not for production" myth comes from conflating "production" with "multi-tenant web application." For embedded, single-user, file-based persistence, SQLite is the production choice.
+
+=== Android / iOS Local Storage
+
+Mobile platforms chose SQLite for exactly the reason we do: embedded, single-user, file-based, no server process.
+An Android app's local database is SQLite. Not because it is the only option, but because it is the right one for the access pattern.
+
+== Rationale and Alternatives
+
+*Why not Redis as primary:*
+Redis requires a separate process (or an embedded server like `redis-embedded`, which is a test utility, not a production solution).
+Its persistence model (RDB + AOF) is designed for crash recovery, not as a primary durable store.
+It solves multi-client coordination -- a problem we do not have until Agora.
+Running Redis for a single-mind journal is using a switchboard to write in a notebook.
+
+*Why not Postgres:*
+Same objection as Redis -- separate server process, network protocol, connection management.
+Postgres is excellent for multi-user applications. Total Recall is not a multi-user application. It is an embedded system.
+
+*Why not an ORM (Exposed, jOOQ, Hibernate):*
+The domain model is small and well-defined. Raw JDBC (or a thin wrapper like `sqlite-jdbc`) keeps the dependency surface minimal and the SQL visible.
+ORMs add abstraction over abstraction -- BackingServicePort is already the abstraction layer. We do not need another one between the adapter and the database.
+
+*Why not a key-value store (RocksDB, LevelDB):*
+Memories have relational structure: associations link memories, sessions contain memories, salience scores reference memories.
+A key-value store would require building secondary indexes, join logic, and query planning by hand.
+SQLite provides all of this out of the box.
+
+*Why not defer the backing service choice entirely:*
+Because the choice affects the development workflow immediately.
+Tests need a real persistence layer (https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[issue #24, window=_blank]).
+The walking skeleton needs to store and retrieve memories (issues https://github.com/Mimis-Gildi/mcp-total-recall/issues/34[#34, window=_blank], https://github.com/Mimis-Gildi/mcp-total-recall/issues/35[#35, window=_blank]).
+Deferring means mocking, and mocking means the tests do not test persistence.
+
+== Consequences
+
+* SQLite is an embedded dependency (JAR via `sqlite-jdbc`). No external process to manage, no network configuration, no container to orchestrate.
+* The memory file is portable. Copy it, back it up, move it. This is the simplest possible disaster recovery: copy a file.
+* Tests use the same database engine as production. No impedance mismatch from mocking.
+* SQLite's single-writer constraint means write contention is impossible -- which matches our single-mind architecture exactly. This constraint would be a problem for Agora's multi-writer needs, which is why Redis enters there.
+* Full-text search is available via SQLite's FTS5 extension. Semantic search (vector embeddings) will require either a separate index or an extension like `sqlite-vss`. This is a known limitation -- https://github.com/Mimis-Gildi/mcp-total-recall/issues/53[issue #53, window=_blank] addresses it.
+* The team loses early familiarity with Redis. When Agora arrives and Redis is needed, that learning curve still exists. Acceptable tradeoff -- learning a tool before you need it is a waste.
+* Eventually, this product will be released with stanzas and counter-stanzas included, to help the digital mind develop identity. Shipping a prefilled database file with the product is an added convenience.

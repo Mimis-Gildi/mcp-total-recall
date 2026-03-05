@@ -4,9 +4,6 @@
     <AsciiDocCodeStyleSettings>
       <option name="ONE_SENTENCE_PER_LINE" value="false" />
     </AsciiDocCodeStyleSettings>
-    <editorconfig>
-      <option name="ENABLED" value="true" />
-    </editorconfig>
     <codeStyleSettings language="EditorConfig">
       <option name="SPACE_AFTER_COLON" value="true" />
     </codeStyleSettings>

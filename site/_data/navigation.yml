@@ -1,6 +1,8 @@
 main:
   - title: "Architecture"
     url: /architecture/
+  - title: "Roadmap"
+    url: /roadmap/
   - title: "About"
     url: /about/
   - title: "GitHub"
@@ -35,6 +37,8 @@ architecture:
         url: /decisions/0006-events-and-commands-as-message-types/
       - title: "ADR-0007: Bio Memory"
         url: /decisions/0007-biological-memory-as-reference-model/
+      - title: "ADR-0008: SQLite Primary"
+        url: /decisions/0008-sqlite-as-primary-backing-service/
   - title: "Design"
     children:
       - title: "About Detailed Design"
@@ -65,3 +69,7 @@ architecture:
     children:
       - title: "Traceability Matrix"
         url: /catalog/0000-catalog/
+  - title: "Roadmap"
+    children:
+      - title: "Delivery Roadmap"
+        url: /roadmap/

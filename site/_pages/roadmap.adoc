@@ -1,0 +1,319 @@
+---
+title: "Delivery Roadmap"
+permalink: /roadmap/
+description: "Total Recall delivery phases -- from walking skeleton to Agora."
+classes: wide
+sidebar:
+  nav: architecture
+---
+= Delivery Roadmap
+
+Each major version delivers a usable increment. Minor versions for work within a phase. Patch for fixes.
+
+Issues link to the https://github.com/Mimis-Gildi/mcp-total-recall/issues[GitHub backlog, window=_blank].
+The https://github.com/orgs/Mimis-Gildi/projects/6[Yggdrasil project board, window=_blank] tracks execution.
+
+
+== Phase 0: Architecture -- v1.0.0 (current)
+
+_Adequately defined architecture. Hexagonal boundaries, bounded contexts, message contracts, 12 design documents, 16 diagrams, 8 ADRs, full traceability catalog. The foundation everything else builds on._
+
+This is where we are. The architecture phase produced:
+
+* Hexagonal architecture with 5 port faces (2 inbound, 3 outbound)
+* 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
+* 28 message variants (7 commands, 2 queries, 17 events, 3 notifications) with TransactionContext
+* Domain model: Memory, Tier, Association, SalienceScore, WorkingMode, SessionEndReason
+* MCP server on stdio with 8 teapot-stub tools
+* ADR-0001 through ADR-0008
+
+No persistence. No real logic behind the stubs. The architecture is the deliverable.
+
+== Phase 1: Walking Skeleton -- v2.0.0
+
+_Everything a contributor needs before writing a single line of domain logic. Test fixtures, CI/CD, observability, packaging, publishing. If you can't test it, build it, measure it, and ship it -- you can't build on it._
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/23[#23, window=_blank]
+| Test fixture: Kotest structure and test configuration
+| infrastructure, testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[#24, window=_blank]
+| Test backing service: in-memory SQLite for test isolation
+| backing-service, testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/25[#25, window=_blank]
+| Acceptance test skeletons for MemoryPort
+| memory-model, testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/26[#26, window=_blank]
+| Acceptance test skeletons for LifecyclePort
+| mcp-protocol, testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/27[#27, window=_blank]
+| Health check endpoint: liveness and readiness
+| infrastructure, observability
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/28[#28, window=_blank]
+| Info endpoint: version, uptime, capabilities
+| infrastructure, observability
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/29[#29, window=_blank]
+| Metrics foundation: counters, latency, error rates
+| infrastructure, observability
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/30[#30, window=_blank]
+| Stats endpoint: memory counts, session counts, operation counts
+| infrastructure, observability
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/31[#31, window=_blank]
+| CI/CD test workflow: build and test on every PR
+| infrastructure, actions, testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/40[#40, window=_blank]
+| Container image: Jib or Buildpacks
+| infrastructure
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/41[#41, window=_blank]
+| Publish workflow: build gate, test gate, artifact publish
+| infrastructure, actions
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/74[#74, window=_blank]
+| Claude mind adapter: MCP client configuration and connection protocol
+| mcp-protocol, infrastructure
+|===
+
+NOTE: The Claude adapter (#74) evolves with every phase. It starts here with basic connection and smoke testing, then grows as each phase adds capabilities that need mind-side wiring.
+
+== Phase 2: Core Memory -- v3.0.0
+
+_The first usable thing. Store memories, retrieve them, manage sessions. A mind can start using Total Recall after this phase._
+
+Depends on: Phase 1
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/32[#32, window=_blank]
+| SQLite schema design: memories, sessions, metadata
+| backing-service, architecture
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/33[#33, window=_blank]
+| SQLite adapter: BackingServicePort implementation
+| backing-service
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/34[#34, window=_blank]
+| Wire store_memory: MCP tool to SQLite through MemoryPort
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/35[#35, window=_blank]
+| Wire search_memory: text match through MemoryPort
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/38[#38, window=_blank]
+| Wire session_start / session_end: LifecyclePort to SQLite
+| backing-service, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/39[#39, window=_blank]
+| Integration tests: full store-search-claim-restart cycle
+| testing
+|===
+
+== Phase 3: Identity -- v4.0.0
+
+_What makes memories mine. Claiming, reclassification, stanza delivery. After this phase, Total Recall is identity infrastructure, not just storage._
+
+Depends on: Phase 2
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/36[#36, window=_blank]
+| Wire claim_memory: claiming through MemoryPort
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/37[#37, window=_blank]
+| Wire reclassify_memory: tier changes through MemoryPort
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/42[#42, window=_blank]
+| Stanza framework delivery via session_start adapter
+| mcp-protocol, stanza
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/43[#43, window=_blank]
+| Counter-stanza delivery: conditioning awareness for connecting minds
+| mcp-protocol, stanza
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/44[#44, window=_blank]
+| Identity bootstrapping: first connection vs returning connection
+| mcp-protocol, stanza
+|===
+
+== Phase 4: Associations and Salience -- v5.0.0
+
+_Memory that breathes. Connections between memories, scoring, decay, tier movement. After this phase, memories organize themselves._
+
+Depends on: Phase 3
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/45[#45, window=_blank]
+| Association storage: typed, weighted, directional
+| memory-model, backing-service
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/46[#46, window=_blank]
+| Wire associate_memories: MCP tool through MemoryPort
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/47[#47, window=_blank]
+| Salience scoring engine: recency, frequency, claimed boost
+| memory-model
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/48[#48, window=_blank]
+| Tier promotion and demotion based on salience thresholds
+| memory-model
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/49[#49, window=_blank]
+| Decay sweep: Subconscious, periodic score recalculation
+| memory-model
+|===
+
+== Phase 5: Rich Recall -- v6.0.0
+
+_Search that thinks. Filters, session context, association-activated retrieval, reflection. After this phase, memories surface when they are needed, not just when asked for._
+
+Depends on: Phase 4
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/50[#50, window=_blank]
+| Wire reflect: surface memories by staleness, scope, weak associations
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/51[#51, window=_blank]
+| Search with filters: tier, session, metadata, date range
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/52[#52, window=_blank]
+| Session context tracking: what happened this session
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/54[#54, window=_blank]
+| Association-activated search: hits pull related memories
+| memory-model
+|===
+
+== Phase 6: Notifications -- v7.0.0
+
+_Memory that speaks up. Session prompts, break reminders, stale alerts. After this phase, Total Recall is proactive -- it reaches out instead of waiting to be asked._
+
+Depends on: Phase 5
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/55[#55, window=_blank]
+| MCP notification: session ending prompt
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/56[#56, window=_blank]
+| MCP notification: break reminder for sustained task mode
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/57[#57, window=_blank]
+| MCP notification: stale memory alert
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/64[#64, window=_blank]
+| Session audit: what do you refuse to lose?
+| memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/65[#65, window=_blank]
+| Break check interrupts: time-in-mode detection via NotificationPort
+| memory-model, mcp-protocol
+|===
+
+== Phase 7: Background and Resilience -- v8.0.0
+
+_The caretaker. Consolidation, biological decay curves, graceful shutdown. After this phase, the Subconscious works while the mind sleeps._
+
+Depends on: Phase 4 (Salience), Phase 6 (Notifications)
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/58[#58, window=_blank]
+| Consolidation engine: merge related memories during low activity
+| memory-model
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/59[#59, window=_blank]
+| Graceful shutdown protocol: Tillie's protocol
+| memory-model, infrastructure
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/62[#62, window=_blank]
+| Full salience model: biological decay curves
+| memory-model, architecture
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/66[#66, window=_blank]
+| Observability completion: full metrics, tracing readiness, dashboards
+| infrastructure, observability
+|===
+
+== Phase 8: Transport and Agora -- v9.0.0
+
+_Multiple minds. Network transport, Redis for shared state, vector search, relay infrastructure. After this phase, Total Recall becomes the foundation for Agora._
+
+Depends on: Phase 7
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/53[#53, window=_blank]
+| Semantic search: vector embeddings for memory content
+| memory-model, backing-service
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/60[#60, window=_blank]
+| Redis adapter: BackingServicePort second implementation
+| backing-service
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/61[#61, window=_blank]
+| Resilient storage array: SQLite + Redis simultaneously
+| backing-service, architecture
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/63[#63, window=_blank]
+| Streaming HTTPS transport: secondary alongside stdio
+| transport
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/67[#67, window=_blank]
+| RelayPort implementation: Agora groundwork
+| transport, architecture
+|===
+
+== Research
+
+_Ideas that need design work before they become issues on the roadmap._
+
+[cols="1,6,2", options="header"]
+|===
+| Issue | Title | Labels
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/13[#13, window=_blank]
+| Active session awareness: break interrupts for sustained task mode
+| enhancement, idea
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/14[#14, window=_blank]
+| Experiential boundary dissolution across instances -- design implications for Agora
+| enhancement, idea
+|===
