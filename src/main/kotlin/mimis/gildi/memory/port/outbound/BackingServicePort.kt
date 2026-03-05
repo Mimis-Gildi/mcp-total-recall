@@ -9,8 +9,8 @@ import mimis.gildi.memory.domain.model.Memory
 import java.util.UUID
 
 /**
- * Outbound port for persistence. Redis is the reference implementation.
- * Cold storage is another. Both can run simultaneously.
+ * Outbound port for persistence. SQLite is the primary implementation (ADR-0008).
+ * Redis enters at Agora. Multiple adapters can run simultaneously (ADR-0004).
  */
 @Suppress("unused")
 interface BackingServicePort {

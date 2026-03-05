@@ -52,6 +52,6 @@ interface MemoryPort {
 
     suspend fun reflect(
         criteria: Map<String, String> = emptyMap(),
-        scope: String = "all"
+        scope: Tier? = null
     ): List<Memory>
 }
