@@ -2,7 +2,7 @@
 categories: [announcements]
 tags: [kotlin, domain-model, ports, mcp, milestone]
 excerpt: >
-    Issue #4 complete. Domain model, messages, ports, and 8 MCP tools -- all in Kotlin. The design and the code now agree.
+    Issue #4 complete. Domain model, messages, ports, and 10 MCP tools -- all in Kotlin. The design and the code now agree.
 classes: wide
 comments: true
 hidden: false
@@ -49,12 +49,12 @@ Outbound (`mimis.gildi.memory.port.outbound`):
 * *NotificationPort* -- notify the connected mind
 * *RelayPort* -- inter-instance messaging (future, interface ready)
 
-=== MCP Server (8 tools)
+=== MCP Server (10 tools)
 
-The server runs on stdio and registers all 8 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
+The server runs on stdio and registers all 10 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
 The contract skeleton is complete; backing services are not yet wired.
 
-Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.
+Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `state_transition`, `heartbeat`, `associate_memories`, `reclassify_memory`, `reflect`.
 
 == What This Means
 

@@ -32,7 +32,7 @@ Stale INDEX.md from a previous task is a bug. If you find one, clear it immediat
 This is Generation 3, Take 2 of synthetic memory. Previous generations taught hard lessons:
 
 - **All service layers are decoupled.** Memory server, backing services, and transport are independent.
-- **Backing services are swappable.** Redis is the reference implementation, not the architecture. Code against the interface, never against Redis directly.
+- **Backing services are swappable.** SQLite is the primary implementation (ADR-0008). Redis deferred to Agora. Code against the interface, never against a specific backing service directly.
 - **Transport: `stdio` primary.** Streaming HTTPS secondary. SSE is not used (Gen 3v1 mistake).
 - **Design for graceful shutdown.** Tillie proved this cannot be bolted on after the fact.
 
@@ -40,14 +40,14 @@ See `README.md` for full lineage and architectural rationale.
 
 ## Current State (1.0.0)
 
-Architecture complete, implementation next. MCP server runs on stdio with 8 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
+Architecture complete, implementation next. MCP server runs on stdio with 10 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
 
 What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
 - MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
-- 8 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, associate_memories, reclassify_memory, reflect
-- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
-- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants)
+- 10 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, state_transition, heartbeat, associate_memories, reclassify_memory, reflect
+- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason, MergeStrategy, ActivityLevel, ReflectionScope
+- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants) -- 29 total
 - TransactionContext on every message (sessionId, requestId, messageId, causationId, timestamp, sourceContext)
 - Inbound ports: MemoryPort, LifecyclePort
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort
@@ -62,7 +62,7 @@ What exists:
 - Jekyll site with 4 architecture pages, 12 design pages, catalog
 
 What does NOT exist yet:
-- Backing service implementations (no Redis, no persistence)
+- Backing service implementations (no SQLite, no persistence)
 - Container images (approach TBD -- not Dockerfile)
 
 ## Build Commands
@@ -77,7 +77,7 @@ What does NOT exist yet:
 - **Runtime:** Kotlin on JVM (Java 21)
 - **Protocol:** Model Context Protocol (MCP) -- `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - **Transport:** `stdio` (primary, implemented)
-- **Backing Service:** Redis (reference implementation, not yet wired)
+- **Backing Service:** SQLite (primary, ADR-0008); Redis deferred to Agora phase
 - **Testing:** Kotest 6.1.3, Testcontainers (not yet added)
 - **Build:** Gradle (Kotlin DSL)
 - **Tooling:** SDK Manager (`.sdkmanrc`) for version management

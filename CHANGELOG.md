@@ -147,7 +147,7 @@ needed before contributors start building.
 
 Contract definitions release. Every port, message, and domain type from the
 architecture model (Issue #3) now exists as Kotlin code. MCP server runs on
-stdio with 8 teapot-stub tools. The design and the code agree.
+stdio with 10 teapot-stub tools. The design and the code agree.
 
 ### Added
 
@@ -157,9 +157,9 @@ stdio with 8 teapot-stub tools. The design and the code agree.
   Command (9 variants), Event (13 variants), Notification (2 variants).
 - Inbound ports: MemoryPort, LifecyclePort.
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort.
-- MCP server on stdio with 8 registered tools (teapot stubs):
+- MCP server on stdio with 10 registered tools (teapot stubs):
   store_memory, search_memory, claim_memory, session_start, session_end,
-  associate_memories, reclassify_memory, reflect.
+  state_transition, heartbeat, associate_memories, reclassify_memory, reflect.
 - Domain model and message tests (Kotest).
 - Site: announcement posts for Issues #3 and #4.
 - Site: favicon from circuit-tree logo.

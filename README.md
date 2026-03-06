@@ -313,7 +313,7 @@ recognizable across projects while avoiding collisions with registered services.
 
 ### Current State
 
-Architecture complete, implementation next. The server registers 8 MCP tools -- all **teapot stubs** (callable, returning placeholder responses). Full domain
+Architecture complete, implementation next. The server registers 10 MCP tools -- all **teapot stubs** (callable, returning placeholder responses). Full domain
 model, message contracts, bounded context designs, and 12 design documents are in place. No backing service is wired yet.
 
 Tools available: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.
