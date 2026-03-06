@@ -9,11 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 import io.modelcontextprotocol.kotlin.sdk.server.StdioServerTransport
-import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
-import io.modelcontextprotocol.kotlin.sdk.types.Implementation
-import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
-import io.modelcontextprotocol.kotlin.sdk.types.TextContent
-import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
+import io.modelcontextprotocol.kotlin.sdk.types.*
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
@@ -25,29 +21,19 @@ import kotlinx.serialization.json.put
 
 val rootLog = KotlinLogging.logger {}
 
-val VERSION: String by lazy {
-    val props = java.util.Properties()
-    val stream = object {}.javaClass.getResourceAsStream("/version.properties")
-        ?: error("version.properties not found on classpath")
-    stream.use { props.load(it) }
-    props.getProperty("version") ?: error("version property not found in version.properties")
-}
-
-fun main(): Unit = runBlocking {
+fun main() {
     configureLogging()
+    runBlocking {
 
-    rootLog.info { "Total Recall $VERSION -- starting MCP server" }
-
-    val server = createServer()
-    val transport = StdioServerTransport(
-        inputStream = System.`in`.asSource().buffered(),
-        outputStream = System.out.asSink().buffered()
-    )
-
-    server.createSession(transport)
-
-    rootLog.info { "Total Recall -- listening on stdio" }
-    awaitCancellation()
+        createServer().createSession(
+            StdioServerTransport(
+                inputStream = System.`in`.asSource().buffered(),
+                outputStream = System.out.asSink().buffered()
+            )
+        )
+        rootLog.info { "Total Recall ${BuildInfo.VERSION} -- listening on stdio" }
+        awaitCancellation()
+    }
 }
 
 /**
@@ -61,7 +47,7 @@ fun main(): Unit = runBlocking {
 fun createServer(): Server = Server(
     serverInfo = Implementation(
         name = "total-recall",
-        version = VERSION
+        version = BuildInfo.VERSION
     ),
     options = ServerOptions(
         capabilities = ServerCapabilities(

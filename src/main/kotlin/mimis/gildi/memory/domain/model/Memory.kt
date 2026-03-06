@@ -15,6 +15,6 @@ data class Memory(
     val tier: Tier,
     val createdAt: Instant,
     val lastAccessed: Instant,
-    val sessionId: String,
+    val sessionId: UUID,
     val claimed: Boolean = false
 )

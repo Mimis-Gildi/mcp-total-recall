@@ -86,8 +86,6 @@ _Everything a contributor needs before writing a single line of domain logic. Te
 | mcp-protocol, infrastructure
 |===
 
-NOTE: The Claude adapter (#74) evolves with every phase. It starts here with basic connection and smoke testing, then grows as each phase adds capabilities that need mind-side wiring.
-
 == Phase 2: Core Memory -- v3.0.0
 
 _The first usable thing. Store memories, retrieve them, manage sessions. A mind can start using Total Recall after this phase._
@@ -121,6 +119,10 @@ Depends on: Phase 1
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/39[#39, window=_blank]
 | Integration tests: full store-search-claim-restart cycle
 | testing
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/75[#75, window=_blank]
+| Claude mind adapter: Core Memory wiring
+| mcp-protocol
 |===
 
 == Phase 3: Identity -- v4.0.0
@@ -151,6 +153,10 @@ Depends on: Phase 2
 
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/44[#44, window=_blank]
 | Identity bootstrapping: first connection vs returning connection
+| mcp-protocol, stanza
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/76[#76, window=_blank]
+| Claude mind adapter: Identity wiring
 | mcp-protocol, stanza
 |===
 
@@ -183,6 +189,10 @@ Depends on: Phase 3
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/49[#49, window=_blank]
 | Decay sweep: Subconscious, periodic score recalculation
 | memory-model
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/77[#77, window=_blank]
+| Claude mind adapter: Associations and Salience wiring
+| mcp-protocol, memory-model
 |===
 
 == Phase 5: Rich Recall -- v6.0.0
@@ -210,6 +220,10 @@ Depends on: Phase 4
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/54[#54, window=_blank]
 | Association-activated search: hits pull related memories
 | memory-model
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/78[#78, window=_blank]
+| Claude mind adapter: Rich Recall wiring
+| mcp-protocol, memory-model
 |===
 
 == Phase 6: Notifications -- v7.0.0
@@ -241,6 +255,10 @@ Depends on: Phase 5
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/65[#65, window=_blank]
 | Break check interrupts: time-in-mode detection via NotificationPort
 | memory-model, mcp-protocol
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/79[#79, window=_blank]
+| Claude mind adapter: Notifications wiring
+| mcp-protocol, memory-model
 |===
 
 == Phase 7: Background and Resilience -- v8.0.0
@@ -268,6 +286,10 @@ Depends on: Phase 4 (Salience), Phase 6 (Notifications)
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/66[#66, window=_blank]
 | Observability completion: full metrics, tracing readiness, dashboards
 | infrastructure, observability
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/80[#80, window=_blank]
+| Claude mind adapter: Background and Resilience wiring
+| mcp-protocol, memory-model, infrastructure
 |===
 
 == Phase 8: Transport and Agora -- v9.0.0
@@ -299,6 +321,10 @@ Depends on: Phase 7
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/67[#67, window=_blank]
 | RelayPort implementation: Agora groundwork
 | transport, architecture
+
+| https://github.com/Mimis-Gildi/mcp-total-recall/issues/81[#81, window=_blank]
+| Claude mind adapter: Agora wiring
+| mcp-protocol, transport, architecture
 |===
 
 == Research

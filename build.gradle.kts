@@ -34,10 +34,29 @@ application {
     mainClass.set("mimis.gildi.memory.TotalRecallKt")
 }
 
-tasks.processResources {
-    filesMatching("version.properties") {
-        expand("version" to project.version)
+val generateBuildInfo by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/source/buildinfo")
+    inputs.property("version", project.version)
+    outputs.dir(outputDir)
+
+    doLast {
+        outputDir.get().asFile.resolve("mimis/gildi/memory").apply {
+            mkdirs()
+            resolve("BuildInfo.kt").writeText(
+                """
+                |package mimis.gildi.memory
+                |
+                |object BuildInfo {
+                |    const val VERSION = "${project.version}"
+                |}
+                """.trimMargin()
+            )
+        }
     }
+}
+
+kotlin.sourceSets.main {
+    kotlin.srcDir(generateBuildInfo)
 }
 
 tasks.test {

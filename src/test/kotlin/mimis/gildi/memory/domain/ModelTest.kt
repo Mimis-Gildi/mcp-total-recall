@@ -37,7 +37,7 @@ class ModelTest : StringSpec({
             tier = Tier.LONG_TERM,
             createdAt = now,
             lastAccessed = now,
-            sessionId = "test-session"
+            sessionId = UUID.randomUUID()
         )
         memory.id shouldBe id
         memory.claimed shouldBe false

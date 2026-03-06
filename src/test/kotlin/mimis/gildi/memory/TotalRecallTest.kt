@@ -17,6 +17,11 @@ import kotlinx.serialization.json.buildJsonObject
 
 class TotalRecallTest : StringSpec({
 
+    "VERSION is compile-time constant from BuildInfo" {
+        BuildInfo.VERSION shouldNotBe null
+        BuildInfo.VERSION shouldBe "1.0.0"
+    }
+
     "server creates without error" {
         val server = createServer()
         server shouldNotBe null

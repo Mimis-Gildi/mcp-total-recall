@@ -33,7 +33,7 @@ class MessageTest : StringSpec({
             content = "test",
             metadata = emptyMap(),
             suggestedTier = Tier.LONG_TERM,
-            sessionId = "s1",
+            sessionId = UUID.randomUUID(),
             timestamp = Instant.now()
         )
         store.shouldBeInstanceOf<StoreCommand>()
@@ -133,7 +133,7 @@ class MessageTest : StringSpec({
         val search: Query = SearchQuery(
             tx = testTx("Cortex"),
             query = "sanctuary",
-            sessionId = "s1"
+            sessionId = UUID.randomUUID()
         )
         search.shouldBeInstanceOf<SearchQuery>()
         search.maxResults shouldBe 10
@@ -141,8 +141,8 @@ class MessageTest : StringSpec({
 
         val reflect: Query = ReflectQuery(
             tx = testTx("Cortex"),
-            criteria = mapOf("staleness" to "high"),
-            scope = "all"
+            scope = "stale",
+            timeSpanDays = 30
         )
         reflect.shouldBeInstanceOf<ReflectQuery>()
     }
@@ -341,7 +341,7 @@ class MessageTest : StringSpec({
             content = "test",
             metadata = emptyMap(),
             suggestedTier = Tier.ACTIVE_CONTEXT,
-            sessionId = "s1",
+            sessionId = sessionId,
             timestamp = Instant.now()
         )
 

@@ -27,7 +27,7 @@ data class StoreCommand(
     val content: String,
     val metadata: Map<String, String>,
     val suggestedTier: Tier,
-    val sessionId: String,
+    val sessionId: UUID,
     val timestamp: Instant
 ) : Command
 
