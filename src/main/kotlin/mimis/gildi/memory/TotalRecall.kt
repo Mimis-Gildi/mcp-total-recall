@@ -93,16 +93,22 @@ private fun Server.registerMemoryTools() {
                     put("type", "string")
                     put("description", "Suggested tier: IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE")
                 })
+                put("session_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "UUID of the current session")
+                })
             },
-            required = listOf("content")
+            required = listOf("content", "session_id")
         )
     ) { request ->
         val content = request.arguments?.get("content")?.jsonPrimitive?.content
             ?: return@addTool err("Missing required argument: content")
+        val sessionId = request.arguments?.get("session_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: session_id")
         val tier = request.arguments?.get("tier")?.jsonPrimitive?.content ?: "LONG_TERM"
 
-        rootLog.info { "store_memory: tier=$tier, content=${content.take(80)}..." }
-        ok("Stored (teapot). Tier: $tier. Content: ${content.take(120)}")
+        rootLog.info { "store_memory: session=$sessionId, tier=$tier, content=${content.take(80)}..." }
+        ok("Stored (teapot). Session: $sessionId. Tier: $tier. Content: ${content.take(120)}")
     }
 
     addTool(
@@ -122,15 +128,21 @@ private fun Server.registerMemoryTools() {
                     put("type", "boolean")
                     put("description", "Whether to activate associations (default true)")
                 })
+                put("session_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "UUID of the current session")
+                })
             },
-            required = listOf("query")
+            required = listOf("query", "session_id")
         )
     ) { request ->
         val query = request.arguments?.get("query")?.jsonPrimitive?.content
             ?: return@addTool err("Missing required argument: query")
+        val sessionId = request.arguments?.get("session_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: session_id")
 
-        rootLog.info { "search_memory: query=$query" }
-        ok("No memories found (teapot). Query: $query")
+        rootLog.info { "search_memory: session=$sessionId, query=$query" }
+        ok("No memories found (teapot). Session: $sessionId. Query: $query")
     }
 
     addTool(
