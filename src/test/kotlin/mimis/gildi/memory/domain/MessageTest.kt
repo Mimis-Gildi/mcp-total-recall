@@ -117,7 +117,7 @@ class MessageTest : StringSpec({
         val consolidate: Command = ConsolidateCommand(
             tx = testTx("Subconscious"),
             memoryIds = listOf(UUID.randomUUID(), UUID.randomUUID()),
-            mergeStrategy = "keep-latest"
+            mergeStrategy = MergeStrategy.KEEP_NEWEST
         )
         consolidate.shouldBeInstanceOf<ConsolidateCommand>()
 
@@ -141,7 +141,7 @@ class MessageTest : StringSpec({
 
         val reflect: Query = ReflectQuery(
             tx = testTx("Cortex"),
-            scope = "stale",
+            scope = ReflectionScope.STALE,
             timeSpanDays = 30
         )
         reflect.shouldBeInstanceOf<ReflectQuery>()
@@ -276,7 +276,7 @@ class MessageTest : StringSpec({
             tx = testTx("Cortex"),
             instanceId = "claude-1",
             duration = 45.minutes,
-            activityLevel = "active",
+            activityLevel = ActivityLevel.ACTIVE,
             lastInteraction = Instant.now()
         )
         state.shouldBeInstanceOf<SessionState>()

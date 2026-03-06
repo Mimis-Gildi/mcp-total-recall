@@ -8,6 +8,7 @@ package mimis.gildi.memory.port.inbound
 import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType
 import mimis.gildi.memory.domain.model.Memory
+import mimis.gildi.memory.domain.model.ReflectionScope
 import mimis.gildi.memory.domain.model.Tier
 import java.util.UUID
 
@@ -51,7 +52,7 @@ interface MemoryPort {
     ): Memory
 
     suspend fun reflect(
-        scope: String = "all",
+        scope: ReflectionScope = ReflectionScope.ALL,
         timeSpanDays: Int? = null,
         maxCandidates: Int? = null
     ): List<Memory>

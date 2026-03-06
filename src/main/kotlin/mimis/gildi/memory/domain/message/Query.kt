@@ -7,6 +7,7 @@
 
 package mimis.gildi.memory.domain.message
 
+import mimis.gildi.memory.domain.model.ReflectionScope
 import java.util.UUID
 
 /**
@@ -26,7 +27,7 @@ data class SearchQuery(
 
 data class ReflectQuery(
     val tx: TransactionContext,
-    val scope: String = "all",
+    val scope: ReflectionScope = ReflectionScope.ALL,
     val timeSpanDays: Int? = null,
     val maxCandidates: Int? = null
 ) : Query
