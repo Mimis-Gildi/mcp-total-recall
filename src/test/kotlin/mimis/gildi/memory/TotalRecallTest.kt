@@ -27,15 +27,17 @@ class TotalRecallTest : StringSpec({
         server shouldNotBe null
     }
 
-    "all 8 tools are registered" {
+    "all 10 tools are registered" {
         val server = createServer()
-        server.tools.size shouldBe 8
+        server.tools.size shouldBe 10
         server.tools.keys shouldContainExactlyInAnyOrder listOf(
             "store_memory",
             "search_memory",
             "claim_memory",
             "session_start",
             "session_end",
+            "state_transition",
+            "heartbeat",
             "associate_memories",
             "reclassify_memory",
             "reflect"

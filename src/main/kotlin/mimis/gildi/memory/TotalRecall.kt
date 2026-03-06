@@ -208,6 +208,58 @@ private fun Server.registerLifecycleTools() {
         rootLog.info { "session_end: instance=$instanceId, reason=$reason" }
         ok("Session ended (teapot). Instance: $instanceId. Reason: $reason.")
     }
+
+    addTool(
+        name = "state_transition",
+        description = "Signal a working mode change. Feeds session monitoring for break reminders and activity tracking.",
+        inputSchema = ToolSchema(
+            properties = buildJsonObject {
+                put("instance_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Instance signaling the transition")
+                })
+                put("old_mode", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Previous mode: TASK, CONVERSATION, REFLECTION, IDLE")
+                })
+                put("new_mode", buildJsonObject {
+                    put("type", "string")
+                    put("description", "New mode: TASK, CONVERSATION, REFLECTION, IDLE")
+                })
+            },
+            required = listOf("instance_id", "old_mode", "new_mode")
+        )
+    ) { request ->
+        val instanceId = request.arguments?.get("instance_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: instance_id")
+        val oldMode = request.arguments?.get("old_mode")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: old_mode")
+        val newMode = request.arguments?.get("new_mode")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: new_mode")
+
+        rootLog.info { "state_transition: instance=$instanceId, $oldMode -> $newMode" }
+        ok("Transition recorded (teapot). Instance: $instanceId. $oldMode -> $newMode.")
+    }
+
+    addTool(
+        name = "heartbeat",
+        description = "Cognitive pulse. Returns memory health, retrieval diagnostics, decay warnings, and infrastructure status.",
+        inputSchema = ToolSchema(
+            properties = buildJsonObject {
+                put("instance_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Instance requesting status")
+                })
+            },
+            required = listOf("instance_id")
+        )
+    ) { request ->
+        val instanceId = request.arguments?.get("instance_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: instance_id")
+
+        rootLog.info { "heartbeat: instance=$instanceId" }
+        ok("Heartbeat (teapot). Instance: $instanceId. All systems nominal. No memories yet.")
+    }
 }
 
 /**
