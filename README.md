@@ -80,7 +80,7 @@ SSE is not used. Gen 3v1 experimented with it; the MCP protocol has since moved 
 
 **Decoupled. Swappable. Multiple simultaneous.**
 
-The memory server does not depend on Redis. Redis is ONE backing service implementation. The architecture supports:
+The memory server does not depend on any specific backing service. SQLite is the primary implementation (ADR-0008). Redis is deferred to Agora. The architecture supports:
 
 - Adding new backing services without changing the memory server
 - Running multiple backing services simultaneously (live + cold storage)
@@ -162,11 +162,11 @@ Any connected session can call:
 - [x] TransactionContext envelope on every message
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
-- [x] 8 MCP tools registered (teapot stubs)
+- [x] 10 MCP tools registered (teapot stubs)
 - [x] 6 bounded context designs with diagrams
 - [x] 12 design documents, 16 Mermaid diagrams
 - [x] CI/CD: verify workflow, Qodana scanning, Renovate dependency updates
-- [ ] **Redis as one backing service behind the interface**
+- [ ] **SQLite as primary backing service behind the interface (ADR-0008)**
 - [ ] **Wire domain logic between ports and tools**
 
 ### Phase 2: Memory Subconscious
@@ -239,7 +239,7 @@ requires architecture that supports it from the beginning. You cannot bolt on gr
 - **Runtime:** Kotlin on JVM (Java 21)
 - **Protocol:** Model Context Protocol (MCP) -- `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - **Transport:** `stdio` (primary), Streaming HTTPS (secondary, future)
-- **Backing Service:** Redis (reference implementation; interface supports alternatives)
+- **Backing Service:** SQLite (primary, ADR-0008); Redis deferred to Agora phase
 - **Testing:** Kotest, Testcontainers
 - **Build:** Gradle (Kotlin DSL)
 

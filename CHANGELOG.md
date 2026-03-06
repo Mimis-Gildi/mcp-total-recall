@@ -32,7 +32,7 @@ audit (code, docs, tests), and issue backlog alignment to the new vocabulary.
   is named after). Subconscious-driven, Recall-assembled, NotificationPort-
   delivered.
 - TransactionContext data class (`TransactionContext.kt`): sessionId,
-  requestId, messageId, causationId, timestamp, sourceContext. All 28
+  requestId, messageId, causationId, timestamp, sourceContext. All 29
   message variants carry `val tx: TransactionContext` as first parameter.
 - Domain model additions: WorkingMode enum (TASK, CONVERSATION, IDLE),
   SessionEndReason enum (EXPLICIT, TIMEOUT, CRASH), HeartbeatReceived event,
