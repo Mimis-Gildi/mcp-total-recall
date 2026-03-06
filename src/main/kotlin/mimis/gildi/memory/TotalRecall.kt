@@ -120,6 +120,10 @@ private fun Server.registerMemoryTools() {
                     put("type", "string")
                     put("description", "Search text or pattern")
                 })
+                put("filters", buildJsonObject {
+                    put("type", "object")
+                    put("description", "Key-value filters: tier, session, metadata, date range")
+                })
                 put("max_results", buildJsonObject {
                     put("type", "integer")
                     put("description", "Cap on returned memories (default 10)")
