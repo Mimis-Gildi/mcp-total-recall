@@ -214,8 +214,7 @@ class MessageTest : StringSpec({
             memoryId = memId,
             score = 0.72,
             lastAccessed = Instant.now(),
-            decayRate = 0.05,
-            claimed = true
+            decayRate = 0.05
         )
         val event = SalienceScored(
             tx = testTx("Salience"),
@@ -223,7 +222,7 @@ class MessageTest : StringSpec({
         )
         event.salienceScore.memoryId shouldBe memId
         event.salienceScore.score shouldBe 0.72
-        event.salienceScore.claimed shouldBe true
+        event.salienceScore.decayRate shouldBe 0.05
     }
 
     "synapse and total recall events are sealed under Event" {
