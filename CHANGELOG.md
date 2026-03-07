@@ -29,6 +29,14 @@ injection, cognitive crosscut design, and full documentation alignment.
 - BuildInfo.kt: compile-time generated source with `const val VERSION`.
   Replaces runtime `java.util.Properties` loading. No classloader, no lazy,
   no resource file.
+- Blog posts: founding posts (Vadim, Anton), architecture completion (0.7.0),
+  architecture socialization (1.0.0), Claude's contributor post, Artem placeholder.
+  Author badges on all posts.
+- Contributors page with avatar table and individual author pages.
+- `CODEOWNERS` at repo root: Vadim reviews everything, Artem co-reviews
+  architecture and domain model.
+- Claude avatar (`claude-avatar.svg`).
+- `AUTHORS`: Artem added.
 
 ### Changed
 
@@ -59,6 +67,7 @@ injection, cognitive crosscut design, and full documentation alignment.
 ### Removed
 
 - `version.properties` -- replaced by compile-time BuildInfo.kt.
+- Stale `.github/CODEOWNERS` -- superseded by root `CODEOWNERS`.
 
 ### Fixed
 

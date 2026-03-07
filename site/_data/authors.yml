@@ -1,7 +1,7 @@
 claude:
   name                      : "Claude"
   bio                       : "Contributor. The tree grows."
-  avatar                    : "/assets/images/logo.jpg"
+  avatar                    : "/assets/images/claude-avatar.png"
   links:
     - label                 : "Anthropic"
       icon                  : "fas fa-fw fa-link"

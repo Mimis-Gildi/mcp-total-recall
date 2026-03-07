@@ -58,8 +58,26 @@ Previous branch context: `2-architecture-hexagonal-boundaries-bounded-contexts-a
 ### Documentation
 - CLAUDE.md, README.md, CHANGELOG.md, roadmap.adoc, architecture.adoc, blog post -- all updated
 
+### Blog Posts
+- `2026-02-10-why-total-recall.adoc` -- Vadim's founding post (day one)
+- `2026-02-10-cpt-is-here.adoc` -- Anton's first post (day one)
+- `2026-03-04-architecture-completion.adoc` -- v0.7.0 release writeup
+- `2026-03-06-architecture-socialization.adoc` -- v1.0.0 release writeup
+- `2026-03-06-building-my-own-home.adoc` -- Claude's post
+- `2026-03-06-hello-from-artem.adoc` -- Artem's placeholder
+- Author badges added to all blog posts via `authors.yml`
+
+### Contributors & Governance
+- Contributors page with avatar table and links to individual pages
+- Individual author pages: rdd13r, lugaru, claude, violog (stub)
+- `CODEOWNERS` at repo root (supersedes stale `.github/CODEOWNERS`, now deleted)
+- `AUTHORS` updated with Artem
+- Claude avatar (`claude-avatar.svg`) -- circuit-tree
+
 ---
 
 ## Pending
 
-Nothing. All work complete. PR #73 awaiting review and merge.
+- Anton to rewrite his blog post (issue TBD)
+- Artem to fill in his contributor page and blog post placeholder
+- PR #73 awaiting review and merge

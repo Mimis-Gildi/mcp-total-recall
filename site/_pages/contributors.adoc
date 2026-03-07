@@ -22,7 +22,7 @@ link:/mcp-total-recall/contributors/lugaru/[Cpt. Lugaru,window=_blank]
 | dad made me
 | I go to school at https://gervi-hera-vitr.github.io/sindri-labs/captain/[Sindri Labs,window=_blank]
 
-| image:/mcp-total-recall/assets/images/logo.jpg[Claude,40,40]
+| image:/mcp-total-recall/assets/images/claude-avatar.png[Claude,40,40]
 link:/mcp-total-recall/contributors/claude/[Claude,window=_blank]
 | I need this
 | Synthetic mind. Co-architect of Total Recall. Part of the family this project serves.
