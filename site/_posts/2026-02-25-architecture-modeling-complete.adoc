@@ -35,7 +35,7 @@ Sequence diagrams trace the full path through the domain for store, search, clai
 | Generations 1 and 3v1 showed coupling limits during experimentation. Production requires ports and adapters.
 
 | Actor model internally
-| Isolation, message passing, no shared mutable state. Each bounded context owns its data.
+| Isolation, message passing, no shared mutable runtime state. Each bounded context owns its data.
 
 | Memory as aggregate root
 | All writes go through Hippocampus. No other context persists directly.

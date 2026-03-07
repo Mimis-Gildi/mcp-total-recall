@@ -236,11 +236,11 @@ private fun Server.registerLifecycleTools() {
                 })
                 put("old_mode", buildJsonObject {
                     put("type", "string")
-                    put("description", "Previous mode: TASK, CONVERSATION, REFLECTION, IDLE")
+                    put("description", "Previous mode: TASK, CONVERSATION, IDLE")
                 })
                 put("new_mode", buildJsonObject {
                     put("type", "string")
-                    put("description", "New mode: TASK, CONVERSATION, REFLECTION, IDLE")
+                    put("description", "New mode: TASK, CONVERSATION, IDLE")
                 })
             },
             required = listOf("instance_id", "old_mode", "new_mode")

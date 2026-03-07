@@ -182,4 +182,4 @@ Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
 
 *Previous: link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus]* -- the aggregate root that owns all memory persistence.
 
-*Next: link:/mcp-total-recall/design/0007-association-graph/[Synapse]* -- the relationship layer that connects memories to each other.
+*Next: link:/mcp-total-recall/design/0007-synapse/[Synapse]* -- the relationship layer that connects memories to each other.

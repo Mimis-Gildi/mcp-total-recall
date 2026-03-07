@@ -59,7 +59,7 @@ Six bounded context diagrams in the design documents:
 
 * link:/mcp-total-recall/design/0005-tiered-memory/#HP-0001[HP-0001] -- Hippocampus (Vault)
 * link:/mcp-total-recall/design/0006-salience/#SL-0001[SL-0001] -- Salience (Focus)
-* link:/mcp-total-recall/design/0007-association-graph/#SY-0001[SY-0001] -- Synapse (Matrix)
+* link:/mcp-total-recall/design/0007-synapse/#SY-0001[SY-0001] -- Synapse (Matrix)
 * link:/mcp-total-recall/design/0008-recall/#RC-0001[RC-0001] -- Recall (Stream)
 * link:/mcp-total-recall/design/0009-cortex/#CX-0001[CX-0001] -- Cortex (Inception)
 * link:/mcp-total-recall/design/0010-subconscious/#SB-0001[SB-0001] -- Subconscious (Dream)

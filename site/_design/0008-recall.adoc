@@ -164,6 +164,6 @@ This is the same pattern as all the other bounded contexts. Cortex is the portal
 
 '''
 
-*Previous: link:/mcp-total-recall/design/0007-association-graph/[Synapse]* -- the relationship layer that connects memories to each other.
+*Previous: link:/mcp-total-recall/design/0007-synapse/[Synapse]* -- the relationship layer that connects memories to each other.
 
 *Next: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the portal where the outside world meets the hexagon.
