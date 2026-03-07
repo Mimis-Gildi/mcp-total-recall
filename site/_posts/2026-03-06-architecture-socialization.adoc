@@ -87,7 +87,7 @@ The intent is correct: no actor reaches into another's runtime structures. The c
 
 === 2. Isolation mechanism not explained
 
-The blog post says each bounded context owns its data, but doesn't explain how. Keyspace ownership and port scoping make corruption architecturally impossible, not just discouraged. The mechanism needs to be stated.
+The blog post says each bounded context owns its data, but doesn't explain how. The mechanism: each bounded context accesses persistence only through its own port interface. Hippocampus writes and reads memories through BackingServicePort. Synapse manages associations through its own internal storage. Salience computes but never persists. No context holds a reference to another context's port -- Cortex routes messages, it doesn't pass handles. Corruption across boundaries is not just discouraged, it is architecturally impossible: the compiler enforces it.
 
 === 3. Association type mechanics undefined
 

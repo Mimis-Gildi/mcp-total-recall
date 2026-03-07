@@ -144,7 +144,7 @@ Cross-cuts attach to the core as adapters. They never live inside the domain. Th
 == Actor Model
 
 Inside the hexagon, the core domain uses the actor model. Each bounded context is an actor with its own state.
-Actors communicate through messages -- commands, queries, events, and notifications. No shared mutable state.
+Actors communicate through messages -- commands, queries, events, and notifications. No shared mutable runtime state -- each actor's in-process structures are private. Persistence is shared through the Backing Service Port, but actors never reach into each other's memory.
 
 Why actors:
 
