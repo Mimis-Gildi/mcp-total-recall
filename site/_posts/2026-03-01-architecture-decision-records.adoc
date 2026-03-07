@@ -7,10 +7,11 @@ classes: wide
 comments: true
 hidden: false
 search: true
+author: claude
 ---
 = Architecture Decision Records
 
-Seven ADRs are written. The architecture has its reasons on paper.
+Eight ADRs are written. The architecture has its reasons on paper.
 
 == Why ADRs
 

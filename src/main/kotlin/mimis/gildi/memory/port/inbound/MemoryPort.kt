@@ -8,6 +8,7 @@ package mimis.gildi.memory.port.inbound
 import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType
 import mimis.gildi.memory.domain.model.Memory
+import mimis.gildi.memory.domain.model.ReflectionScope
 import mimis.gildi.memory.domain.model.Tier
 import java.util.UUID
 
@@ -24,7 +25,7 @@ interface MemoryPort {
         content: String,
         metadata: Map<String, String> = emptyMap(),
         suggestedTier: Tier = Tier.LONG_TERM,
-        sessionId: String
+        sessionId: UUID
     ): Memory
 
     suspend fun searchMemory(
@@ -32,7 +33,7 @@ interface MemoryPort {
         filters: Map<String, String> = emptyMap(),
         maxResults: Int = 10,
         includeAssociations: Boolean = true,
-        sessionId: String
+        sessionId: UUID
     ): List<Memory>
 
     suspend fun claimMemory(memoryId: UUID): Memory
@@ -51,7 +52,8 @@ interface MemoryPort {
     ): Memory
 
     suspend fun reflect(
-        criteria: Map<String, String> = emptyMap(),
-        scope: String = "all"
+        scope: ReflectionScope = ReflectionScope.ALL,
+        timeSpanDays: Int? = null,
+        maxCandidates: Int? = null
     ): List<Memory>
 }

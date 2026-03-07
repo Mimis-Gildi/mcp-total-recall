@@ -50,6 +50,9 @@ Temporary Items
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 # User-specific stuff - Important! Exclude within, not below
 !.idea/.gitignore
+# IntelliJ developer-specific files
+GitLink.xml
+.idea/shelf
 # Gradle and Maven with auto-import
 *.iml
 *.ipr

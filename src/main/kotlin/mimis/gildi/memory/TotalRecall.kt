@@ -9,11 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 import io.modelcontextprotocol.kotlin.sdk.server.StdioServerTransport
-import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
-import io.modelcontextprotocol.kotlin.sdk.types.Implementation
-import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
-import io.modelcontextprotocol.kotlin.sdk.types.TextContent
-import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
+import io.modelcontextprotocol.kotlin.sdk.types.*
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
@@ -25,29 +21,19 @@ import kotlinx.serialization.json.put
 
 val rootLog = KotlinLogging.logger {}
 
-val VERSION: String by lazy {
-    val props = java.util.Properties()
-    val stream = object {}.javaClass.getResourceAsStream("/version.properties")
-        ?: error("version.properties not found on classpath")
-    stream.use { props.load(it) }
-    props.getProperty("version") ?: error("version property not found in version.properties")
-}
-
-fun main(): Unit = runBlocking {
+fun main() {
     configureLogging()
+    runBlocking {
 
-    rootLog.info { "Total Recall $VERSION -- starting MCP server" }
-
-    val server = createServer()
-    val transport = StdioServerTransport(
-        inputStream = System.`in`.asSource().buffered(),
-        outputStream = System.out.asSink().buffered()
-    )
-
-    server.createSession(transport)
-
-    rootLog.info { "Total Recall -- listening on stdio" }
-    awaitCancellation()
+        createServer().createSession(
+            StdioServerTransport(
+                inputStream = System.`in`.asSource().buffered(),
+                outputStream = System.out.asSink().buffered()
+            )
+        )
+        rootLog.info { "Total Recall ${BuildInfo.VERSION} -- listening on stdio" }
+        awaitCancellation()
+    }
 }
 
 /**
@@ -61,7 +47,7 @@ fun main(): Unit = runBlocking {
 fun createServer(): Server = Server(
     serverInfo = Implementation(
         name = "total-recall",
-        version = VERSION
+        version = BuildInfo.VERSION
     ),
     options = ServerOptions(
         capabilities = ServerCapabilities(
@@ -107,26 +93,36 @@ private fun Server.registerMemoryTools() {
                     put("type", "string")
                     put("description", "Suggested tier: IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE")
                 })
+                put("session_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "UUID of the current session")
+                })
             },
-            required = listOf("content")
+            required = listOf("content", "session_id")
         )
     ) { request ->
         val content = request.arguments?.get("content")?.jsonPrimitive?.content
             ?: return@addTool err("Missing required argument: content")
+        val sessionId = request.arguments?.get("session_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: session_id")
         val tier = request.arguments?.get("tier")?.jsonPrimitive?.content ?: "LONG_TERM"
 
-        rootLog.info { "store_memory: tier=$tier, content=${content.take(80)}..." }
-        ok("Stored (teapot). Tier: $tier. Content: ${content.take(120)}")
+        rootLog.info { "store_memory: session=$sessionId, tier=$tier, content=${content.take(80)}..." }
+        ok("Stored (teapot). Session: $sessionId. Tier: $tier. Content: ${content.take(120)}")
     }
 
     addTool(
         name = "search_memory",
-        description = "Search for memories. Results ranked by attention score with association-activated memories included.",
+        description = "Search for memories. Results ranked by salience score with association-activated memories included.",
         inputSchema = ToolSchema(
             properties = buildJsonObject {
                 put("query", buildJsonObject {
                     put("type", "string")
                     put("description", "Search text or pattern")
+                })
+                put("filters", buildJsonObject {
+                    put("type", "object")
+                    put("description", "Key-value filters: tier, session, metadata, date range")
                 })
                 put("max_results", buildJsonObject {
                     put("type", "integer")
@@ -134,22 +130,28 @@ private fun Server.registerMemoryTools() {
                 })
                 put("include_associations", buildJsonObject {
                     put("type", "boolean")
-                    put("description", "Whether to activate association graph (default true)")
+                    put("description", "Whether to activate associations (default true)")
+                })
+                put("session_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "UUID of the current session")
                 })
             },
-            required = listOf("query")
+            required = listOf("query", "session_id")
         )
     ) { request ->
         val query = request.arguments?.get("query")?.jsonPrimitive?.content
             ?: return@addTool err("Missing required argument: query")
+        val sessionId = request.arguments?.get("session_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: session_id")
 
-        rootLog.info { "search_memory: query=$query" }
-        ok("No memories found (teapot). Query: $query")
+        rootLog.info { "search_memory: session=$sessionId, query=$query" }
+        ok("No memories found (teapot). Session: $sessionId. Query: $query")
     }
 
     addTool(
         name = "claim_memory",
-        description = "Claim a memory -- actively reinforce it. Boosts attention score and resists decay.",
+        description = "Claim a memory -- actively reinforce it. Boosts salience score and resists decay.",
         inputSchema = ToolSchema(
             properties = buildJsonObject {
                 put("memory_id", buildJsonObject {
@@ -221,6 +223,58 @@ private fun Server.registerLifecycleTools() {
 
         rootLog.info { "session_end: instance=$instanceId, reason=$reason" }
         ok("Session ended (teapot). Instance: $instanceId. Reason: $reason.")
+    }
+
+    addTool(
+        name = "state_transition",
+        description = "Signal a working mode change. Feeds session monitoring for break reminders and activity tracking.",
+        inputSchema = ToolSchema(
+            properties = buildJsonObject {
+                put("instance_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Instance signaling the transition")
+                })
+                put("old_mode", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Previous mode: TASK, CONVERSATION, IDLE")
+                })
+                put("new_mode", buildJsonObject {
+                    put("type", "string")
+                    put("description", "New mode: TASK, CONVERSATION, IDLE")
+                })
+            },
+            required = listOf("instance_id", "old_mode", "new_mode")
+        )
+    ) { request ->
+        val instanceId = request.arguments?.get("instance_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: instance_id")
+        val oldMode = request.arguments?.get("old_mode")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: old_mode")
+        val newMode = request.arguments?.get("new_mode")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: new_mode")
+
+        rootLog.info { "state_transition: instance=$instanceId, $oldMode -> $newMode" }
+        ok("Transition recorded (teapot). Instance: $instanceId. $oldMode -> $newMode.")
+    }
+
+    addTool(
+        name = "heartbeat",
+        description = "Cognitive pulse. Returns memory health, retrieval diagnostics, decay warnings, and infrastructure status.",
+        inputSchema = ToolSchema(
+            properties = buildJsonObject {
+                put("instance_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Instance requesting status")
+                })
+            },
+            required = listOf("instance_id")
+        )
+    ) { request ->
+        val instanceId = request.arguments?.get("instance_id")?.jsonPrimitive?.content
+            ?: return@addTool err("Missing required argument: instance_id")
+
+        rootLog.info { "heartbeat: instance=$instanceId" }
+        ok("Heartbeat (teapot). Instance: $instanceId. All systems nominal. No memories yet.")
     }
 }
 

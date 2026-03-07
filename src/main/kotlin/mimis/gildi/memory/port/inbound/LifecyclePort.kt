@@ -5,6 +5,9 @@
  */
 package mimis.gildi.memory.port.inbound
 
+import mimis.gildi.memory.domain.model.SessionEndReason
+import mimis.gildi.memory.domain.model.WorkingMode
+
 /**
  * Inbound port for session lifecycle. Adapters translate
  * mind-specific events (Claude Code hooks, UI events) into
@@ -21,13 +24,13 @@ interface LifecyclePort {
 
     suspend fun sessionEnd(
         instanceId: String,
-        reason: String = "explicit"
+        reason: SessionEndReason = SessionEndReason.EXPLICIT
     )
 
     suspend fun stateTransition(
         instanceId: String,
-        oldState: String,
-        newState: String,
+        oldMode: WorkingMode,
+        newMode: WorkingMode,
         context: Map<String, String> = emptyMap()
     )
 

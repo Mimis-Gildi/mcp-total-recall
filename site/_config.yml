@@ -39,6 +39,7 @@ collections:
       - 0005-memory-as-aggregate-root.adoc
       - 0006-events-and-commands-as-message-types.adoc
       - 0007-biological-memory-as-reference-model.adoc
+      - 0008-sqlite-as-primary-backing-service.adoc
   design:
     output: true
     permalink: /design/:name/
@@ -50,7 +51,7 @@ collections:
       - 0004-hexagon-sides.adoc
       - 0005-tiered-memory.adoc
       - 0006-salience.adoc
-      - 0007-association-graph.adoc
+      - 0007-synapse.adoc
       - 0008-recall.adoc
       - 0009-cortex.adoc
       - 0010-subconscious.adoc
@@ -115,6 +116,7 @@ defaults:
       sidebar:
         nav: architecture
 
+# Default / anonymous author meta
 author:
   name: "Mimis Gildi"
   avatar: "/assets/images/logo.jpg"

@@ -11,5 +11,6 @@ data class Association(
     val memoryId: UUID,
     val type: AssociationType,
     val strength: Double,
+    val direction: AssociationDirection = AssociationDirection.CREATE,
     val bidirectional: Boolean = true
 )

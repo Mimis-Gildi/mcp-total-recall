@@ -37,7 +37,7 @@ class ModelTest : StringSpec({
             tier = Tier.LONG_TERM,
             createdAt = now,
             lastAccessed = now,
-            sessionId = "test-session"
+            sessionId = UUID.randomUUID()
         )
         memory.id shouldBe id
         memory.claimed shouldBe false
@@ -58,10 +58,9 @@ class ModelTest : StringSpec({
             memoryId = UUID.randomUUID(),
             score = 0.95,
             lastAccessed = Instant.now(),
-            decayRate = 0.01,
-            claimed = true
+            decayRate = 0.01
         )
-        score.claimed shouldBe true
         score.score shouldBe 0.95
+        score.decayRate shouldBe 0.01
     }
 })

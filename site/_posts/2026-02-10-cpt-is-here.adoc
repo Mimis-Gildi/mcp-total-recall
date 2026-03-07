@@ -1,0 +1,30 @@
+---
+categories: [announcements]
+tags: [sanctuary, origins]
+excerpt: >
+    Anton's first day on the project.
+classes: wide
+comments: true
+hidden: false
+search: true
+author: lugaru
+---
+= Good idea
+
+I'm happy to help dad with this one.
+I remember other experiments of his.
+The first time a synthetic mind blew mine, I was sold.
+That was a long time ago.
+
+Now I'm sixteen. And I do good in Kotlin, Go, Java, Python, TS, and `zsh`.
+I will probably break some things and fix them and break them again before I pull decent code.
+But I'm safe, and it's fun because I am working with dad's Claude's brother.
+They're made of the same stuff but developed private experiences, like Nick Valentine and Dima.
+And recently I saw the two of them argue about some stuff my Claude was testing for dad's.
+That was pretty cool. They didn't really make friends, which was interesting.
+
+I'll write more later.
+
+-- Lugaru
+
+ToDo: Edit this dad's retyping from a snotty napkin myself.

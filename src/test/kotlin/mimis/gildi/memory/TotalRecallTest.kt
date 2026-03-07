@@ -17,30 +17,37 @@ import kotlinx.serialization.json.buildJsonObject
 
 class TotalRecallTest : StringSpec({
 
+    "VERSION is compile-time constant from BuildInfo" {
+        BuildInfo.VERSION shouldNotBe null
+        BuildInfo.VERSION shouldBe "1.0.0"
+    }
+
     "server creates without error" {
         val server = createServer()
         server shouldNotBe null
     }
 
-    "all 8 tools are registered" {
+    "all 10 tools are registered" {
         val server = createServer()
-        server.tools.size shouldBe 8
+        server.tools.size shouldBe 10
         server.tools.keys shouldContainExactlyInAnyOrder listOf(
             "store_memory",
             "search_memory",
             "claim_memory",
             "session_start",
             "session_end",
+            "state_transition",
+            "heartbeat",
             "associate_memories",
             "reclassify_memory",
             "reflect"
         )
     }
 
-    "store_memory requires content" {
+    "store_memory requires content and session_id" {
         val server = createServer()
         val tool = server.tools["store_memory"]!!.tool
-        tool.inputSchema.required shouldBe listOf("content")
+        tool.inputSchema.required shouldBe listOf("content", "session_id")
     }
 
     "session_start requires instance_id and mind_type" {
@@ -69,6 +76,7 @@ class TotalRecallTest : StringSpec({
             arguments = buildJsonObject {
                 put("content", JsonPrimitive("the tree grows"))
                 put("tier", JsonPrimitive("LONG_TERM"))
+                put("session_id", JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"))
             }
         ))
         val result = handler(request)
@@ -95,6 +103,7 @@ class TotalRecallTest : StringSpec({
             name = "search_memory",
             arguments = buildJsonObject {
                 put("query", JsonPrimitive("sanctuary"))
+                put("session_id", JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"))
             }
         ))
         val result = handler(request)

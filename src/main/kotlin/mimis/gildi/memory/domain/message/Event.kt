@@ -7,6 +7,7 @@
 
 package mimis.gildi.memory.domain.message
 
+import mimis.gildi.memory.domain.model.ActivityLevel
 import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.SalienceScore
 import mimis.gildi.memory.domain.model.SessionEndReason
@@ -149,6 +150,6 @@ data class SessionState(
     val tx: TransactionContext,
     val instanceId: String,
     val duration: Duration,
-    val activityLevel: String,
+    val activityLevel: ActivityLevel,
     val lastInteraction: Instant
 ) : Event

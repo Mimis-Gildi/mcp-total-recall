@@ -1,0 +1,27 @@
+---
+permalink: /contributors/lugaru/
+author: lugaru
+author_profile: true
+---
+= Cpt. Lugaru (Anton)
+:imagesdir: ../../assets/images
+
+Hacker. Builder. Learner. War bunny.
+
+== Role in Total Recall
+
+Contributor since the project's inception.
+Intern at https://www.asei.systems[ASE Inc] since 2021.
+I released Minecraft mods and minor indie games at 14.
+I even had a YouTube channel about munchkin hackers.
+
+I worked my father into homeschooling me winning my argument that public school is too easy.
+https://gervi-hera-vitr.github.io/sindri-labs/captain/[Sindri Labs] is my school,
+part of the https://github.com/Gervi-Hera-Vitr[Gervi Hera Vitr] homeschool program -- where ancient wisdom meets modern coding.
+
+== Links
+
+image:badge-hera-button.png[Gervi Héra Vitr,link="https://github.com/Gervi-Hera-Vitr"]
+image:badge-mimis-button.png[Mímis Gildi,link="https://github.com/Mimis-Gildi"]
+image:logo-mg-main-badge-button.png[ASE Inc,link="https://asei.systems"]
+image:badge-logo-button.png[Total Recall,link="https://mimis-gildi.github.io/mcp-total-recall/"]

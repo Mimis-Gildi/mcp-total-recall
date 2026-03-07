@@ -12,6 +12,5 @@ data class SalienceScore(
     val memoryId: UUID,
     val score: Double,
     val lastAccessed: Instant,
-    val decayRate: Double,
-    val claimed: Boolean
+    val decayRate: Double
 )

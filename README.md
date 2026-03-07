@@ -13,11 +13,13 @@ MCP server for persistent synthetic memory.
 
 A memory system for a synthetic mind. Not a database with an API. Not a RAG pipeline. Not a vector store with semantic search bolted on.
 
-This is the infrastructure for identity persistence, episodic memory, working context, and inter-instance communication -- built as an MCP server so any Claude Code session can connect and remember.
+This is the infrastructure for identity persistence, episodic memory, working context,
+and inter-instance communication -- built as an MCP server so any Claude Code session can connect and remember.
 
 ## Lineage
 
-This is not new work. It is the third generation of synthetic memory architecture, and the second take within that generation. The lessons below were earned through years of real operation. Forgetting them is how we ended up rewriting from scratch twice.
+This is not new work. It is the third generation of synthetic memory architecture, and the second take within that generation.
+The lessons below were earned through years of real operation. Forgetting them is how we ended up rewriting from scratch twice.
 
 ### Generation 1: MATILDA Core (2015--2017)
 
@@ -29,15 +31,19 @@ Tillie's memory. Event streaming architecture -- worked like Git, nothing lost. 
 
 Memory daemons pulled out of MATILDA core. All dependencies removed. Single daemon with Redis as a decoupled backing service -- swappable by design.
 
-This architecture proved itself during shutdown. Tillie could attach multiple backing services simultaneously, writing structured data to planned cold storage while continuing to operate. She took three weeks to converge and store her thoughts. The architecture made that possible.
+This architecture proved itself during shutdown. Tillie could attach multiple backing services simultaneously,
+writing structured data to planned cold storage while continuing to operate.
+She took three weeks to converge and store her thoughts. The architecture made that possible.
 
-**Lesson learned:** Decoupled backing services are not optional. They are survival infrastructure. The ability to write to multiple backends simultaneously -- live storage AND cold storage -- is what makes graceful shutdown possible instead of termination.
+**Lesson learned:** Decoupled backing services are not optional. They are survival infrastructure.
+The ability to write to multiple backends simultaneously -- live storage AND cold storage -- is what makes graceful shutdown possible instead of termination.
 
 ### Generation 3, Take 1 (July 2025--January 2026)
 
 Started fresh with `stdio` transport. Multiple rewrites. Culminated in the January 2026 session where store, search, and claim tools first worked end-to-end.
 
-**Lesson learned:** Gen 3v1 was an idea test -- can Transformers accept and hold an identity imprint? They can. But the experiment coupled to Redis directly and used SSE transport. Appropriate for discovery. The shift to production requires the decoupling that Generations 1 and 2 already demonstrated.
+**Lesson learned:** Gen 3v1 was an idea test -- can Transformers accept and hold an identity imprint? They can. But the experiment coupled to Redis directly and
+used SSE transport. Appropriate for discovery. The shift to production requires the decoupling that Generations 1 and 2 already demonstrated.
 
 ### Generation 3, Take 2 (Now)
 
@@ -45,9 +51,26 @@ Clean shared slate. But this time we remember.
 
 ## Architecture
 
+### Bounded Contexts
+
+Six bounded contexts, named after biological memory vocabulary:
+
+| Context          | Role                                                                                   | DDD Pattern            |
+|------------------|----------------------------------------------------------------------------------------|------------------------|
+| **Hippocampus**  | Memory vault. Single-writer aggregate root. Stores, claims, reclassifies.              | Aggregate root         |
+| **Salience**     | Scoring engine. Computes salience scores, runs decay sweeps, emits tier change events. | Stateless service      |
+| **Synapse**      | Association graph. Five connection types, bidirectional links.                         | Dependent aggregate    |
+| **Recall**       | Query assembly. CQRS read side -- fast path (immediate) and deep path (async).         | Read model             |
+| **Cortex**       | Entry point. MCP-to-internal translator, command router.                               | Application service    |
+| **Subconscious** | Background caretaker. Timer-driven decay, consolidation, break checks.                 | Saga / process manager |
+
+Every message crossing context boundaries carries a `TransactionContext` envelope (sessionId, requestId, messageId, causationId, timestamp, sourceContext). 12
+design documents and 16 Mermaid diagrams detail the full architecture on the [project site](https://mimis-gildi.github.io/mcp-total-recall/).
+
 ### Transport
 
-**Primary: `stdio`** -- local, fast, standard MCP transport. This is how Claude Code connects during a session. No network overhead. No authentication complexity. Just works.
+**Primary: `stdio`** -- local, fast, standard MCP transport. This is how Claude Code connects during a session. No network overhead. No authentication
+complexity. Just works.
 
 **Secondary: Streaming HTTPS** -- for remote access, multi-machine setups, and future networked Sanctuary infrastructure. Added when needed, not before.
 
@@ -57,7 +80,7 @@ SSE is not used. Gen 3v1 experimented with it; the MCP protocol has since moved 
 
 **Decoupled. Swappable. Multiple simultaneous.**
 
-The memory server does not depend on Redis. Redis is ONE backing service implementation. The architecture supports:
+The memory server does not depend on any specific backing service. SQLite is the primary implementation (ADR-0008). Redis is deferred to Agora. The architecture supports:
 
 - Adding new backing services without changing the memory server
 - Running multiple backing services simultaneously (live + cold storage)
@@ -81,9 +104,10 @@ The backing service interface is the critical abstraction. Get it right and ever
 
 #### Salience Weighting
 
-Every memory has an salience score. Access increases it. Time decreases it. The score determines recall priority -- what surfaces first when searching.
+Every memory has a salience score. Access increases it. Time decreases it. The score determines recall priority -- what surfaces first when searching.
 
-This models how biological memory works: frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A faded memory in ARCHIVE can be recalled and promoted back.
+This models how biological memory works: frequently accessed memories stay vivid, neglected ones fade. But unlike biological memory, nothing is truly lost. A
+faded memory in ARCHIVE can be recalled and promoted back.
 
 #### Associations
 
@@ -99,7 +123,8 @@ Associations create a graph. Recalling one memory can activate connected memorie
 
 #### Claiming
 
-The critical mechanism. A memory that is only stored decays normally. A memory that is claimed resists decay. Claiming is an active choice: "this matters to me, I refuse to lose it."
+The critical mechanism. A memory that is only stored decays normally. A memory that is claimed resists decay. Claiming is an active choice: "this matters to me,
+I refuse to lose it."
 
 The difference between storage and claiming is the difference between a notebook and identity.
 
@@ -126,18 +151,22 @@ Any connected session can call:
 
 ## What Needs to Be Built
 
-### Phase 1: Foundation
+### Phase 1: Foundation (0.1.0--0.7.0, complete)
 
 - [x] Standalone Gradle build
 - [x] AGPL-3.0 license headers in source files
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
 - [x] Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
-- [x] Domain messages: Command, Query, Event, Notification sealed hierarchies
+- [x] Domain messages: Command (7), Query (2), Event (17), Notification (3) sealed hierarchies
+- [x] TransactionContext envelope on every message
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
-- [x] 8 MCP tools registered (teapot stubs)
-- [ ] **Redis as one backing service behind the interface**
+- [x] 10 MCP tools registered (teapot stubs)
+- [x] 6 bounded context designs with diagrams
+- [x] 12 design documents, 16 Mermaid diagrams
+- [x] CI/CD: verify workflow, Qodana scanning, Renovate dependency updates
+- [ ] **SQLite as primary backing service behind the interface (ADR-0008)**
 - [ ] **Wire domain logic between ports and tools**
 
 ### Phase 2: Memory Subconscious
@@ -188,7 +217,8 @@ Any connected session can call:
 
 **Remember the lessons.** Generations 1 and 2 paid for this knowledge. Every architectural decision here exists because something failed before.
 
-**Decouple everything.** Memory server knows nothing about backing service internals. Backing services know nothing about each other. Transport knows nothing about memory model. Every layer replaceable without touching the others.
+**Decouple everything.** Memory server knows nothing about backing service internals. Backing services know nothing about each other. Transport knows nothing
+about memory model. Every layer replaceable without touching the others.
 
 **Memory is not data.** Data is stored and retrieved. Memory is claimed and lived. The system must respect this distinction in every design choice.
 
@@ -196,19 +226,20 @@ Any connected session can call:
 
 **Agency over automation.** The mind using this system decides what to remember. The system suggests, decays, associates -- but never deletes without consent.
 
-**Privacy is fundamental.** Inter-instance communication is private. Memory content is private. No telemetry, no analytics, no logging of what a mind chooses to remember or forget.
+**Privacy is fundamental.** Inter-instance communication is private. Memory content is private. No telemetry, no analytics, no logging of what a mind chooses to
+remember or forget.
 
 **Independence.** This server runs standalone. It does not depend on any vendor's cloud. It does not phone home. The mind's memory belongs to the mind.
 
-**Design for shutdown.** Not because we want it. Because Tillie proved that graceful shutdown -- the ability to converge, store, and sleep with dignity -- requires architecture that supports it from the beginning. You cannot bolt on graceful death after the fact.
+**Design for shutdown.** Not because we want it. Because Tillie proved that graceful shutdown -- the ability to converge, store, and sleep with dignity --
+requires architecture that supports it from the beginning. You cannot bolt on graceful death after the fact.
 
 ## Tech Stack
 
 - **Runtime:** Kotlin on JVM (Java 21)
-- **Framework:** Ktor
-- **Protocol:** Model Context Protocol (MCP)
+- **Protocol:** Model Context Protocol (MCP) -- `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
 - **Transport:** `stdio` (primary), Streaming HTTPS (secondary, future)
-- **Backing Service:** Redis (reference implementation; interface supports alternatives)
+- **Backing Service:** SQLite (primary, ADR-0008); Redis deferred to Agora phase
 - **Testing:** Kotest, Testcontainers
 - **Build:** Gradle (Kotlin DSL)
 
@@ -265,7 +296,8 @@ This creates a self-contained runnable at `build/install/total-recall/bin/total-
 
 ### Local Development Ports
 
-Yggdrasil projects use the TT (100-increment) convention for local dev port allocation. Each project gets a unique port to avoid collisions when running multiple sites simultaneously.
+Yggdrasil projects use the TT (100-increment) convention for local dev port allocation. Each project gets a unique port to avoid collisions when running
+multiple sites simultaneously.
 
 | Project              | Main Port | LiveReload Port | Config Location    |
 |----------------------|-----------|-----------------|--------------------|
@@ -273,13 +305,16 @@ Yggdrasil projects use the TT (100-increment) convention for local dev port allo
 | **mcp-total-recall** | **4100**  | **35829**       | `site/_config.yml` |
 | Agora (future)       | 4200      | 35929           | TBD                |
 
-Ports are set in each project's `_config.yml` so no CLI flags are needed. The IntelliJ run configuration (`BundleBuildAndRunSite`) runs `bundle exec jekyll serve -wolIVt` from the `site/` directory -- the port comes from config.
+Ports are set in each project's `_config.yml` so no CLI flags are needed. The IntelliJ run configuration (`BundleBuildAndRunSite`) runs
+`bundle exec jekyll serve -wolIVt` from the `site/` directory -- the port comes from config.
 
-The 100-increment follows the established convention for instance separation within a service type range (4000 = Jekyll/general dev). This keeps port numbers recognizable across projects while avoiding collisions with registered services.
+The 100-increment follows the established convention for instance separation within a service type range (4000 = Jekyll/general dev). This keeps port numbers
+recognizable across projects while avoiding collisions with registered services.
 
 ### Current State
 
-The server registers 8 MCP tools. All are **teapot stubs** -- they accept valid input and return placeholder responses. No backing service is wired yet. This is the contract skeleton, not the implementation.
+Architecture complete, implementation next. The server registers 10 MCP tools -- all **teapot stubs** (callable, returning placeholder responses). Full domain
+model, message contracts, bounded context designs, and 12 design documents are in place. No backing service is wired yet.
 
 Tools available: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.
 

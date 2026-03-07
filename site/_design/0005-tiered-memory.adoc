@@ -222,7 +222,7 @@ Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory 
 
 Hippocampus does not store, retrieve, or manage associations. When it emits events like MemoryStored or MemoryClaimed, Synapse may react by creating or strengthening associations in its own storage. The two aggregates share a key (Memory ID), not a file cabinet.
 
-Full design in link:/mcp-total-recall/design/0007-association-graph/[Design E3: Synapse].
+Full design in link:/mcp-total-recall/design/0007-synapse/[Design E3: Synapse].
 
 == Summary
 

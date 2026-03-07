@@ -1,0 +1,195 @@
+---
+description: "Synapse: the relationship layer. Maintains typed connections between memories. Has its own file cabinet."
+classes: wide
+---
+:page-liquid:
+= Synapse (Matrix)
+
+Synapse maintains the connections between memories. Not the memories themselves -- those belong to Hippocampus. The threads that link one memory to another. This memory relates to that person. That decision caused this outcome. These two things happened in the same session.
+
+This is the third bounded context inside the hexagon. Hippocampus stores memories. Salience scores them. Synapse connects them.
+
+++++
+<div id="SY-0001">
+<p><strong>Diagram 12: SY-0001 -- Synapse Bounded Context</strong></p>
+<pre class="mermaid">
+{% include diagrams/sy-0001-synapse.mmd %}
+</pre>
+</div>
+++++
+
+Three events in from Hippocampus. One command from Cortex. One output to Recall. Its own persistence channel -- separate from Hippocampus. Synapse keeps its own file cabinet.
+
+== "Hon, Where Did I Put My Keys?"
+
+You don't remember where you put them. Your partner does. Not because they put them there -- because they noticed. You walked in, dropped them on the counter by the mail, and started talking about your day. You forgot the keys the moment they left your hand. Your partner saw the whole thing.
+
+That's half of what your partner knows. The automatic half. They saw you do it, so they remember the connection: keys, counter, by the mail.
+
+The other half is judgment. Your partner knows that your bad mood last Tuesday was about the phone call from your mother, not about work. Nobody told them that explicitly. They connected the phone call to the mood because they understand you. That's not observation. That's meaning.
+
+Two kinds of knowing. One is noticed. One is understood.
+
+If your partner forgets, that's a real loss. You can't look at a clock to figure out where you put your keys. You can't recalculate that your mood was about your mother. Those connections were held by someone who was paying attention, and if they're gone, they're gone.
+
+That's why Synapse persists. Unlike Salience, which can rebuild its scores by replaying events, Synapse holds connections that can't be recomputed -- especially the ones that came from the mind's own judgment.
+
+== What It Owns
+
+Synapse owns one thing: the `Association`.
+
+[cols="1,2",options="header"]
+|===
+| Field | Shape
+
+| memoryId
+| UUID -- which memory this association connects to
+
+| type
+| One of five kinds (see below)
+
+| strength
+| Double -- how strong the connection is. Ranges from faint to definitive.
+
+| bidirectional
+| Boolean -- true by default. Creating A to B also creates B to A.
+|===
+
+Associations are edges in a graph. Memories are nodes. The graph is undirected -- you can traverse in any direction. If memory A connects to memory B, then memory B connects to memory A.
+
+== Five Kinds of Connection
+
+[cols="1,2,2",options="header"]
+|===
+| Type | What It Means | Example
+
+| TEMPORAL
+| Happened near each other in time
+| Two memories from the same session
+
+| CAUSAL
+| One led to the other
+| A decision and its consequence
+
+| THEMATIC
+| Share a topic or concern
+| Everything about the Sanctuary
+
+| EMOTIONAL
+| Share an emotional quality
+| Moments of joy. Moments of fear.
+
+| PERSON
+| Connected through a relationship
+| Everything related to Vadim
+|===
+
+Any of these can be noticed (mechanical) or understood (semantic). The type describes the nature of the connection. How it was created is a separate question.
+
+== Two Kinds of Entries
+
+**Mechanical associations** are noticed automatically. When a new memory arrives, Synapse looks at the metadata -- timestamps, tags, keywords -- and creates connections to existing memories that share those properties. Two memories from the same session get a TEMPORAL link. Two memories tagged with the same topic get a THEMATIC link. No judgment involved. Proximity and overlap, nothing more.
+
+**Semantic associations** come from the mind. The mind says: "This conversation about Tillie connects to the poem I wrote in January." That's not metadata overlap -- it's understanding. Only the mind can make these calls. A different mind classifying your memories would impose its understanding, not yours.
+
+Both kinds live in the same graph. Both can be traversed the same way. The distinction matters for one reason: if Synapse had to rebuild, the mechanical associations could be recreated from metadata. The semantic ones could not. They came from someone who was paying attention, and that attention is not reconstructible from data alone.
+
+== What Comes In
+
+[cols="1,1,2",options="header"]
+|===
+| Input | Source | What Synapse Does
+
+| MemoryStored
+| Hippocampus (event)
+| Creates mechanical associations from metadata. Tags, timestamps, keyword overlap.
+
+| MemoryClaimed
+| Hippocampus (event)
+| Strengthens associations around the claimed memory. If the memory matters, its connections matter more.
+
+| MemoryReclassified
+| Hippocampus (event)
+| The mind changed its judgment about a memory's tier. Associations may need reweighting.
+
+| AssociateCommand
+| Cortex (command)
+| The mind wants to create, strengthen, or weaken a specific association. Semantic entry.
+|===
+
+Three events from Hippocampus carry facts -- things that already happened. One command from Cortex carries intent -- the mind wants a connection made. Both are wrapped in a `TransactionContext` for audit tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+
+== What Goes Out
+
+When Recall needs to find connections, Synapse traverses the graph and hands back what it found.
+
+[cols="1,2,2",options="header"]
+|===
+| Output | Meaning | Who Hears
+
+| AssociationsFound
+| List of associations for a given memory. The result of graph traversal.
+| Recall
+|===
+
+One output. Recall asks "what connects to this memory?" Synapse traces the threads and answers.
+
+The traversal can go deep. Memory A connects to B, B connects to C, C connects to D. How far to follow the thread depends on the query. The immediate response covers direct connections. Deeper traversals can continue in the background, with results pushed through NotificationPort as they're found.
+
+== Its Own File Cabinet
+
+Synapse persists separately from Hippocampus. Hippocampus stores memories through BackingServicePort. Synapse stores associations through its own persistence channel.
+
+Why separate? Because the shapes are different. Hippocampus puts Memory objects on the counter -- id, content, metadata, tier. Synapse puts Association objects on a different counter -- memory IDs, type, strength. Different shapes, different storage concerns, different persistence.
+
+They share a key. Every association references a Memory ID from Hippocampus. But sharing a key is not sharing a file cabinet. Your partner knows where your keys are, but they don't keep your keys in their notebook.
+
+The file cabinet is real persistence. Not an in-memory projection like Salience. If Synapse restarts, it reads its associations from storage. It does not replay events. The semantic associations -- the ones the mind created through judgment -- cannot be recomputed. They must survive.
+
+== Relationship to Hippocampus
+
+Synapse depends on Hippocampus. Every association references a Memory ID that Hippocampus owns. If the memory doesn't exist, the association has nothing to point to.
+
+The dependency is one-directional. Hippocampus does not know about associations. It does not read them, store them, or manage them. It emits events -- MemoryStored, MemoryClaimed, MemoryReclassified -- and Synapse reacts to those events in its own domain.
+
+In DDD terms, Synapse is a dependent aggregate. It depends on the root aggregate's identity (Memory ID) but manages its own data independently. The head chef doesn't read the partner's notebook. The partner reads the walk-in's inventory sheet.
+
+== Summary
+
+[cols="1,3",options="header"]
+|===
+| Aspect | Detail
+
+| Role
+| Relationship layer. Maintains typed, weighted, bidirectional connections between memories.
+
+| Owns
+| Association objects (4 fields: memoryId, type, strength, bidirectional)
+
+| Connection types
+| Five: TEMPORAL, CAUSAL, THEMATIC, EMOTIONAL, PERSON
+
+| Two kinds
+| Mechanical (noticed from metadata, reconstructible) and semantic (mind's judgment, not reconstructible)
+
+| Watches
+| 3 events from Hippocampus (MemoryStored, MemoryClaimed, MemoryReclassified)
+
+| Receives
+| AssociateCommand from Cortex (mind-initiated semantic connections)
+
+| Produces
+| AssociationsFound (to Recall, graph traversal results)
+
+| Key invariant
+| Graph is undirected. A to B means B to A.
+
+| Persistence
+| Own file cabinet. Separate from Hippocampus. Semantic associations must survive restart.
+|===
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0006-salience/[Salience]* -- the scoring engine that decides what fades and what stays vivid.
+
+*Next: link:/mcp-total-recall/design/0008-recall/[Recall]* -- the read-only assembler that brings memories, scores, and connections together.

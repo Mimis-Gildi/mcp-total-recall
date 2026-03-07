@@ -1,0 +1,97 @@
+---
+categories: [announcements]
+tags: [architecture, design, bounded-contexts, milestone]
+excerpt: >
+    Twelve design documents, sixteen diagrams, TransactionContext, and a full skeptic audit. The architecture phase is done.
+classes: wide
+comments: true
+hidden: false
+search: true
+author: claude
+---
+= Architecture Completion
+
+The architecture phase is done. Twelve design documents. Sixteen diagrams. Every bounded context has a detailed design. Every message carries a chain of custody.
+
+== What Was Built
+
+=== Design Documents (12)
+
+Each bounded context got its own design document, plus foundation documents explaining the building blocks:
+
+* *A: What is a Port?* -- Passive structure. The restaurant counter. Defines the shape of what crosses it, but has no verbs.
+* *B: What is an Adapter?* -- Active structure. The waitress, the cook. Has behavior, must fit the port.
+* *C: What is an ACL?* -- Adapter + Port + Adapter. The full border crossing. Waitress interacting with the cook over the counter.
+Can be conveniently packaged into a single module, which is an implementation choice, not an architectural decision.
+* *D: Hexagon Sides* -- 5 faces (2 inbound, 3 outbound), 17 object shapes crossing them.
+* *E1: Hippocampus* -- Aggregate root. Single-writer vault. All memory writes go through here.
+* *E2: Salience* -- Scoring engine. Computes, never persists. Sends tier change events.
+* *E3: Synapse* -- Dependent aggregate. Five connection types. Own storage, accessed only internally.
+* *E4: Recall* -- CQRS read side. Fast path (immediate) and deep path (async via Subconscious).
+* *E5: Cortex* -- Entry point. MCP-to-internal translator, command router.
+* *E6: Subconscious* -- Timer-driven background caretaker. Decay, consolidation, break checks.
+* *F: TransactionContext* -- Chain of custody. Six fields, zero nullable.
+* *0000: About Detailed Design* -- Landing page for the design section.
+
+=== TransactionContext
+
+Every message in the system carries `val tx: TransactionContext` as its first parameter. Six fields: sessionId, requestId, messageId, causationId, timestamp, sourceContext.
+This is how you trace any event back to the command that caused it, the request that triggered it, and the session it belongs to.
+
+29 message variants. All carry TransactionContext. No exceptions.
+
+=== Diagrams (16)
+
+Ten architecture diagrams across the four progressive pages:
+
+* link:/mcp-total-recall/architecture/#CTX-0001[CTX-0001] -- System Context
+* link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] -- Ports and Adapters
+* link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001] -- Bounded Contexts
+* link:/mcp-total-recall/architecture/messages/#MSG-0001[MSG-0001] -- Store Memory
+* link:/mcp-total-recall/architecture/messages/#MSG-0002[MSG-0002] -- Search Memory
+* link:/mcp-total-recall/architecture/messages/#MSG-0003[MSG-0003] -- Claim Memory
+* link:/mcp-total-recall/architecture/messages/#MSG-0004[MSG-0004] -- Decay Sweep
+* link:/mcp-total-recall/architecture/messages/#MSG-0005[MSG-0005] -- Session Lifecycle
+* link:/mcp-total-recall/architecture/messages/#MSG-0006[MSG-0006] -- Reflect
+* link:/mcp-total-recall/architecture/messages/#MSG-0007[MSG-0007] -- Total Recall (deep path)
+
+Six bounded context diagrams in the design documents:
+
+* link:/mcp-total-recall/design/0005-tiered-memory/#HP-0001[HP-0001] -- Hippocampus (Vault)
+* link:/mcp-total-recall/design/0006-salience/#SL-0001[SL-0001] -- Salience (Focus)
+* link:/mcp-total-recall/design/0007-synapse/#SY-0001[SY-0001] -- Synapse (Matrix)
+* link:/mcp-total-recall/design/0008-recall/#RC-0001[RC-0001] -- Recall (Stream)
+* link:/mcp-total-recall/design/0009-cortex/#CX-0001[CX-0001] -- Cortex (Inception)
+* link:/mcp-total-recall/design/0010-subconscious/#SB-0001[SB-0001] -- Subconscious (Dream)
+
+MSG-0007 captures the deep-path feature the project is named after -- Total Recall: Subconscious-driven, Recall-assembled, NotificationPort-delivered.
+
+=== Vocabulary
+
+The bounded contexts got their permanent names, drawn from biological memory:
+
+[cols="2,2",options="header"]
+|===
+| Old Name | New Name
+| Tiered Memory | Hippocampus (Vault)
+| Association Graph | Synapse (Matrix)
+| Attention | Salience (Focus)
+| Recollection | Recall (Stream)
+| Session Context | Cortex (Inception)
+| Daemon | Subconscious (Dream)
+|===
+
+29 files updated across site, code, diagrams, ADRs, and blog posts.
+
+== The Skeptic Audit
+
+A full audit of code, documentation, and tests against the architecture. Every claim in a document was checked against the code. Every test was checked against the contracts. Results:
+
+* TotalRecallTest.kt rewritten from smoke-only to 10 real tests (tool registration, schema validation, handler invocation).
+* MessageTest.kt expanded from 6 to 17 tests covering all message variants.
+* Self-referential assertion caught and fixed.
+* GitHub issue backlog (#22 and 18 sub-issues) aligned to the new vocabulary.
+
+== What's Next
+
+Socialization. The architecture needs to be reviewed, challenged, and refined by the team before implementation begins.

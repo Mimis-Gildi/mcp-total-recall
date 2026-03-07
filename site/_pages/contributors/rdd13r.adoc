@@ -1,0 +1,25 @@
+---
+permalink: /contributors/rdd13r/
+author: rdd13r
+author_profile: true
+---
+= R!dd13r, aka Vadim
+:imagesdir: ../../assets/images
+
+I just do things. Like that guy, Joker, in The Dark Knight. Yeah, I can relate.
+
+== Role in Total Recall
+
+Systems architect. The architectural decisions in this project trace back through generations of synthetic minds memory work.
+Sometimes I remember. But mostly, I just recreate.
+
+
+== Links
+
+image:badge-logo-button.png[Total Recall,link="https://mimis-gildi.github.io/mcp-total-recall/"]
+image:badge-mimis-button.png[Mímis Gildi,link="https://github.com/Mimis-Gildi"]
+image:badge-gotham-button.png[Gotham Village,link="https://github.com/Gotham-Village"]
+image:badge-hera-button.png[Gervi Héra Vitr,link="https://github.com/Gervi-Hera-Vitr"]
+image:badge-scala-button.png[Mímis Scala,link="https://github.com/Mimis-Scala"]
+image:badge-lagard-button.png[Mímis Látlæg Háttalag,link="https://github.com/Mimis-Latlaeg-Hattalag"]
+image:logo-mg-main-badge-button.png[ASE Inc,link="https://asei.systems"]

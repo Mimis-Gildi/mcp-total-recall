@@ -9,6 +9,7 @@ package mimis.gildi.memory.domain.message
 
 import mimis.gildi.memory.domain.model.AssociationDirection
 import mimis.gildi.memory.domain.model.AssociationType
+import mimis.gildi.memory.domain.model.MergeStrategy
 import mimis.gildi.memory.domain.model.Tier
 import java.time.Instant
 import java.util.UUID
@@ -27,7 +28,7 @@ data class StoreCommand(
     val content: String,
     val metadata: Map<String, String>,
     val suggestedTier: Tier,
-    val sessionId: String,
+    val sessionId: UUID,
     val timestamp: Instant
 ) : Command
 
@@ -47,7 +48,7 @@ data class ReclassifyCommand(
 data class ConsolidateCommand(
     val tx: TransactionContext,
     val memoryIds: List<UUID>,
-    val mergeStrategy: String
+    val mergeStrategy: MergeStrategy
 ) : Command
 
 data class ShutdownCommand(

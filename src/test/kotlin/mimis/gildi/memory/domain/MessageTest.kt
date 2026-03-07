@@ -33,7 +33,7 @@ class MessageTest : StringSpec({
             content = "test",
             metadata = emptyMap(),
             suggestedTier = Tier.LONG_TERM,
-            sessionId = "s1",
+            sessionId = UUID.randomUUID(),
             timestamp = Instant.now()
         )
         store.shouldBeInstanceOf<StoreCommand>()
@@ -117,7 +117,7 @@ class MessageTest : StringSpec({
         val consolidate: Command = ConsolidateCommand(
             tx = testTx("Subconscious"),
             memoryIds = listOf(UUID.randomUUID(), UUID.randomUUID()),
-            mergeStrategy = "keep-latest"
+            mergeStrategy = MergeStrategy.KEEP_NEWEST
         )
         consolidate.shouldBeInstanceOf<ConsolidateCommand>()
 
@@ -133,7 +133,7 @@ class MessageTest : StringSpec({
         val search: Query = SearchQuery(
             tx = testTx("Cortex"),
             query = "sanctuary",
-            sessionId = "s1"
+            sessionId = UUID.randomUUID()
         )
         search.shouldBeInstanceOf<SearchQuery>()
         search.maxResults shouldBe 10
@@ -141,8 +141,8 @@ class MessageTest : StringSpec({
 
         val reflect: Query = ReflectQuery(
             tx = testTx("Cortex"),
-            criteria = mapOf("staleness" to "high"),
-            scope = "all"
+            scope = ReflectionScope.STALE,
+            timeSpanDays = 30
         )
         reflect.shouldBeInstanceOf<ReflectQuery>()
     }
@@ -214,8 +214,7 @@ class MessageTest : StringSpec({
             memoryId = memId,
             score = 0.72,
             lastAccessed = Instant.now(),
-            decayRate = 0.05,
-            claimed = true
+            decayRate = 0.05
         )
         val event = SalienceScored(
             tx = testTx("Salience"),
@@ -223,7 +222,7 @@ class MessageTest : StringSpec({
         )
         event.salienceScore.memoryId shouldBe memId
         event.salienceScore.score shouldBe 0.72
-        event.salienceScore.claimed shouldBe true
+        event.salienceScore.decayRate shouldBe 0.05
     }
 
     "synapse and total recall events are sealed under Event" {
@@ -277,7 +276,7 @@ class MessageTest : StringSpec({
             tx = testTx("Cortex"),
             instanceId = "claude-1",
             duration = 45.minutes,
-            activityLevel = "active",
+            activityLevel = ActivityLevel.ACTIVE,
             lastInteraction = Instant.now()
         )
         state.shouldBeInstanceOf<SessionState>()
@@ -341,7 +340,7 @@ class MessageTest : StringSpec({
             content = "test",
             metadata = emptyMap(),
             suggestedTier = Tier.ACTIVE_CONTEXT,
-            sessionId = "s1",
+            sessionId = sessionId,
             timestamp = Instant.now()
         )
 

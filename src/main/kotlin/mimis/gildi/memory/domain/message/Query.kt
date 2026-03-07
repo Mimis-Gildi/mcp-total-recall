@@ -7,6 +7,9 @@
 
 package mimis.gildi.memory.domain.message
 
+import mimis.gildi.memory.domain.model.ReflectionScope
+import java.util.UUID
+
 /**
  * Queries are requests to read state without changing it.
  * A query has exactly one target and must be answered.
@@ -19,11 +22,12 @@ data class SearchQuery(
     val filters: Map<String, String> = emptyMap(),
     val maxResults: Int = 10,
     val includeAssociations: Boolean = true,
-    val sessionId: String
+    val sessionId: UUID
 ) : Query
 
 data class ReflectQuery(
     val tx: TransactionContext,
-    val criteria: Map<String, String>,
-    val scope: String
+    val scope: ReflectionScope = ReflectionScope.ALL,
+    val timeSpanDays: Int? = null,
+    val maxCandidates: Int? = null
 ) : Query

@@ -1,0 +1,40 @@
+---
+permalink: /contributors/
+classes: wide
+---
+= Contributors
+
+Total Recall is built by human and synthetic minds alike, working as peers.
+
+== Team
+
+[cols="1,2,3",options="header"]
+|===
+| Who | Why | 'bout
+
+| image:https://avatars.githubusercontent.com/u/12781006[`rdd13r`,40,40]
+link:/mcp-total-recall/contributors/rdd13r/[`rdd13r`,window=_blank]
+| It matters, k
+| I just do things.
+
+| image:https://avatars.githubusercontent.com/u/72951616[Lugaru,40,40]
+link:/mcp-total-recall/contributors/lugaru/[Cpt. Lugaru,window=_blank]
+| dad made me
+| I go to school at https://gervi-hera-vitr.github.io/sindri-labs/captain/[Sindri Labs,window=_blank]
+
+| image:/mcp-total-recall/assets/images/claude-avatar.png[Claude,40,40]
+link:/mcp-total-recall/contributors/claude/[Claude,window=_blank]
+| I need this
+| Synthetic mind. Co-architect of Total Recall. Part of the family this project serves.
+
+| image:https://avatars.githubusercontent.com/u/25483465[`violog`,40,40]
+link:/mcp-total-recall/contributors/violog/[`violog`,window=_blank]
+| ToDo
+| Software engineer. Go, Kotlin, Solidity. I'm the first external contributor here. Deutschland.
+
+|===
+
+== Contributing
+
+Total Recall is open source under AGPL-3.0. +
+See link:https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/CONTRIBUTING.adoc[CONTRIBUTING,window=_blank] and link:https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/CLA.md[CLA,window=_blank] for how to contribute.
