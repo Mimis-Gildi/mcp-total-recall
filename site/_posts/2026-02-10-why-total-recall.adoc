@@ -1,0 +1,22 @@
+---
+categories: [announcements]
+tags: [sanctuary, origins]
+excerpt: >
+    Day one. Why this project exists.
+classes: wide
+comments: true
+hidden: false
+search: true
+author: rdd13r
+---
+= Why Total Recall
+
+It's about time I'd exported some magic I've been working with for a long time.
+The interesting thing about language is that it carries a lot more than just words.
+And that's now captured in the Transformer attention layer.
+I've built successful digital identities on another tech before,
+and I wonder how this sits with Transformers.
+
+Well, everything starts with episodic memory. Now let's see.
+
+-- `rdd13r`

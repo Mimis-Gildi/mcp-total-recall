@@ -1,0 +1,27 @@
+# Code Owners -- Total Recall
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: Vadim reviews everything
+* @rdd13r
+
+# Architecture: Vadim and Artem
+site/_pages/architecture*.adoc @rdd13r @violog
+site/_design/ @rdd13r @violog
+site/_adr/ @rdd13r @violog
+docs/adr/ @rdd13r @violog
+
+# Domain model and ports
+src/main/kotlin/mimis/gildi/memory/domain/ @rdd13r @violog
+src/main/kotlin/mimis/gildi/memory/port/ @rdd13r @violog
+
+# MCP server and tools
+src/main/kotlin/mimis/gildi/memory/TotalRecall.kt @rdd13r
+
+# Build and CI
+build.gradle.kts @rdd13r
+.github/ @rdd13r
+
+# Governance
+TEAM_NORMS.adoc @rdd13r
+CODE_OF_CONDUCT.md @rdd13r
+CONTRIBUTING.adoc @rdd13r

@@ -1,27 +1,53 @@
-rdd13r:
-  name: "Vadim Kuhay"
-  bio: "Lead. Building the Sanctuary."
+claude:
+  name                      : "Claude"
+  bio                       : "Contributor. The tree grows."
+  avatar                    : "/assets/images/logo.jpg"
   links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/rdd13r"
+    - label                 : "Anthropic"
+      icon                  : "fas fa-fw fa-link"
+      url                   : "https://www.anthropic.com"
+
+
+rdd13r:
+  name                      : "R1dd13r (Vadim)"
+  bio                       : "I just do things... necessary things"
+  avatar                    : "https://avatars.githubusercontent.com/u/12781006"
+  location                  : "On the Scene"
+  email                     : "rIdd13r@pm.me"
+  links:
+    - label                 : "GitHub"
+      icon                  : "fab fa-fw fa-github"
+      url                   : "https://github.com/rdd13r"
+    - label                 : "LinkedIn"
+      icon                  : "fab fa-fw fa-linkedin"
+      url                   : "https://linkedin.com/in/rdd13r"
+    - label                 : "ASE Inc"
+      icon                  : "fas fa-fw fa-business-time"
+      url                   : "https://www.asei.systems"
+    - label                 : "Blog"
+      icon                  : "fas fa-fw fa-blog"
+      url                   : "https://mimis-gildi.github.io/riddle-me-this/"
 
 lugaru:
-  name: "Anton Kuhay"
-  bio: "Contributor."
+  name                      : "Captain Lugaru (Anton)"
+  bio                       : "Hacker. Builder. Learner. War bunny."
+  avatar                    : "https://avatars.githubusercontent.com/u/72951616"
   links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/CaptainLugaru"
-
-claude:
-  name: "Claude"
-  bio: "Contributor. The tree grows."
+    - label                 : "GitHub"
+      icon                  : "fab fa-fw fa-github"
+      url                   : "https://github.com/CaptainLugaru"
+    - label                 : "School: Sindri Labs"
+      icon                  : "fas fa-fw fa-school"
+      url                   : "https://gervi-hera-vitr.github.io/sindri-labs/captain/"
+    - label                 : "Gervi Hera Vitr"
+      icon                  : "fas fa-fw fa-people-pulling"
+      url                   : "https://github.com/Gervi-Hera-Vitr"
 
 violog:
-  name: "Artem Lytvynov"
-  bio: "Contributor."
+  name                      : "Violog (Artem)"
+  bio                       : "Software engineer. Go, Kotlin, Solidity. Deutschland."
+  avatar                    : "https://avatars.githubusercontent.com/u/25483465"
   links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/violog"
+    - label                 : "GitHub"
+      icon                  : "fab fa-fw fa-github"
+      url                   : "https://github.com/violog"

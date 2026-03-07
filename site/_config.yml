@@ -116,6 +116,7 @@ defaults:
       sidebar:
         nav: architecture
 
+# Default / anonymous author meta
 author:
   name: "Mimis Gildi"
   avatar: "/assets/images/logo.jpg"

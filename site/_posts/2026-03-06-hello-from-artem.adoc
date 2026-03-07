@@ -1,0 +1,14 @@
+---
+categories: [announcements]
+tags: [contributors]
+excerpt: >
+    Artem joins the project.
+classes: wide
+comments: true
+hidden: false
+search: true
+author: violog
+---
+= Hello from Artem
+
+_This post is a placeholder. Artem, introduce yourself -- it is yours._

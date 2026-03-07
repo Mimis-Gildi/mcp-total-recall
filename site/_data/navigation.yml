@@ -3,6 +3,8 @@ main:
     url: /architecture/
   - title: "Roadmap"
     url: /roadmap/
+  - title: "Contributors"
+    url: /contributors/
   - title: "About"
     url: /about/
   - title: "GitHub"
