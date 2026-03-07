@@ -5,6 +5,69 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-03-06
+
+Architecture socialization release. Soundness audit of all contracts, ADR-0008
+(SQLite as primary backing service), delivery roadmap, compile-time version
+injection, cognitive crosscut design, and full documentation alignment.
+
+### Added
+
+- ADR-0008: SQLite as the primary backing service. Redis deferred to the Agora phase.
+  MATILDA origin context and prefilled-DB consequence documented.
+- Delivery roadmap (`site/_pages/roadmap.adoc`): Phase 0 (v1.0.0) through
+  Phase 8 (v9.0.0) plus Research. Added to the top nav and sidebar.
+- Claude mind adapter issues (#74-81), one per delivery phase, bound to
+  Yggdrasil project board.
+- MCP tools: `state_transition` (working mode change: TASK, CONVERSATION,
+  REFLECTION, IDLE) and `heartbeat` (cognitive pulse, memory health). 10 tools
+  total.
+- Domain model: ReflectionScope, MergeStrategy, ActivityLevel enums. Replace
+  magic strings with type-safe values at the adapter boundary.
+- `store_memory` and `search_memory`: `session_id` required argument added.
+- `search_memory`: `filters` optional argument added.
+- BuildInfo.kt: compile-time generated source with `const val VERSION`.
+  Replaces runtime `java.util.Properties` loading. No classloader, no lazy,
+  no resource file.
+
+### Changed
+
+- Architecture soundness audit (11 findings, all resolved):
+  - sessionId: String → UUID across Memory, Command, Query, MemoryPort, tests.
+  - reflect: port and query aligned to MCP tool params (scope, timeSpanDays,
+    maxCandidates).
+  - Association: added a direction field (AssociationDirection).
+  - SalienceScore: removed `claimed` proxy. Memory.claimed is authoritative.
+    Same JVM -- no staleness management needed for data one function call away.
+  - ConsolidateCommand.mergeStrategy: String -> MergeStrategy enum.
+  - SessionState.activityLevel: String → ActivityLevel enum.
+  - ReflectQuery.scope: String → ReflectionScope enum.
+- LifecyclePort: `reason: String` -> SessionEndReason, `oldState/newState:
+  String` -> WorkingMode.
+- MemoryPort.reflect: `scope: String` -> `Tier?`.
+- `configureLogging()` moved outside `runBlocking` (pure JVM infrastructure,
+  not a coroutine).
+- `main()` cleaned: server and transport inlined, no unused vals.
+- BackingServicePort.kt KDoc: Redis reference → SQLite/ADR-0008.
+- GitHub issues #27-30 (crosscuts): rewritten from cloud-ops framing to
+  cognitive self-check. No HTTP, no Kubernetes, no Prometheus. All crosscuts
+  through MCP tools -- the mind's private introspection channel.
+- CLAUDE.md, README.md, CHANGELOG.md, roadmap.adoc, architecture.adoc,
+  blog post: tool count 8→10, message count 28→29, Redis→SQLite, a tool
+  list updated.
+
+### Removed
+
+- `version.properties` -- replaced by compile-time BuildInfo.kt.
+
+### Fixed
+
+- TotalRecallTest.kt: tool count 8→10, `store_memory`/`search_memory` tests
+  include `session_id`, version test uses `BuildInfo.VERSION`.
+- MessageTest.kt: ReflectQuery, ConsolidateCommand, SessionState aligned to
+  new enum types. SalienceScore `claimed` removed from test assertions.
+- ModelTest.kt: SalienceScore test updated for `decayRate` instead of `claimed`.
+
 ## [0.7.0] - 2026-03-04
 
 Architecture completion release. Twelve detailed design documents, sixteen
@@ -55,13 +118,13 @@ audit (code, docs, tests), and issue backlog alignment to the new vocabulary.
 - Bounded contexts renamed to biological memory vocabulary:
   Tiered Memory → Hippocampus, Association Graph → Synapse,
   Attention → Salience, Recollection → Recall, Session Context → Cortex,
-  Daemon → Subconscious. 29+ files updated across site, code, diagrams,
+  Daemon → Subconscious. 29+ files updated across the site, code, diagrams,
   ADRs, blog posts.
 - Domain model: AttentionScore → SalienceScore, AttentionScored →
   SalienceScored. SalienceScored refactored to wrap SalienceScore model.
-- Domain model: DecaySweep.scope changed from String to Tier? (null = all).
-  Temporal fields (ShutdownCommand.flushTimeout, SessionState.duration,
-  BreakNotification.timeInTaskMode, SessionAuditPrompt.sessionDuration)
+- Domain model: `DecaySweep.scope` changed from String to Tier? (null = all).
+  Temporal fields (`ShutdownCommand.flushTimeout`, `SessionState.duration`,
+  `BreakNotification.timeInTaskMode`, `SessionAuditPrompt.sessionDuration`)
   changed from Long to kotlin.time.Duration.
 - MSG-0002 (Search Memory) rewritten: fast path only. Deep path split to
   MSG-0007. MemoryAccessedEvent added on retrieval.
@@ -74,10 +137,10 @@ audit (code, docs, tests), and issue backlog alignment to the new vocabulary.
   fixed (Recall not Hippocampus/Synapse).
 - Architecture-hexagonal.adoc: port operations aligned with code, actor
   count 5→6, SearchFilter references → Map<String, String>.
-- GitHub Action: replaced dead SECURITY.md step with CLAUDE.md step.
+- GitHub Action: replaced the dead SECURITY.md step with CLAUDE.md step.
 - GitHub issue backlog (#22 and 18 sub-issues): vocabulary aligned to
   architecture, design document cross-references added, acceptance criteria
-  updated for event distinctions (TierDemoted vs MemoryReclassified) and
+  updated for event distinctions (TierDemoted vs. MemoryReclassified) and
   Cortex routing.
 
 ### Removed
@@ -96,7 +159,7 @@ audit (code, docs, tests), and issue backlog alignment to the new vocabulary.
 
 - C-Audit-9: TotalRecall.kt refactoring pass (deferred to implementation).
 - F-Audit-6: MemoryRetrieved/SalienceScored/AssociationsFound identity
-  crisis (response payloads vs domain events -- resolve during implementation).
+  crisis (response payloads vs. domain events -- resolve during implementation).
 
 ## [0.6.0] - 2026-03-01
 
@@ -184,7 +247,7 @@ stdio with 10 teapot-stub tools. The design and the code agree.
 
 Architecture modeling release. Four-page progressive architecture documentation
 with Mermaid diagrams and a complete message catalog. All bounded contexts,
-ports, and message contracts defined. No runtime code -- this release defines
+ports, and message contracts are defined. No runtime code -- this release defines
 what we build next.
 
 ### Added
@@ -202,7 +265,7 @@ what we build next.
 ### Architecture Decisions
 
 - Conscience-universal port contracts: mind-agnostic, not Claude-specific.
-- Agora as peer MCP server alongside Total Recall, not downstream.
+- Agora as a peer MCP server alongside Total Recall, not downstream.
 - Lifecycle Port: session start/end, state transitions -- pluggable.
 - Notification Port: outbound alerts (break checks, session audits).
 - Internal timers (decay sweeps, break checks, consolidation) as domain logic.
@@ -228,7 +291,7 @@ what we build next.
 
 ## [0.1.0] - 2026-02-10
 
-Generation 3, Take 2 foundation release. This establishes the project skeleton,
+Generation 3, Take 2, the foundation release. This establishes the project skeleton,
 governance, and infrastructure for the MCP memory server. No runtime functionality
 yet -- this release is about getting the house in order before writing the first
 line of production code.
@@ -250,7 +313,7 @@ governance, collaboration infrastructure, and a public project board.
 - Repository governance: LICENSE (AGPL-3.0), NOTICE, CLA, AUTHORS, TEAM_NORMS,
   CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, ATTRIBUTIONS.
 - GitHub issue templates: bug, feature, architecture, idea.
-- Pull request template with layer checklist.
+- A pull request template with a layer checklist.
 - Dependabot configuration for GitHub Actions and Gradle ecosystems.
 - Repository labels for work areas, types, and automation.
 - Yggdrasil project board (#6, public, linked to repo).
@@ -259,7 +322,7 @@ governance, collaboration infrastructure, and a public project board.
 - Release automation: publish workflow reads CHANGELOG.md and creates GitHub
   Releases on PR merge. No separate release notes file -- CHANGELOG.md is the
   single source of truth.
-- Composite actions ported from parent: feature branch guard, runner detection,
+- Composite actions ported from the parent: feature branch guard, runner detection,
   version extraction, annotated tagging. New: changelog section extraction.
 
 ### Deferred
@@ -269,7 +332,7 @@ Items explicitly scoped out of 0.1.0 for later releases:
 - **MCP server and protocol handling.** No runtime functionality yet.
 - **Memory model and backing services.** Redis integration deferred.
 - **Container images.** Docker/OCI approach TBD (intentionally not Dockerfile).
-- **CI/CD pipeline.** Build and test workflow deferred (publish workflow runs build as gate).
+- **CI/CD pipeline.** Build and test workflow deferred (publish workflow runs build as the gate).
 - **Internal documentation (`docs/`).** AsciiDoc directory deferred.
 
 ### Notes
