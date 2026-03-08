@@ -38,7 +38,7 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
-## Current State (1.0.0)
+## Current State (1.1.0)
 
 Architecture complete, implementation next. MCP server runs on stdio with 10 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
 
