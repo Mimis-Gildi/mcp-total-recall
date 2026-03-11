@@ -1,19 +1,20 @@
 ---
-title: "Artem Lytvynov"
+title: "violog (Artem)"
 permalink: /contributors/violog/
 author: violog
 author_profile: true
 ---
-= Artem Lytvynov
+= violog (Artem)
 
-Backend engineer. Go, Kotlin, Solidity. Deutschland.
+Writes Go for a living and anything else when it's fun enough.
 
 == Role in Total Recall
 
-Contributor. First external architecture reviewer -- submitted five substantive findings on the v1.0.0 architecture (link:/mcp-total-recall/2026/03/06/architecture-socialization/[documented here]).
+Contributor. Neurophysiology enthusiast. Supports Vadim on neuroscience questions -- why reinvent what the human brain already solved?
 
-_This page is a stub. Artem, fill it in -- it is yours._
+Exploring agentic workflow development with Claude Code.
 
 == Links
 
 * https://github.com/violog[GitHub]
+* https://www.linkedin.com/in/artem-lytvynov/[LinkedIn]

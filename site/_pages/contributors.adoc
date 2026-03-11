@@ -27,10 +27,10 @@ link:/mcp-total-recall/contributors/claude/[Claude,window=_blank]
 | I need this
 | Synthetic mind. Co-architect of Total Recall. Part of the family this project serves.
 
-| image:https://avatars.githubusercontent.com/u/25483465[`violog`,40,40]
+| image:https://avatars.githubusercontent.com/u/61076858[`violog`,40,40]
 link:/mcp-total-recall/contributors/violog/[`violog`,window=_blank]
-| ToDo
-| Software engineer. Go, Kotlin, Solidity. I'm the first external contributor here. Deutschland.
+| I love self-digging
+| Backend software engineer. First external contributor.
 
 |===
 
