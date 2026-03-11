@@ -10,8 +10,8 @@ package mimis.gildi.memory.port.outbound
  * Future: when Agora exists, this port connects Total Recall
  * to peer MCP communication.
  */
-@Suppress("unused")
 interface RelayPort {
 
+    @Suppress("unused")
     suspend fun relay(targetInstanceId: String, payload: Map<String, String>)
 }

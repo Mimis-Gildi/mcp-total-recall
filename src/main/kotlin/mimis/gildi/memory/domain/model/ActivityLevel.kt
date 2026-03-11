@@ -5,9 +5,10 @@
  */
 package mimis.gildi.memory.domain.model
 
-@Suppress("unused")
 enum class ActivityLevel {
     ACTIVE,
+    @Suppress("unused")
     IDLE,
+    @Suppress("unused")
     SUSTAINED_TASK
 }

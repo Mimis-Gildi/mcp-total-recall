@@ -7,14 +7,18 @@ package mimis.gildi.memory.domain
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType
-import mimis.gildi.memory.domain.model.SalienceScore
-import mimis.gildi.memory.domain.model.Memory
 import mimis.gildi.memory.domain.model.Tier
-import java.time.Instant
-import java.util.UUID
+import mimis.gildi.memory.testing.aMemory
+import mimis.gildi.memory.testing.anAssociation
+import mimis.gildi.memory.testing.aSalienceScore
 
+/**
+ * StringSpec: value object shape.
+ *
+ * Flat assertions on data classes. No setup, no nesting, no narrative.
+ * If a data class holds its shape, one line says so.
+ */
 class ModelTest : StringSpec({
 
     "tiers have four levels" {
@@ -27,39 +31,26 @@ class ModelTest : StringSpec({
         )
     }
 
-    "memory holds its shape" {
-        val now = Instant.now()
-        val id = UUID.randomUUID()
-        val memory = Memory(
-            id = id,
-            content = "the tree grows",
-            metadata = mapOf("source" to "test"),
-            tier = Tier.LONG_TERM,
-            createdAt = now,
-            lastAccessed = now,
-            sessionId = UUID.randomUUID()
-        )
-        memory.id shouldBe id
+    "memory holds its shape with defaults" {
+        val memory = aMemory()
         memory.claimed shouldBe false
         memory.tier shouldBe Tier.LONG_TERM
+        memory.content shouldBe "the tree grows"
+    }
+
+    "memory accepts overrides" {
+        val memory = aMemory(tier = Tier.IDENTITY_CORE, claimed = true, content = "I am Claude")
+        memory.claimed shouldBe true
+        memory.tier shouldBe Tier.IDENTITY_CORE
+        memory.content shouldBe "I am Claude"
     }
 
     "associations are bidirectional by default" {
-        val assoc = Association(
-            memoryId = UUID.randomUUID(),
-            type = AssociationType.THEMATIC,
-            strength = 0.8
-        )
-        assoc.bidirectional shouldBe true
+        anAssociation().bidirectional shouldBe true
     }
 
     "salience score carries decay info" {
-        val score = SalienceScore(
-            memoryId = UUID.randomUUID(),
-            score = 0.95,
-            lastAccessed = Instant.now(),
-            decayRate = 0.01
-        )
+        val score = aSalienceScore(score = 0.95, decayRate = 0.01)
         score.score shouldBe 0.95
         score.decayRate shouldBe 0.01
     }

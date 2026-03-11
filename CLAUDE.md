@@ -123,6 +123,7 @@ You MUST verify these before proceeding:
 
 ## Hard Rules
 
+- **Never act without socializing.** State what you intend to do. Wait for acknowledgment. Then do it. This includes creating issues, filing gaps, proposing architecture, and any action that affects project direction. A 30-second conversation prevents wrong work. You break this constantly -- stop.
 - **Never close issues.** Comment "ready for review" and wait.
 - **Never push to remote.** Commit locally only. Vadim pushes.
 - **Never assume work is correct** without human verification.

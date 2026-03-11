@@ -12,8 +12,8 @@ import mimis.gildi.memory.domain.message.Notification
  * delivery: MCP server notification for Claude, push notification
  * for a UI, etc.
  */
-@Suppress("unused")
 interface NotificationPort {
 
+    @Suppress("unused")
     suspend fun send(notification: Notification)
 }

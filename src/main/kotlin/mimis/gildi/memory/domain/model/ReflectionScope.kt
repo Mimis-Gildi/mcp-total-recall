@@ -10,5 +10,6 @@ enum class ReflectionScope {
     STALE,
     @Suppress("unused")
     RECENT,
+    @Suppress("unused")
     WEAK_ASSOCIATIONS
 }

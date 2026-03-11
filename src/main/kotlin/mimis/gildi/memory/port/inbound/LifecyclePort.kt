@@ -13,20 +13,22 @@ import mimis.gildi.memory.domain.model.WorkingMode
  * mind-specific events (Claude Code hooks, UI events) into
  * universal lifecycle signals.
  */
-@Suppress("unused")
 interface LifecyclePort {
 
+    @Suppress("unused")
     suspend fun sessionStart(
         instanceId: String,
         mindType: String,
         resumptionData: Map<String, String> = emptyMap()
     )
 
+    @Suppress("unused")
     suspend fun sessionEnd(
         instanceId: String,
         reason: SessionEndReason = SessionEndReason.EXPLICIT
     )
 
+    @Suppress("unused")
     suspend fun stateTransition(
         instanceId: String,
         oldMode: WorkingMode,
@@ -34,5 +36,6 @@ interface LifecyclePort {
         context: Map<String, String> = emptyMap()
     )
 
+    @Suppress("unused")
     suspend fun heartbeat(instanceId: String)
 }

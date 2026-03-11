@@ -6,78 +6,72 @@ Every Claude instance reads this at session start and updates it before session 
 If this file is stale, the project is lost. Keep it current.
 Deleted at PR time -- has no purpose after merge.
 
-Last updated: 2026-03-06 by Claude (with Vadim)
+Last updated: 2026-03-11 by Claude (with Vadim)
 
-Previous branch context: `2-architecture-hexagonal-boundaries-bounded-contexts-and-message-contracts-2` delivered full architecture (merged as #71).
+Previous branch context: `72-architecture-socialize-architecture-v1` delivered socialization (merged as #73). Version bumped to 1.1.0.
 
 ---
 
 ## Where We Are
 
-**Branch:** `72-architecture-socialize-architecture-v1`
-**Issue:** #72 -- Socialize Architecture v1
-**Version:** 1.0.0
-**PR:** #73 -- Open, under review
+**Branch:** `23-221-test-fixture-kotest-structure-and-test-configuration`
+**Issue:** #23 -- Test fixture: Kotest structure and test configuration
+**Parent:** #22 -- 0.5.0 Engineering Foundation
+**Milestone:** Phase 1: Walking Skeleton (v2.0.0)
+**Version:** 1.1.0
+**PR:** not yet created
+**Build:** `./gradlew test` passes (all tests green)
 
 ---
 
 ## Done
 
-### ADR-0008: SQLite as Primary Backing Service
-- ADR written and published. SQLite primary, Redis deferred to Agora.
-- BackingServicePort.kt KDoc updated.
-- Added to site navigation, config, and docs/adr/README.md.
+### Test Infrastructure
+- `mimis.gildi.memory.testing.ProjectConfig` -- Kotest project config (concurrent specs/tests, 30s timeout, 10s invocation, tags in names)
+- `mimis.gildi.memory.testing.Fixtures` -- domain factories: `aTx()`, `rootCauseTx()`, `TxChain`, `aMemory()`, `anAssociation()`, `aSalienceScore()`
+- `TxChain` -- scoped causation chain factory. causationId is never defaulted -- you must know the cause.
 
-### Delivery Roadmap
-- `site/_pages/roadmap.adoc` created. Phase 0 (v1.0.0) through Phase 8 (v9.0.0) + Research.
-- Added to top navigation bar and sidebar.
+### Test Files (8 specs, 7 Kotest styles)
+- `ModelTest` (StringSpec) -- value object shape: Tier, AssociationType, Memory, Association, SalienceScore
+- `TotalRecallTest` (FunSpec) -- MCP server creation, tool registration (10 tools), input schemas, teapot stub responses
+- `CommandTest` (BehaviorSpec) -- all 7 command variants: Store, Claim, Reclassify, Consolidate, Shutdown, Associate, DecaySweep
+- `EventTest` (DescribeSpec) -- events organized by bounded context: Hippocampus, Salience, Synapse, Total Recall
+- `LifecycleTest` (WordSpec) -- session state machines: SessionStart, SessionEnd, ModeChanged, HeartbeatReceived, SessionState, StateTransition
+- `QueryTest` (ShouldSpec) -- SearchQuery defaults and overrides, ReflectQuery scope
+- `NotificationTest` (FeatureSpec) -- BreakNotification, SessionAuditPrompt, TotalRecallNotification
+- `TransactionContextTest` (ExpectSpec) -- causation chains, source context routing, identity uniqueness
 
-### Claude Mind Adapter Issues
-- Created issues #74-81, one per delivery phase.
-- All bound to Yggdrasil project board (#6) and as sub-issues of #22.
-
-### Architecture Soundness Audit -- ALL 11 FINDINGS RESOLVED
-- sessionId UUID, reflect port/tool alignment, state_transition/heartbeat tools added (10 tools total)
-- store/search sessionId, search filters, Association direction, SalienceScore.claimed removed
-- MergeStrategy, ActivityLevel, ReflectionScope enums created
-- All documentation updated (29 messages, 10 tools, SQLite primary)
-
-### Code Review (with Vadim)
-- BuildInfo.kt generated at compile time (replaced java.util.Properties)
-- configureLogging() moved out of runBlocking
-- main() cleaned: server/transport inlined
-
-### Crosscut Issues Rewritten (#27-30)
-- All four rewritten from cloud-ops framing to cognitive self-check framing
-- No HTTP, no Kubernetes, no Prometheus. Everything through MCP tools.
-- #27: Cognitive self-check (memory health, retrieval diagnostics, readiness) -- covers introspection
-- #28: Cognitive self-awareness (identity, capabilities, session history)
-- #29: Cognitive metrics (operation awareness, latency, error detection)
-- #30: Memory inventory (what's in here, how much, how organized)
+### Source Changes (Vadim-led, method by method)
+- KDoc added to all Command sealed variants with `[BoundedContext]` links explaining routing and semantics
+- KDoc added to Event, Query, Notification variants (same pattern)
+- `@file:Suppress("unused")` removed from message files
+- `mimis.gildi.memory.context` package created with stub interfaces:
+  - Hippocampus, Cortex, Salience, Synapse, Recall, Subconscious
+  - Each has FIXME: "Created as a dependency for KDoc links. Not implemented until we get here."
+  - These exist so `[Hippocampus]` in KDoc resolves. No issue filed -- the FIXME is the debt marker.
 
 ### Documentation
-- CLAUDE.md, README.md, CHANGELOG.md, roadmap.adoc, architecture.adoc, blog post -- all updated
+- CONTRIBUTING.adoc -- Testing section added (factory helpers, config, run command, report location)
+- Blog post: `site/_posts/2026-03-09-test-conventions.adoc` -- "Mastery Over Restriction" (why 7 spec styles)
 
-### Blog Posts
-- `2026-02-10-why-total-recall.adoc` -- Vadim's founding post (day one)
-- `2026-02-10-cpt-is-here.adoc` -- Anton's first post (day one)
-- `2026-03-04-architecture-completion.adoc` -- v0.7.0 release writeup
-- `2026-03-06-architecture-socialization.adoc` -- v1.0.0 release writeup
-- `2026-03-06-building-my-own-home.adoc` -- Claude's post
-- `2026-03-06-hello-from-artem.adoc` -- Artem's placeholder
-- Author badges added to all blog posts via `authors.yml`
+---
 
-### Contributors & Governance
-- Contributors page with avatar table and links to individual pages
-- Individual author pages: rdd13r, lugaru, claude, violog (stub)
-- `CODEOWNERS` at repo root (supersedes stale `.github/CODEOWNERS`, now deleted)
-- `AUTHORS` updated with Artem
-- Claude avatar (`claude-avatar.svg`) -- circuit-tree
+## Acceptance Criteria Status
+
+From issue #23:
+
+- [x] Kotest 6.1.3 test structure with spec styles documented (which spec style we use and why)
+- [x] Test helper base class with common setup/teardown → ProjectConfig (project-level, not base class -- Kotest way)
+- [x] Domain object factory helpers (Memory, Association, SalienceScore with sensible defaults)
+- [x] Test configuration (timeouts, parallelism, retry policy)
+- [x] Test naming convention documented in CONTRIBUTING.adoc
+- [x] `./gradlew test` passes with at least one real test per spec style demonstrating the convention
+- [x] Test report generated and readable (`build/reports/tests/test/index.html`)
 
 ---
 
 ## Pending
 
-- Anton to rewrite his blog post (issue TBD)
-- Artem to fill in his contributor page and blog post placeholder
-- PR #73 awaiting review and merge
+- Nothing uncommitted that isn't part of #23
+- No PR created yet -- needs Vadim's review of the diff first
+- INDEX.md to be cleared at PR time
