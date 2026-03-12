@@ -49,7 +49,7 @@ function openDiagramLightbox(sourceSvg) {
 
   // Hint text
   var hint = document.createElement("div");
-  hint.textContent = "Scroll to zoom \u00B7 Drag to pan \u00B7 Double-click to reset \u00B7 ESC to close";
+  hint.textContent = "Scroll/double-click to zoom \u00B7 Drag to pan \u00B7 ESC to close";
   hint.style.cssText =
     "position:absolute; bottom:0.5rem; left:50%; transform:translateX(-50%);" +
     "color:#666; font-size:0.75rem; pointer-events:none; white-space:nowrap;";
