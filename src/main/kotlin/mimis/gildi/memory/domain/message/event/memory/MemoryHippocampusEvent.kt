@@ -7,8 +7,14 @@ import mimis.gildi.memory.context.Synapse
 import mimis.gildi.memory.domain.message.TransactionContext
 import mimis.gildi.memory.domain.model.Tier
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
+/**
+ * Storage lifecycle events emitted by [Hippocampus].
+ * Consumed by [Salience] (scoring), [Synapse] (associations), and [Recall] (search assembly).
+ *
+ * @property tier the memory's tier at the time of this event.
+ */
 sealed interface MemoryHippocampusEvent: MemoryEvent {
     val tier: Tier
 }
@@ -87,7 +93,7 @@ data class MemoryClaimed(
  * [Hippocampus]. Full memory content returned to [Recall] for assembly into a search response.
  *
  * @property tx chain of custody.
- * @property memoryId which memory was retrieved?
+ * @property memoryId which memory was retrieved.
  * @property content the stored text.
  * @property metadata the stored key-value pairs.
  * @property tier the current tier at retrieval time -- may have changed since stored last.
@@ -111,9 +117,9 @@ data class MemoryRetrieved(
  *
  * @property tx chain of custody.
  * @property memoryId the memory that moved.
+ * @property tier where it is now.
  * @property droppedTier where it was.
- * @property newTier where it is now.
- * @property reason machine-generated ("decay score 0.12 below floor 0.2") or mind-provided ("this is who I am").
+ * @property reasonToChange machine-generated ("decay score 0.12 below floor 0.2") or mind-provided ("this is who I am").
  */
 data class TierChanged(
     // Message properties
@@ -139,9 +145,9 @@ data class TierChanged(
  *
  * @property tx chain of custody.
  * @property memoryId the memory being reclassified.
- * @property oldTier tier before the mind's decision.
- * @property newTier tier after the mind's decision.
- * @property reason the mind's stated reason -- always human/mind-authored, never machine-generated.
+ * @property tier tier after the mind's decision.
+ * @property droppedTier tier before the mind's decision.
+ * @property reasonToClassify the mind's stated reason -- always human/mind-authored, never machine-generated.
  */
 data class MemoryReclassified(
     // Message properties

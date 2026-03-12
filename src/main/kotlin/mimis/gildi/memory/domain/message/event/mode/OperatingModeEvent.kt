@@ -9,6 +9,13 @@ import mimis.gildi.memory.domain.model.WorkingMode
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Working mode and state transition events emitted by [Cortex].
+ * Consumed by [Subconscious] for break detection and session health monitoring.
+ *
+ * @property instanceId which mind instance.
+ * @property mode the current working mode after this event.
+ */
 sealed interface OperatingModeEvent: Event {
     val instanceId: String
     val mode: WorkingMode
@@ -20,8 +27,8 @@ sealed interface OperatingModeEvent: Event {
  *
  * @property tx chain of custody.
  * @property instanceId which mind.
- * @property oldMode previous working mode.
- * @property newMode current working mode.
+ * @property mode current working mode.
+ * @property retiredMode previous working mode.
  */
 data class ModeChanged(
     // Message properties
@@ -39,15 +46,13 @@ data class ModeChanged(
     val retiredMode: WorkingMode
 ) : OperatingModeEvent
 
-
 /**
  * [Cortex]. Generic state change. For transitions that don't map to [ModeChanged].
  *
  * @property tx chain of custody.
  * @property instanceId which mind.
- * @property oldState free-form previous state (e.g. "connected", "active").
- * @property newState free-form new state.
- * @property context optional key-value pairs explaining the transition.
+ * @property mode current working mode.
+ * @property contextRetired optional key-value pairs from the previous state.
  */
 data class StateTransitioned(
     // Message properties

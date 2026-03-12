@@ -5,8 +5,14 @@ import mimis.gildi.memory.context.Synapse
 import mimis.gildi.memory.domain.message.TransactionContext
 import mimis.gildi.memory.domain.model.Association
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
+/**
+ * Association discovery events emitted by [Synapse].
+ * Consumed by [Recall] for inclusion in search results.
+ *
+ * @property associations the discovered links -- each carries type, strength, and direction.
+ */
 sealed interface MemorySynapseEvent: MemoryEvent {
     val associations: List<Association>
 }
