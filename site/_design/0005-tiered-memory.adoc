@@ -18,7 +18,7 @@ This is the first bounded context inside the hexagon. The previous four document
 </div>
 ++++
 
-Seven commands in from three sources. Six events out to three consumers. One persistence channel down to BackingServicePort. Everything Hippocampus touches, in one view.
+Six memory commands in from three sources. Six events out to three consumers. One persistence channel down to BackingServicePort. Everything Hippocampus touches, in one view.
 
 == The Walk-In
 
@@ -110,25 +110,21 @@ Hippocampus receives commands from three sources.
 |===
 | Command | Source | What Happens
 
-| StoreCommand
+| StoreMemoryCommand
 | Cortex (mind-initiated)
 | Validates content, assigns tier (may override suggested tier), persists, emits MemoryStored
 
-| ClaimCommand
+| ClaimMemoryCommand
 | Cortex (mind-initiated)
 | Sets `claimed = true`, persists, emits MemoryClaimed
 
-| ReclassifyCommand
+| ReclassifyMemoryCommand
 | Cortex (mind-initiated)
 | Moves memory to new tier, updates metadata, persists, emits MemoryReclassified and TierChanged
 
-| ConsolidateCommand
+| ConsolidateMemoryCommand
 | Subconscious (background)
 | Merges related memories per merge strategy, persists result, emits events for each affected memory
-
-| ShutdownCommand
-| Subconscious (background)
-| Flushes all in-memory state to cold storage within timeout, coordinates graceful convergence
 
 | AttentionTierPromotionRequested
 | Salience (scoring decision)
@@ -139,7 +135,7 @@ Hippocampus receives commands from three sources.
 | Moves memory to lower tier based on decay, persists, emits TierChanged
 |===
 
-Three sources. Seven commands. All writes flow through here. Every command carries a `TransactionContext` envelope for chain-of-custody tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+Three sources. Six memory commands. All memory writes flow through here. (ShutdownCommand is now a lifecycle command targeting all bounded contexts -- Hippocampus handles its memory flush portion.) Every command carries a `TransactionContext` envelope for chain-of-custody tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == Events It Emits
 
@@ -186,9 +182,9 @@ Synapse manages relationships. It does not write memories to storage. If an asso
 
 Recall assembles search results. It reads. It never writes.
 
-Cortex tracks working state. It sends StoreCommand and ClaimCommand to Hippocampus.
+Cortex tracks working state. It sends StoreMemoryCommand and ClaimMemoryCommand to Hippocampus.
 
-Subconscious runs timers and background sweeps. It sends ConsolidateCommand and ShutdownCommand to Hippocampus.
+Subconscious runs timers and background sweeps. It sends ConsolidateMemoryCommand to Hippocampus. ShutdownCommand is a lifecycle command that targets all bounded contexts -- Hippocampus handles its memory flush portion.
 
 One door. One key. One writer. Everyone else asks.
 
@@ -240,7 +236,7 @@ Full design in link:/mcp-total-recall/design/0007-synapse/[Design E3: Synapse].
 | Four: IDENTITY_CORE (no decay), ACTIVE_CONTEXT (fast), LONG_TERM (slow), ARCHIVE (very slow)
 
 | Commands accepted
-| 7 (from Cortex, Subconscious, and Salience)
+| 6 memory commands (from Cortex, Subconscious, and Salience). ShutdownCommand is now a lifecycle command targeting all contexts.
 
 | Events emitted
 | 6 (consumed by Salience, Synapse, Recall)

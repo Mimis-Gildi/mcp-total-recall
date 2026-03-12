@@ -13,6 +13,20 @@ import mimis.gildi.memory.domain.model.Tier
 import java.util.UUID
 
 /**
+ * The mind's proposal of a memory before [mimis.gildi.memory.context.Hippocampus] accepts and enriches it.
+ * Identity is assigned at creation -- the mind names its own memories.
+ *
+ * @property id the memory's identity from birth.
+ * @property content the text to store.
+ * @property metadata key-value pairs the mind attaches: source, tags, context.
+ */
+data class MemoryDraft(
+    val id: UUID,
+    val content: String,
+    val metadata: Map<String, String>
+)
+
+/**
  * Inbound port for memory operations. Any mind connects through this.
  *
  * Conscience-universal: the contract is the same whether the connected
@@ -22,10 +36,8 @@ interface MemoryPort {
 
     @Suppress("unused")
     suspend fun storeMemory(
-        content: String,
-        metadata: Map<String, String> = emptyMap(),
-        suggestedTier: Tier = Tier.LONG_TERM,
-        sessionId: UUID
+        memory: MemoryDraft,
+        suggestedTier: Tier = Tier.LONG_TERM
     ): Memory
 
     @Suppress("unused")

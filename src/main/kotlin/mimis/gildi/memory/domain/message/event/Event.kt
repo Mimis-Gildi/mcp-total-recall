@@ -7,6 +7,9 @@ import mimis.gildi.memory.domain.message.TransactionContext
  * Events are facts. Something happened. Zero, one, or many consumers.
  * Every event carries a [TransactionContext] for chain of custody.
  *
+ * @property tx chain of custody -- session, request, causation, source context.
+ * @property metadata key-value pairs the emitter attaches: source, tags, context.
+ *
  * Sub-hierarchies:
  *
  * - [mimis.gildi.memory.domain.message.event.memory.MemoryEvent]:

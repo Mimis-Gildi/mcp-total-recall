@@ -23,11 +23,11 @@ sequenceDiagram
 
     CX->>HP: Command: Store Memory
     activate HP
-    Note left of HP: data class MemoryStoreCommand
+    Note left of HP: data class StoreMemoryCommand
 
     HP->>HP: Validate, assign tier, persist
     HP-->>CX: Command Response: Memory Stored
-    Note left of HP: data class MemoryStoreCommand<br/> memory_id: UUID<br/>content: String<br/>metadata: Map<br/>tier: Tier<br/>timestamp: Instant
+    Note left of HP: data class StoreMemoryCommand<br/> memory_id: UUID<br/>content: String<br/>metadata: Map<br/>tier: Tier<br/>timestamp: Instant
     CX-->>M: store_memory response
 
     deactivate CX

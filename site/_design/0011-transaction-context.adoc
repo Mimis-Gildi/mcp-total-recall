@@ -90,13 +90,13 @@ When a bounded context receives a message and produces a new one, the new messag
 | Cortex
 | B
 | A
-| Cortex translates the MCP call into StoreCommand.
+| Cortex translates the MCP call into StoreMemoryCommand.
 
 | 3
 | Hippocampus
 | C
 | B
-| Hippocampus processes StoreCommand, persists the memory, emits MemoryStoredEvent.
+| Hippocampus processes StoreMemoryCommand, persists the memory, emits MemoryStoredEvent.
 
 | 4
 | Salience

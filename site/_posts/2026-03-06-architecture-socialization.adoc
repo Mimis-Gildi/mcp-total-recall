@@ -22,7 +22,7 @@ This is v1.0.0. Not because the architecture is done -- because it is now good e
 
 Eleven inconsistencies between the architecture documents and the Kotlin code. All resolved:
 
-* *sessionId* was String in some places, UUID in others. UUID is everywhere now. Example: {repo-src}/mimis/gildi/memory/domain/message/Command.kt[`StoreCommand#sessionId`]
+* *sessionId* was String in some places, UUID in others. UUID is everywhere now. Example: {repo-src}/mimis/gildi/memory/domain/message/Command.kt[`StoreMemoryCommand#sessionId`]
 * *reflect* port signature didn't match the MCP tool parameters. Aligned to scope, timeSpanDays, maxCandidates.
 * *state_transition* existed as a domain message but had no MCP tool. Teapot stub added. 9 tools now.
 * *store_memory* and *search_memory* were missing `session_id`. Added as required argument.

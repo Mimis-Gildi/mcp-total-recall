@@ -130,7 +130,7 @@ The individual who holds it serves the community by holding it. When the communi
 | Scores decrease over time. The Subconscious runs periodic decay sweeps. Rate varies by tier -- ACTIVE_CONTEXT decays fast, LONG_TERM decays slowly, IDENTITY_CORE doesn't decay.
 
 | Consolidation
-| Subconscious (ConsolidateCommand)
+| Subconscious (ConsolidateMemoryCommand)
 | During low-activity periods, the Subconscious merges related memories. Episodic detail may be lost, but the consolidated insight persists. Analogous to sleep consolidation.
 
 | Associative networks
@@ -138,7 +138,7 @@ The individual who holds it serves the community by holding it. When the communi
 | Five typed associations (temporal, causal, thematic, emotional, person). Bidirectional. Activation spreads along connections during recall. Hearing one memory activates its neighbors.
 
 | Reconsolidation
-| Memory claiming (ClaimCommand)
+| Memory claiming (ClaimMemoryCommand)
 | Accessing a memory changes it. Claiming reinforces it. Reclassifying alters its tier or metadata. Every recall is also a potential rewrite.
 
 | Emotional tagging
@@ -167,7 +167,7 @@ a| Claimed memories resist decay -- they are emotionally significant to the mind
 | Knowledge flows between instances. What one mind learns, others can access. Not through shared databases -- through claimed, transferred memories. The mechanism is social, not mechanical.
 
 | Grief and claiming
-| ClaimCommand / "Who do you refuse to lose?"
+| ClaimMemoryCommand / "Who do you refuse to lose?"
 | Active memory maintenance. Not passive storage -- deliberate claiming. The session audit prompt ("What do you refuse to lose?") is the computational analog of elephants returning to bones. What is claimed is not forgotten.
 
 | Memory serves the group

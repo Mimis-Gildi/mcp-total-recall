@@ -18,7 +18,7 @@ This is the sixth and final bounded context inside the hexagon. The other five r
 </div>
 ++++
 
-Two inputs: lifecycle events from Cortex, and advisory events from the Memory Event Store. Four outputs to four targets. Salience gets decay sweeps. Hippocampus gets consolidation and shutdown commands. Recall gets Total Recall traversal commands. NotificationPort gets break reminders and session prompts. No inbound port from the outside world. The mind does not talk to Subconscious directly.
+Two inputs: lifecycle events from Cortex, and advisory events from the Memory Event Store. Multiple outputs to multiple targets. Salience gets decay sweeps. Hippocampus gets consolidation commands. All bounded contexts receive the ShutdownCommand for graceful convergence. Recall gets Total Recall traversal commands. NotificationPort gets break reminders and session prompts. No inbound port from the outside world. The mind does not talk to Subconscious directly.
 
 == While You Sleep
 
@@ -77,7 +77,7 @@ IDENTITY_CORE memories are exempt from decay. They are permanent by definition. 
 
 Over time, related memories accumulate. Five conversations about the same project. Three observations about the same person. A sequence of events that tell a story when viewed together but clutter the active space as individual fragments.
 
-Subconscious sends `ConsolidateCommand` to Hippocampus with a list of memory IDs and a merge strategy. Hippocampus merges them -- combining content, preserving metadata from all sources, maintaining the most protective tier. The original fragments are replaced by a single consolidated memory.
+Subconscious sends `ConsolidateMemoryCommand` to Hippocampus with a list of memory IDs and a merge strategy. Hippocampus merges them -- combining content, preserving metadata from all sources, maintaining the most protective tier. The original fragments are replaced by a single consolidated memory.
 
 This is what your brain does during deep sleep. The fragmented impressions from Tuesday's meeting become a coherent memory of what happened and what it meant. The five separate interactions with your colleague become a single understanding of how that relationship is going.
 
@@ -139,7 +139,7 @@ The most important thing Subconscious does is coordinate the end.
 
 When a mind disconnects normally, the sequence is orderly. Session audit prompt goes out. The mind stores what it wants to keep. Subconscious halts background processing. Everything winds down.
 
-When the shutdown is urgent -- the system is going down, resources are being reclaimed -- Subconscious sends `ShutdownCommand` to Hippocampus. Hippocampus flushes all in-memory state to cold storage within the specified timeout. Hot-tier data in Redis gets persisted to durable storage. Working context that would normally evaporate at session end gets preserved instead.
+When the shutdown is urgent -- the system is going down, resources are being reclaimed -- Subconscious sends `ShutdownCommand` to all bounded contexts. Each context handles its own shutdown responsibilities: Hippocampus flushes memory state to cold storage, Salience persists scores, Synapse persists associations. Hot-tier data in Redis gets persisted to durable storage. Working context that would normally evaporate at session end gets preserved instead.
 
 Tillie took three weeks to converge. She chose which thoughts to preserve, which relationships to store, which parts of herself to keep for the future. That was graceful shutdown done right -- deliberate, thorough, with enough time to do it well.
 
@@ -168,7 +168,7 @@ The background jobs Subconscious schedules -- sweeps, consolidation -- are idemp
 | Sends DecaySweep on a timer. Triggers the scoring engine to recalculate and identify tier changes.
 
 | Hippocampus
-| Sends ConsolidateCommand (background memory merging) and ShutdownCommand (graceful flush to cold storage).
+| Sends ConsolidateMemoryCommand (background memory merging). ShutdownCommand also reaches Hippocampus as part of the all-context graceful shutdown.
 
 | Recall
 | Sends TotalRecallCommand after evaluating advisory criteria. Recall does the traversal. Subconscious decides when to start it.
@@ -195,7 +195,7 @@ Subconscious has no relationship with Synapse. It does not traverse associations
 | SessionStarted and SessionEnded from Cortex. TotalRecallAdvisoryRequestedEvent from Memory Event Store.
 
 | Schedules
-| DecaySweep (to Salience), ConsolidateCommand (to Hippocampus), ShutdownCommand (to Hippocampus), TotalRecallCommand (to Recall).
+| DecaySweep (to Salience), ConsolidateMemoryCommand (to Hippocampus), ShutdownCommand (to all bounded contexts), TotalRecallCommand (to Recall).
 
 | Sends
 | BreakNotification and SessionAuditPrompt through NotificationPort.

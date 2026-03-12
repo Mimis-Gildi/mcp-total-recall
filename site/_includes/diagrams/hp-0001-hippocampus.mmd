@@ -20,11 +20,10 @@ graph LR
 
     BSP[("BackingServicePort<br/>Memory persistence")]
 
-    CX -- "StoreCommand" --> HP
-    CX -- "ClaimCommand" --> HP
-    CX -- "ReclassifyCommand" --> HP
-    SB -- "ConsolidateCommand" --> HP
-    SB -- "ShutdownCommand" --> HP
+    CX -- "StoreMemoryCommand" --> HP
+    CX -- "ClaimMemoryCommand" --> HP
+    CX -- "ReclassifyMemoryCommand" --> HP
+    SB -- "ConsolidateMemoryCommand" --> HP
     SL_IN -- "AttentionTierPromotionRequested" --> HP
     SL_IN -- "AttentionTierDemotionRequested" --> HP
 

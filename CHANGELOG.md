@@ -46,7 +46,7 @@ injection, cognitive crosscut design, and full documentation alignment.
   - Association: added a direction field (AssociationDirection).
   - SalienceScore: removed `claimed` proxy. Memory.claimed is authoritative.
     Same JVM -- no staleness management needed for data one function call away.
-  - ConsolidateCommand.mergeStrategy: String -> MergeStrategy enum.
+  - ConsolidateMemoryCommand.mergeStrategy: String -> MergeStrategy enum.
   - SessionState.activityLevel: String → ActivityLevel enum.
   - ReflectQuery.scope: String → ReflectionScope enum.
 - LifecyclePort: `reason: String` -> SessionEndReason, `oldState/newState:
@@ -72,7 +72,7 @@ injection, cognitive crosscut design, and full documentation alignment.
 
 - TotalRecallTest.kt: tool count 8→10, `store_memory`/`search_memory` tests
   include `session_id`, version test uses `BuildInfo.VERSION`.
-- MessageTest.kt: ReflectQuery, ConsolidateCommand, SessionState aligned to
+- MessageTest.kt: ReflectQuery, ConsolidateMemoryCommand, SessionState aligned to
   new enum types. SalienceScore `claimed` removed from test assertions.
 - ModelTest.kt: SalienceScore test updated for `decayRate` instead of `claimed`.
 

@@ -16,13 +16,13 @@ import io.kotest.core.spec.style.BehaviorSpec
  *
  * Command routing paths:
  *
- * - [mimis.gildi.memory.domain.message.command.StoreCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.command.ClaimCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.command.ReclassifyCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.command.ConsolidateCommand]: [mimis.gildi.memory.context.Subconscious] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.command.ShutdownCommand]: [mimis.gildi.memory.context.Subconscious] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.command.AssociateCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Synapse]
- * - [mimis.gildi.memory.domain.message.command.DecaySweep]: [mimis.gildi.memory.context.Subconscious] → [mimis.gildi.memory.context.Salience]
+ * - [mimis.gildi.memory.domain.message.command.memory.StoreMemoryCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.command.memory.ClaimMemoryCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.command.memory.ReclassifyMemoryCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.command.memory.ConsolidateMemoryCommand]: [mimis.gildi.memory.context.Subconscious] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.command.association.AssociateCommand]: [mimis.gildi.memory.context.Cortex] → [mimis.gildi.memory.context.Synapse]
+ * - [mimis.gildi.memory.domain.message.command.attention.DecaySweep]: [mimis.gildi.memory.context.Subconscious] → [mimis.gildi.memory.context.Salience]
+ * - [mimis.gildi.memory.domain.message.command.lifecycle.ShutdownCommand]: [mimis.gildi.memory.context.Subconscious] → all bounded contexts
  */
 class CommandTest : BehaviorSpec({
 

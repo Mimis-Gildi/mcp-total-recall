@@ -57,7 +57,7 @@ Six object shapes. Each is an order slip with a different format. The port defin
 
 **Inside adapter (who picks up objects from the counter):**
 
-The domain command/query handler. Translates port objects into `StoreCommand`, `SearchQuery`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ReflectQuery`. Dispatches to the appropriate bounded context.
+The domain command/query handler. Translates port objects into `StoreMemoryCommand`, `SearchQuery`, `ClaimMemoryCommand`, `AssociateCommand`, `ReclassifyMemoryCommand`, `ReflectQuery`. Dispatches to the appropriate bounded context.
 
 == Inbound Face 2: LifecyclePort
 

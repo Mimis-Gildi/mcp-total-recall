@@ -28,8 +28,6 @@ import mimis.gildi.memory.domain.message.TransactionContext
  * 7. **Total Recall:** Search → Subconscious → Recall deep traversal → NotificationPort
  *
  * @see mimis.gildi.memory.testing.TxChain scoped causation chain factory
- * @see mimis.gildi.memory.testing.aTx standalone transaction with explicit wiring
- * @see mimis.gildi.memory.testing.rootCauseTx convenience for root-cause transactions
  */
 class TransactionContextTest : ExpectSpec({
 
@@ -39,7 +37,7 @@ class TransactionContextTest : ExpectSpec({
 //            val chain = TxChain(source = "Cortex")
 //            val commandTx = chain.next()
 //
-//            val store = StoreCommand(
+//            val store = StoreMemoryCommand(
 //                tx = commandTx,
 //                content = "test",
 //                metadata = emptyMap(),

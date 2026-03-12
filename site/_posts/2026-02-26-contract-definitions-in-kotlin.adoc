@@ -32,7 +32,7 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 
 `mimis.gildi.memory.domain.message` -- every message from the catalog, now type-safe:
 
-* *Command* -- 7 sealed variants. `StoreCommand`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ConsolidateCommand`, `ShutdownCommand`, `DecaySweep`.
+* *Command* -- 7 sealed variants across 4 sub-hierarchies. *MemoryCommand:* `StoreMemoryCommand`, `ClaimMemoryCommand`, `ReclassifyMemoryCommand`, `ConsolidateMemoryCommand`. *AssociationCommand:* `AssociateCommand`. *AttentionCommand:* `DecaySweep`. *LifecycleCommand:* `ShutdownCommand`.
 * *Query* -- 2 sealed variants. `SearchQuery`, `ReflectQuery`.
 * *Event* -- 17 sealed variants. Every state change in the system is a named, typed event.
 * *Notification* -- 3 sealed variants. `BreakNotification`, `SessionAuditPrompt`, `TotalRecallNotification`.

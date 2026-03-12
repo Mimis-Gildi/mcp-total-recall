@@ -61,7 +61,12 @@ Previous branch context: `72-architecture-socialize-architecture-v1` delivered s
   - `event/mode/` -- OperatingModeEvent (sealed)
 - Event names now past tense: SessionStarted, SessionEnded, StateTransitioned
 - Salience events renamed to recommendations: AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged
-- Command, Query, Notification moved to own sub-packages
+- Command changed from sealed interface to regular interface (same pattern as Event)
+- Commands refactored into sub-package hierarchy:
+  - `command/memory/` -- MemoryCommand (sealed, 5 variants → Hippocampus)
+  - `command/association/` -- AssociationCommand (sealed, 1 variant → Synapse)
+  - `command/attention/` -- AttentionCommand (sealed, 1 variant → Salience)
+- Query, Notification moved to own sub-packages
 
 ### Documentation
 - CONTRIBUTING.adoc -- Testing section added (factory helpers, config, run command, report location)

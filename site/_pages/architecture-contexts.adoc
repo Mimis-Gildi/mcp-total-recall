@@ -80,13 +80,14 @@ Defined as `Tier` enum with decay semantics per variant.
 
 === Commands Accepted
 
-* `StoreCommand` -- from Cortex.
-* `ClaimCommand` -- from Cortex.
-* `ReclassifyCommand` -- from Cortex. Mind-initiated tier change with reason.
-* `ConsolidateCommand` -- from Subconscious. Merge related memories.
-* `ShutdownCommand` -- from Subconscious. Begin graceful convergence.
+* `StoreMemoryCommand` -- from Cortex.
+* `ClaimMemoryCommand` -- from Cortex.
+* `ReclassifyMemoryCommand` -- from Cortex. Mind-initiated tier change with reason.
+* `ConsolidateMemoryCommand` -- from Subconscious. Merge related memories.
 * `AttentionTierPromotionRequested` -- from Salience. Score rose above promotion threshold.
 * `AttentionTierDemotionRequested` -- from Salience. Score dropped below demotion threshold.
+
+NOTE: `ShutdownCommand` is a lifecycle command that targets all bounded contexts for graceful shutdown, not just Hippocampus. Hippocampus receives it as one of many contexts. See Subconscious below.
 
 '''
 
@@ -242,10 +243,10 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 
 === Commands Produced
 
-* `StoreCommand` -- to Hippocampus. Store a new memory.
-* `ClaimCommand` -- to Hippocampus. Actively reinforce a memory.
+* `StoreMemoryCommand` -- to Hippocampus. Store a new memory.
+* `ClaimMemoryCommand` -- to Hippocampus. Actively reinforce a memory.
 * `AssociateCommand` -- to Synapse. Create, strengthen, or weaken an association. Mind's semantic judgment.
-* `ReclassifyCommand` -- to Hippocampus. Change a memory's tier or metadata by choice, not decay.
+* `ReclassifyMemoryCommand` -- to Hippocampus. Change a memory's tier or metadata by choice, not decay.
 
 === Queries Produced
 
@@ -298,7 +299,7 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 
 | *Consolidation*
 | Low-activity periods
-| `ConsolidateCommand` to Hippocampus
+| `ConsolidateMemoryCommand` to Hippocampus
 |===
 
 === Events Consumed
@@ -309,8 +310,8 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 === Commands Produced
 
 * `DecaySweep` -- to Salience. Trigger batch decay calculations.
-* `ConsolidateCommand` -- to Hippocampus. Merge related memories.
-* `ShutdownCommand` -- to Hippocampus. Begin graceful convergence.
+* `ConsolidateMemoryCommand` -- to Hippocampus. Merge related memories.
+* `ShutdownCommand` -- to all bounded contexts. Begin graceful convergence. Each context handles its own shutdown responsibilities (Hippocampus flushes to cold storage, Salience persists scores, Synapse persists associations).
 
 === Notifications Produced
 

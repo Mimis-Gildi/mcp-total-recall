@@ -39,7 +39,7 @@ These conventions apply to all sequence diagrams on this page.
 
 External arrows (Mind ↔ Cortex) use `snake_case`: `store_memory_command`, `store_memory_response`.
 
-Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreCommand`, `MemoryStoreResponse`.
+Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreMemoryCommand`, `MemoryStoreResponse`.
 
 Cortex translates at the boundary. The ACL is visible in every diagram.
 
@@ -171,10 +171,10 @@ This is what makes the memory system active instead of passive. The mind does no
 
 === Where Claiming Intelligence Lives
 
-The Claim Memory flow above shows the protocol -- `ClaimCommand` through Cortex to Hippocampus. But the protocol is the easy part.
+The Claim Memory flow above shows the protocol -- `ClaimMemoryCommand` through Cortex to Hippocampus. But the protocol is the easy part.
 The hard part is deciding *what* to claim, *when*, and *why*.
 
-That intelligence does not live in the core. The core provides `ClaimCommand` through its ports.
+That intelligence does not live in the core. The core provides `ClaimMemoryCommand` through its ports.
 The actual claiming -- evaluating what matters, selecting it, reinforcing it -- happens in the adapter.
 For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("what do you refuse to lose?") and by the mind's own judgment during reflection.
 
@@ -189,7 +189,7 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 
 Every message in the system. Named, typed, with producer and consumer.
 
-All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
+All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants across 4 sub-hierarchies: MemoryCommand, AssociationCommand, AttentionCommand, LifecycleCommand), `Query` (2 sealed variants),
 `Event` (17 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
@@ -200,24 +200,24 @@ Commands are requests to change state. They carry intent. A command has exactly 
 |===
 | Command | Producer | Consumer | Payload
 
-| `StoreCommand`
+| `StoreMemoryCommand`
 | Cortex
 | Hippocampus
 | content, metadata, suggested tier
 
-| `ClaimCommand`
+| `ClaimMemoryCommand`
 | Cortex
 | Hippocampus
 | memory ID
 
-| `ConsolidateCommand`
+| `ConsolidateMemoryCommand`
 | Subconscious
 | Hippocampus
 | memory IDs to merge, merge strategy
 
 | `ShutdownCommand`
 | Subconscious
-| Hippocampus
+| All bounded contexts
 | cold storage target, flush timeout
 
 | `AssociateCommand`
@@ -225,7 +225,7 @@ Commands are requests to change state. They carry intent. A command has exactly 
 | Synapse
 | memory IDs, association type, strength, direction (create/strengthen/weaken)
 
-| `ReclassifyCommand`
+| `ReclassifyMemoryCommand`
 | Cortex
 | Hippocampus
 | memory ID, new tier, new metadata, reason
@@ -389,7 +389,7 @@ Events are facts about something that happened. An event can have multiple consu
 
 Every message carries a `TransactionContext` as its first field. The envelope fields are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the six envelope fields.
 
-==== StoreCommand
+==== StoreMemoryCommand
 
 ....
 content:        String       -- the memory content
@@ -457,7 +457,7 @@ associations:   List<Association>
 | When error handling is designed
 
 | Consolidation details
-| How `ConsolidateCommand` merge strategies work
+| How `ConsolidateMemoryCommand` merge strategies work
 | When Subconscious behavior is specified
 
 | Additional notification types

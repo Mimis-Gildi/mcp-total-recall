@@ -22,11 +22,11 @@ sequenceDiagram
 
     CX->>HP: Command: Claim Memory
     activate HP
-    Note left of HP: data class ClaimCommand
+    Note left of HP: data class ClaimMemoryCommand
 
     HP->>HP: Mark as claimed, update metadata
     HP-->>CX: Command Response: Memory Claimed
-    Note left of HP: data class ClaimCommand<br/>memory_id: UUID<br/>claim_timestamp: Instant
+    Note left of HP: data class ClaimMemoryCommand<br/>memory_id: UUID<br/>claim_timestamp: Instant
     CX-->>M: claim_memory response
 
     deactivate CX

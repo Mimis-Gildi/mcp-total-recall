@@ -31,13 +31,15 @@ graph LR
     Synapse -- "AssociationsFound" --> Recall
     Salience -- "AttentionScoreChanged" --> Recall
     Hippocampus -- "MemoryRetrieved" --> Recall
-    Cortex -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Hippocampus
+    Cortex -- "StoreMemoryCommand<br/>ClaimMemoryCommand<br/>ReclassifyMemoryCommand" --> Hippocampus
     Cortex -- "SearchQuery<br/>ReflectQuery" --> Recall
     Cortex -- "AssociateCommand" --> Synapse
     Cortex -- "ModeChanged" --> Subconscious
     Subconscious -- "DecaySweep" --> Salience
-    Subconscious -- "ConsolidateCommand" --> Hippocampus
+    Subconscious -- "ConsolidateMemoryCommand" --> Hippocampus
     Subconscious -- "ShutdownCommand" --> Hippocampus
+    Subconscious -- "ShutdownCommand" --> Salience
+    Subconscious -- "ShutdownCommand" --> Synapse
     Subconscious -- "BreakNotification<br/>SessionAuditPrompt" --> NP
 
     style Hippocampus fill:#1a1a2e,stroke:#e94560,stroke-width:2px

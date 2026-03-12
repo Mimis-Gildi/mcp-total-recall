@@ -27,7 +27,7 @@ This works until it doesn't. Direct method calls create compile-time coupling --
 Call chains become hidden dependencies. Testing requires mocking entire context implementations.
 And the interactions between contexts are invisible -- buried in method signatures instead of named and documented.
 
-Messages make interactions explicit. A `StoreCommand` is a thing you can see, name, log, test, and reason about.
+Messages make interactions explicit. A `StoreMemoryCommand` is a thing you can see, name, log, test, and reason about.
 A method call `store(content, tier, metadata)` is the same operation hidden inside a call stack.
 When something goes wrong, the message is traceable. The method call requires a debugger.
 
@@ -65,9 +65,18 @@ The compiler guarantees exhaustive matching.
 [source,kotlin,opts=novalidate]
 ----
 sealed interface Command
-data class StoreCommand(...) : Command
-data class ClaimCommand(...) : Command
-// ... 7 total variants
+sealed interface MemoryCommand : Command
+data class StoreMemoryCommand(...) : MemoryCommand
+data class ClaimMemoryCommand(...) : MemoryCommand
+data class ReclassifyMemoryCommand(...) : MemoryCommand
+data class ConsolidateMemoryCommand(...) : MemoryCommand
+sealed interface AssociationCommand : Command
+data class AssociateCommand(...) : AssociationCommand
+sealed interface AttentionCommand : Command
+data class DecaySweep(...) : AttentionCommand
+sealed interface LifecycleCommand : Command
+data class ShutdownCommand(...) : LifecycleCommand
+// 7 total variants across 4 sub-hierarchies
 
 sealed interface Query
 data class SearchQuery(...) : Query
@@ -107,7 +116,7 @@ This is appropriate for plugin systems. It is wrong for a domain where every mes
 * May be accepted, rejected, or ignored.
 * Produces events on success.
 
-Example flow: `StoreCommand` (Cortex -> Hippocampus) produces `MemoryStored` (consumed by Salience and Synapse).
+Example flow: `StoreMemoryCommand` (Cortex -> Hippocampus) produces `MemoryStored` (consumed by Salience and Synapse).
 
 === Query Semantics
 
@@ -166,7 +175,7 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 
 === Message Catalog Counts
 
-* *Commands:* 7 variants (StoreCommand, ClaimCommand, AssociateCommand, ReclassifyCommand, ConsolidateCommand, ShutdownCommand, DecaySweep)
+* *Commands:* 7 variants across 4 sub-hierarchies -- *MemoryCommand:* StoreMemoryCommand, ClaimMemoryCommand, ReclassifyMemoryCommand, ConsolidateMemoryCommand; *AssociationCommand:* AssociateCommand; *AttentionCommand:* DecaySweep; *LifecycleCommand:* ShutdownCommand
 * *Queries:* 2 variants (SearchQuery, ReflectQuery)
 * *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
 MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished, TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
