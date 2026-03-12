@@ -255,7 +255,6 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 === Events Produced
 
 * `ModeChanged` -- to Subconscious. The mind's working mode changed (task mode, conversation mode, idle). Used by Subconscious for break timing.
-* `SessionState` -- to Subconscious. Current session duration, activity level, last interaction timestamp.
 
 Cortex is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Cortex translates them into domain commands.
 The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
@@ -305,7 +304,6 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 === Events Consumed
 
 * `ModeChanged` -- from Cortex. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
-* `SessionState` -- from Cortex. Current session duration, activity level. Feeds break check logic.
 * `SessionEnd` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
 
 === Commands Produced

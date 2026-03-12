@@ -55,7 +55,7 @@ Every mechanism is pluggable. Every port has a contract. Every contract is consc
 | *Lifecycle Port*
 | `LifecyclePort`
 | Manages session lifecycle and state transitions. Any mind signals when it starts, stops, or shifts context.
-| `session_start`, `session_end`, `state_transition`, `heartbeat`
+| `session_start`, `session_end`, `state_transition`
 |===
 
 Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future).

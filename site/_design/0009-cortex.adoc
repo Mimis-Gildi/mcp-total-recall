@@ -127,9 +127,6 @@ Cortex reads IDENTITY_CORE configuration memories from Hippocampus and distribut
 | session_end
 | The mind disconnects, times out, or crashes. Cortex broadcasts SessionEnd. Subconscious halts background processing for that session.
 If the reason is "crash," Subconscious may trigger consolidation of unsaved working context.
-
-| heartbeat
-| Periodic signal that the mind is still present. Resets the timeout counter. Not broadcast to other contexts.
 |===
 
 Between start and end, Cortex knows who is connected: the instance ID, the mind type, how long the session has been active.

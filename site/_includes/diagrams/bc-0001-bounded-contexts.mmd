@@ -34,7 +34,7 @@ graph LR
     Cortex -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Hippocampus
     Cortex -- "SearchQuery<br/>ReflectQuery" --> Recall
     Cortex -- "AssociateCommand" --> Synapse
-    Cortex -- "ModeChanged<br/>SessionState" --> Subconscious
+    Cortex -- "ModeChanged" --> Subconscious
     Subconscious -- "DecaySweep" --> Salience
     Subconscious -- "ConsolidateCommand" --> Hippocampus
     Subconscious -- "ShutdownCommand" --> Hippocampus

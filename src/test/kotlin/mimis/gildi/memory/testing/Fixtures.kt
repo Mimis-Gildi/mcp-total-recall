@@ -53,42 +53,42 @@ val testServer: Server by lazy { createServer() }
  * @param messageId unique identity of THIS message -- always fresh, never reuse.
  * @param timestamp when this message was created.
  */
-fun aTx(
-    source: String = "Test",
-    causationId: UUID,
-    sessionId: UUID = UUID.randomUUID(),
-    requestId: UUID = UUID.randomUUID(),
-    messageId: UUID = UUID.randomUUID(),
-    timestamp: Instant = Instant.now()
-) = TransactionContext(
-    sessionId = sessionId,
-    requestId = requestId,
-    messageId = messageId,
-    causationId = causationId,
-    timestamp = timestamp,
-    sourceContext = source
-)
+//fun aTx(
+//    source: String = "Test",
+//    causationId: UUID,
+//    sessionId: UUID = UUID.randomUUID(),
+//    requestId: UUID = UUID.randomUUID(),
+//    messageId: UUID = UUID.randomUUID(),
+//    timestamp: Instant = Instant.now()
+//) = TransactionContext(
+//    sessionId = sessionId,
+//    requestId = requestId,
+////    messageId = messageId,
+////    causationId = causationId,
+////    timestamp = timestamp,
+////    sourceContext = source
+//)
 
 /**
  * Convenience for root-cause transactions -- `causationId` equals `messageId`.
  * "Nothing caused me. I'm the origin."
  */
-fun rootCauseTx(
-    source: String = "Test",
-    sessionId: UUID = UUID.randomUUID(),
-    requestId: UUID = UUID.randomUUID(),
-    timestamp: Instant = Instant.now()
-): TransactionContext {
-    val messageId = UUID.randomUUID()
-    return TransactionContext(
-        sessionId = sessionId,
-        requestId = requestId,
-        messageId = messageId,
-        causationId = messageId,
-        timestamp = timestamp,
-        sourceContext = source
-    )
-}
+//fun rootCauseTx(
+//    source: String = "Test",
+//    sessionId: UUID = UUID.randomUUID(),
+//    requestId: UUID = UUID.randomUUID(),
+//    timestamp: Instant = Instant.now()
+//): TransactionContext {
+//    val messageId = UUID.randomUUID()
+//    return TransactionContext(
+//        sessionId = sessionId,
+//        requestId = requestId,
+//        messageId = messageId,
+//        causationId = messageId,
+//        timestamp = timestamp,
+//        sourceContext = source
+//    )
+//}
 
 /**
  * Scoped causation chain factory. Each instance IS a conversation.
@@ -112,21 +112,22 @@ class TxChain(
      * First call: root cause (causationId == messageId).
      * Subsequent calls: causationId == previous message's messageId.
      */
-    fun next(
-        timestamp: Instant = Instant.now()
-    ): TransactionContext {
-        val messageId = UUID.randomUUID()
-        val causationId = lastMessageId ?: messageId
-        lastMessageId = messageId
-        return TransactionContext(
-            sessionId = sessionId,
-            requestId = requestId,
-            messageId = messageId,
-            causationId = causationId,
-            timestamp = timestamp,
-            sourceContext = source
-        )
-    }
+//    fun next(
+//        timestamp: Instant = Instant.now()
+//    ): TransactionContext {
+//        val messageId = UUID.randomUUID()
+//        val causationId = lastMessageId ?: messageId
+//        lastMessageId = messageId
+
+//        return TransactionContext(
+//            sessionId = sessionId,
+//            requestId = requestId,
+//            messageId = messageId,
+//            causationId = causationId,
+//            timestamp = timestamp,
+//            sourceContext = source
+//        )
+//    }
 }
 
 /**

@@ -3,10 +3,11 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-package mimis.gildi.memory.domain.message
+package mimis.gildi.memory.domain.message.query
 
 import mimis.gildi.memory.context.Cortex
 import mimis.gildi.memory.context.Recall
+import mimis.gildi.memory.domain.message.TransactionContext
 import mimis.gildi.memory.domain.model.ReflectionScope
 import java.util.UUID
 
@@ -24,7 +25,7 @@ sealed interface Query
  * [Recall]. Find memories matching text and filters.
  *
  * The fast path returns immediately;
- * deep association traversal continues in the background and may produce a [TotalRecallNotification] later.
+ * deep association traversal continues in the background and may produce a [mimis.gildi.memory.domain.message.notification.TotalRecallNotification] later.
  *
  * @property tx chain of custody.
  * @property query free-text search -- semantics TBD (keyword, embedding, hybrid).

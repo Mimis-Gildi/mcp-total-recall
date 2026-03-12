@@ -5,7 +5,7 @@
  */
 package mimis.gildi.memory.port.inbound
 
-import mimis.gildi.memory.domain.model.SessionEndReason
+import mimis.gildi.memory.domain.model.SessionEndCause
 import mimis.gildi.memory.domain.model.WorkingMode
 
 /**
@@ -25,7 +25,7 @@ interface LifecyclePort {
     @Suppress("unused")
     suspend fun sessionEnd(
         instanceId: String,
-        reason: SessionEndReason = SessionEndReason.EXPLICIT
+        reason: SessionEndCause = SessionEndCause.EXPLICIT
     )
 
     @Suppress("unused")
@@ -36,6 +36,4 @@ interface LifecyclePort {
         context: Map<String, String> = emptyMap()
     )
 
-    @Suppress("unused")
-    suspend fun heartbeat(instanceId: String)
 }

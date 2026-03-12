@@ -5,8 +5,7 @@
  */
 package mimis.gildi.memory.domain.message
 
-import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /**
  * Chain of custody envelope carried on every domain message.
@@ -15,10 +14,8 @@ import java.util.UUID
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0011-transaction-context/">Design Spec: TransactionContext</a>
  */
 data class TransactionContext(
+    val instanceId: UUID,
     val sessionId: UUID,
     val requestId: UUID,
-    val messageId: UUID,
-    val causationId: UUID,
-    val timestamp: Instant,
     val sourceContext: String
 )

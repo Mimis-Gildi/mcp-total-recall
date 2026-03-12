@@ -54,8 +54,8 @@ class TotalRecallTest : FunSpec({
         createServer() shouldNotBe null
     }
 
-    test("all 10 MCP tools are registered") {
-        testServer.tools.size shouldBe 10
+    test("all 9 MCP tools are registered") {
+        testServer.tools.size shouldBe 9
         testServer.tools.keys shouldContainExactlyInAnyOrder listOf(
             "store_memory",
             "search_memory",
@@ -63,7 +63,6 @@ class TotalRecallTest : FunSpec({
             "session_start",
             "session_end",
             "state_transition",
-            "heartbeat",
             "associate_memories",
             "reclassify_memory",
             "reflect"
@@ -110,9 +109,6 @@ class TotalRecallTest : FunSpec({
                     put("old_mode", JsonPrimitive("CONVERSATION"))
                     put("new_mode", JsonPrimitive("TASK"))
                 },
-                "heartbeat" to buildJsonObject {
-                    put("instance_id", JsonPrimitive("claude-1"))
-                },
                 "associate_memories" to buildJsonObject {
                     put("memory_a", JsonPrimitive("550e8400-e29b-41d4-a716-446655440000"))
                     put("memory_b", JsonPrimitive("550e8400-e29b-41d4-a716-446655440001"))
@@ -152,7 +148,6 @@ class TotalRecallTest : FunSpec({
                 OneMissingProbe("claim_memory", "memory_id"),
                 OneMissingProbe("session_start", "instance_id"),
                 OneMissingProbe("session_end", "instance_id"),
-                OneMissingProbe("heartbeat", "instance_id"),
                 OneMissingProbe("associate_memories", "memory_a"),
                 OneMissingProbe("reclassify_memory", "memory_id"),
 

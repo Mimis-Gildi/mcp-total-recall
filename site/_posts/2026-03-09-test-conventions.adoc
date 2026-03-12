@@ -64,9 +64,9 @@ Given this context, when this command, then these properties hold.
 Hippocampus events, Salience events, Synapse events -- each in its section.
 
 | **WordSpec**
-| Lifecycle state machines (sessions, modes, heartbeats)
+| Lifecycle state machines (sessions, modes, transitions)
 | "When ... should" nesting reads like a state machine specification.
-Sessions start, modes change, heartbeats arrive, sessions end.
+Sessions start, modes change, transitions happen, sessions end.
 
 | **ShouldSpec**
 | Query contracts and defaults

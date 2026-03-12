@@ -190,7 +190,7 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 Every message in the system. Named, typed, with producer and consumer.
 
 All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
-`Event` (17 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+`Event` (15 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
 
@@ -284,16 +284,6 @@ Defined as part of `sealed interface Event`.
 | Cortex
 | Subconscious
 | instance ID, old mode, new mode (task, conversation, idle)
-
-| `SessionState`
-| Cortex
-| Subconscious
-| instance ID, duration, activity level, last interaction
-
-| `HeartbeatReceived`
-| Lifecycle Port
-| Cortex
-| instance ID, timestamp
 |===
 
 === Notifications
@@ -459,10 +449,6 @@ associations:   List<Association>
 | Consolidation details
 | How `ConsolidateCommand` merge strategies work
 | When Subconscious behavior is specified
-
-| Heartbeat details
-| Keep-alive semantics, timeout thresholds
-| When transport adapters are designed
 
 | Additional notification types
 | Context drift warnings, memory capacity alerts

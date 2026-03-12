@@ -12,11 +12,10 @@ package mimis.gildi.memory.context
  * "Subconscious" consumes
  *
  * - [mimis.gildi.memory.domain.message.ModeChanged]
- * - and [mimis.gildi.memory.domain.message.SessionState]
  *
  * to detect sustained task mode and trigger
  *
- * - [mimis.gildi.memory.domain.message.BreakNotification].
+ * - [mimis.gildi.memory.domain.message.notification.BreakNotification].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0010-subconscious/">Design: Subconscious</a>
  */

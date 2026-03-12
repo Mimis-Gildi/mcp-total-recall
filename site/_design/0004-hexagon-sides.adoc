@@ -77,12 +77,9 @@ The staff entrance. This is where session events arrive -- a mind connects, disc
 
 | State transition
 | instance ID, old state, new state, context
-
-| Heartbeat
-| instance ID, timestamp
 |===
 
-Four object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Subconscious never triggers the audit prompt.
+Three object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Subconscious never triggers the audit prompt.
 
 **Outside adapters:**
 
@@ -211,7 +208,7 @@ Cross-cuts attach as adapters but never live inside the domain. The core is test
 
 == The Full Hexagon
 
-Five faces. Two inbound, three outbound. Fourteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
+Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
 
 [cols="1,1,1,1,1",options="header"]
 |===
@@ -226,7 +223,7 @@ Five faces. Two inbound, three outbound. Fourteen object shapes crossing today. 
 | 2
 | LifecyclePort
 | Inbound
-| 4 shapes
+| 3 shapes
 | Claude Code Hooks, Human UI (future)
 
 | 3

@@ -79,7 +79,7 @@ Cold storage is another. Both can run simultaneously. This is how Tillie survive
 | Internal timers (break checks, decay sweeps) | Not yet
 |===
 
-All contracts are defined in Kotlin. 10 MCP tools are registered and callable. Backing services are not yet wired -- tools return teapot stub responses.
+All contracts are defined in Kotlin. 9 MCP tools are registered and callable. Backing services are not yet wired -- tools return teapot stub responses.
 
 '''
 

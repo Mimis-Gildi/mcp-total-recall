@@ -24,12 +24,12 @@ Eleven inconsistencies between the architecture documents and the Kotlin code. A
 
 * *sessionId* was String in some places, UUID in others. UUID is everywhere now. Example: {repo-src}/mimis/gildi/memory/domain/message/Command.kt[`StoreCommand#sessionId`]
 * *reflect* port signature didn't match the MCP tool parameters. Aligned to scope, timeSpanDays, maxCandidates.
-* *state_transition* and *heartbeat* existed as domain messages but had no MCP tools. Teapot stubs added. 10 tools now.
+* *state_transition* existed as a domain message but had no MCP tool. Teapot stub added. 9 tools now.
 * *store_memory* and *search_memory* were missing `session_id`. Added as required argument.
 * *search_memory* was missing `filters`. Added as optional argument.
 * *Association* was missing `direction` field. Added.
 * *SalienceScore.claimed* was a proxy for Memory.claimed -- same JVM, one function call away. Removed the proxy.
-* Three String fields replaced with enums: MergeStrategy, ActivityLevel, ReflectionScope.
+* Two String fields replaced with enums: MergeStrategy, ReflectionScope.
 
 The lesson: architecture documents and code drift apart the moment you stop checking them against each other.
 

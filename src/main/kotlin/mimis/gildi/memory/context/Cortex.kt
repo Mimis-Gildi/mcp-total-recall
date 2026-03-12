@@ -15,8 +15,6 @@ package mimis.gildi.memory.context
  * - [mimis.gildi.memory.domain.message.SessionEnd],
  * - [mimis.gildi.memory.domain.message.StateTransition],
  * - [mimis.gildi.memory.domain.message.ModeChanged],
- * - [mimis.gildi.memory.domain.message.HeartbeatReceived],
- * - [mimis.gildi.memory.domain.message.SessionState],
  * - and [mimis.gildi.memory.domain.message.TotalRecallAdvisory].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0009-cortex/">Design: Cortex</a>

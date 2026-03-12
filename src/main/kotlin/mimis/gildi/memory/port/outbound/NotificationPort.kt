@@ -5,7 +5,7 @@
  */
 package mimis.gildi.memory.port.outbound
 
-import mimis.gildi.memory.domain.message.Notification
+import mimis.gildi.memory.domain.message.notification.Notification
 
 /**
  * Outbound port for mind-directed notifications. The adapter decides

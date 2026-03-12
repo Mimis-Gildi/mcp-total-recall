@@ -257,25 +257,6 @@ private fun Server.registerLifecycleTools() {
         ok("Transition recorded (teapot). Instance: $instanceId. $oldMode -> $newMode.")
     }
 
-    addTool(
-        name = "heartbeat",
-        description = "Cognitive pulse. Returns memory health, retrieval diagnostics, decay warnings, and infrastructure status.",
-        inputSchema = ToolSchema(
-            properties = buildJsonObject {
-                put("instance_id", buildJsonObject {
-                    put("type", "string")
-                    put("description", "Instance requesting status")
-                })
-            },
-            required = listOf("instance_id")
-        )
-    ) { request ->
-        val instanceId = request.arguments?.get("instance_id")?.jsonPrimitive?.content
-            ?: return@addTool err("Missing required argument: instance_id")
-
-        rootLog.info { "heartbeat: instance=$instanceId" }
-        ok("Heartbeat (teapot). Instance: $instanceId. All systems nominal. No memories yet.")
-    }
 }
 
 /**

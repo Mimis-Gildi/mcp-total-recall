@@ -5,7 +5,7 @@
  */
 package mimis.gildi.memory.domain.model
 
-enum class SessionEndReason {
+enum class SessionEndCause {
     EXPLICIT,
     TIMEOUT,
     CRASH
