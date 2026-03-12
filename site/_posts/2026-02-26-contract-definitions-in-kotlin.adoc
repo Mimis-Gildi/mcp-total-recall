@@ -28,12 +28,12 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *WorkingMode* -- enum: `TASK`, `CONVERSATION`, `IDLE`.
 * *SessionEndCause* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
 
-=== Domain Messages (4 sealed hierarchies)
+=== Domain Messages (4 type hierarchies)
 
 `mimis.gildi.memory.domain.message` -- every message from the catalog, now type-safe:
 
 * *Command* -- 7 sealed variants across 4 sub-hierarchies. *MemoryCommand:* `StoreMemoryCommand`, `ClaimMemoryCommand`, `ReclassifyMemoryCommand`, `ConsolidateMemoryCommand`. *AssociationCommand:* `AssociateCommand`. *AttentionCommand:* `DecaySweep`. *LifecycleCommand:* `ShutdownCommand`.
-* *Query* -- 2 sealed variants. `SearchQuery`, `ReflectQuery`.
+* *Query* -- 1 sealed sub-hierarchy (`RecallQuery`) with 2 variants. `SearchQuery`, `ReflectQuery`.
 * *Event* -- 17 sealed variants. Every state change in the system is a named, typed event.
 * *Notification* -- 3 sealed variants. `BreakNotification`, `SessionAuditPrompt`, `TotalRecallNotification`.
 
