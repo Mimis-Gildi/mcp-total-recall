@@ -5,9 +5,10 @@
  */
 package mimis.gildi.memory.domain.message.notification
 
-import mimis.gildi.memory.context.*
+import mimis.gildi.memory.context.Cortex
+import mimis.gildi.memory.context.Subconscious
 import mimis.gildi.memory.domain.message.TransactionContext
-import java.util.*
+import java.util.UUID
 import kotlin.time.Duration
 
 /**
