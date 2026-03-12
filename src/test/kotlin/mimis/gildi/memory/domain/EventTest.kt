@@ -34,8 +34,8 @@ import io.kotest.core.spec.style.DescribeSpec
  *
  * [mimis.gildi.memory.context.Cortex] emits:
  * - [mimis.gildi.memory.domain.message.event.recall.TotalRecallAdvisoryRequested] → [mimis.gildi.memory.context.Subconscious]
- * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionStarted] → all contexts
- * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionEnded] → all contexts
+ * - [mimis.gildi.memory.domain.message.event.observable.SessionStarted] → all contexts
+ * - [mimis.gildi.memory.domain.message.event.observable.SessionEnded] → all contexts
  * - [mimis.gildi.memory.domain.message.event.mode.StateTransitioned] → [mimis.gildi.memory.context.Subconscious]
  * - [mimis.gildi.memory.domain.message.event.mode.ModeChanged] → [mimis.gildi.memory.context.Subconscious]
  */

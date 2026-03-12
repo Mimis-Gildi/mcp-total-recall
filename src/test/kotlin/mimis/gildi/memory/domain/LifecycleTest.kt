@@ -16,8 +16,8 @@ import io.kotest.core.spec.style.WordSpec
  *
  * Lifecycle is owned by [mimis.gildi.memory.context.Cortex]. All lifecycle events originate there:
  *
- * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionStarted]: mind connects → load identity, resume state
- * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionEnded]: mind disconnects → audit, flush, notify
+ * - [mimis.gildi.memory.domain.message.event.observable.SessionStarted]: mind connects → load identity, resume state
+ * - [mimis.gildi.memory.domain.message.event.observable.SessionEnded]: mind disconnects → audit, flush, notify
  * - [mimis.gildi.memory.domain.message.event.mode.ModeChanged]: working mode shift → [mimis.gildi.memory.context.Subconscious] break detection
  * - [mimis.gildi.memory.domain.message.event.mode.StateTransitioned]: generic state change → [mimis.gildi.memory.context.Subconscious]
  */

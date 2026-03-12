@@ -57,7 +57,7 @@ Previous branch context: `72-architecture-socialize-architecture-v1` delivered s
 - Events refactored into sub-package hierarchy:
   - `event/memory/` -- MemoryEvent (sealed), MemoryHippocampusEvent (sealed), MemorySalienceEvent (sealed), MemorySynapseEvent (sealed)
   - `event/recall/` -- RecallEvent (sealed, 3-phase advisory lifecycle)
-  - `event/lifecycle/observable/` -- SessionEvent (sealed, observer pattern)
+  - `event/observable/` -- SessionEvent (sealed, observer pattern)
   - `event/mode/` -- OperatingModeEvent (sealed)
 - Event names now past tense: SessionStarted, SessionEnded, StateTransitioned
 - Salience events renamed to recommendations: AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged

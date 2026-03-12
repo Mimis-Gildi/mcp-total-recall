@@ -17,7 +17,7 @@ import mimis.gildi.memory.domain.message.TransactionContext
  * - [mimis.gildi.memory.domain.message.event.recall.RecallEvent]:
  * 1. deep traversal advisory lifecycle ([mimis.gildi.memory.context.Recall]).
  *
- * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionEvent]:
+ * - [mimis.gildi.memory.domain.message.event.observable.SessionEvent]:
  * 1. session lifecycle, observable by all contexts ([mimis.gildi.memory.context.Cortex]).
  *
  * - [mimis.gildi.memory.domain.message.event.mode.OperatingModeEvent]:

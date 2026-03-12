@@ -1,4 +1,4 @@
-package mimis.gildi.memory.domain.message.event.lifecycle.observable
+package mimis.gildi.memory.domain.message.event.observable
 
 import mimis.gildi.memory.context.Cortex
 import mimis.gildi.memory.context.Subconscious
