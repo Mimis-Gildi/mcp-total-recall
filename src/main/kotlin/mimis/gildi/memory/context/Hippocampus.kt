@@ -12,12 +12,12 @@ package mimis.gildi.memory.context
  * when it moves, and how it responds to claims.
  * It emits
  *
- * - [mimis.gildi.memory.domain.message.MemoryStored],
- * - [mimis.gildi.memory.domain.message.MemoryAccessed],
- * - [mimis.gildi.memory.domain.message.MemoryClaimed],
- * - [mimis.gildi.memory.domain.message.MemoryRetrieved],
- * - [mimis.gildi.memory.domain.message.TierChanged],
- * - and [mimis.gildi.memory.domain.message.MemoryReclassified].
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryStored],
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryAccessed],
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryClaimed],
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryRetrieved],
+ * - [mimis.gildi.memory.domain.message.event.memory.TierChanged],
+ * - and [mimis.gildi.memory.domain.message.event.memory.MemoryReclassified].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0005-tiered-memory/">Design: Hippocampus</a>
  */

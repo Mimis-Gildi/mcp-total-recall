@@ -18,7 +18,7 @@ graph LR
     end
 
     HP -- "MemoryRetrieved" --> RC
-    SL -- "SalienceScored" --> RC
+    SL -- "AttentionScoreChanged" --> RC
     SY -- "AssociationsFound" --> RC
 
     RC -- "Search results<br/>(immediate)" --> CX

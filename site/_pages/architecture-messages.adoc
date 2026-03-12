@@ -154,7 +154,7 @@ This operation requires the same mind. A different mind classifying your memorie
 
 === Total Recall
 
-The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryRequestedEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
 
 The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model). The core provides the port. The adapter decides how.
 
@@ -190,7 +190,7 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 Every message in the system. Named, typed, with producer and consumer.
 
 All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
-`Event` (15 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+`Event` (17 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
 
@@ -265,17 +265,17 @@ Defined as part of `sealed interface Event`.
 |===
 | Event | Producer | Consumer(s) | Payload
 
-| `SessionStart`
+| `SessionStarted`
 | Lifecycle Port
 | Cortex
 | instance ID, mind type, resumption data
 
-| `SessionEnd`
+| `SessionEnded`
 | Lifecycle Port
 | Cortex, Subconscious
-| instance ID, reason (explicit, timeout, crash)
+| instance ID, cause (explicit, timeout, crash)
 
-| `StateTransition`
+| `StateTransitioned`
 | Lifecycle Port
 | Cortex
 | instance ID, old state, new state, context
@@ -344,17 +344,17 @@ Events are facts about something that happened. An event can have multiple consu
 | (internal record)
 | memory ID, old tier, new tier, reason
 
-| `TierPromoted`
+| `AttentionTierPromotionRequested`
 | Salience
 | Hippocampus
 | memory ID, new tier, score
 
-| `TierDemoted`
+| `AttentionTierDemotionRequested`
 | Salience
 | Hippocampus
 | memory ID, new tier, score
 
-| `SalienceScored`
+| `AttentionScoreChanged`
 | Salience
 | Recall
 | memory ID, score, last access, decay rate
@@ -369,10 +369,20 @@ Events are facts about something that happened. An event can have multiple consu
 | Synapse
 | memory ID, old tier, new tier, reason (mind-initiated)
 
-| `TotalRecallAdvisory`
+| `TotalRecallAdvisoryRequested`
 | Cortex
 | Subconscious (via Memory Event Store)
 | source memory IDs, origin request ID, timestamp
+
+| `TotalRecallAdvisoryPublished`
+| Subconscious
+| Recall
+| source memory IDs, origin request ID, traversal parameters
+
+| `TotalRecallAdvisoryTerminated`
+| Subconscious
+| (internal record)
+| origin request ID, reason (throttled, session gate, shutdown gate, cancelled)
 |===
 
 === Message Payload Details
@@ -409,7 +419,7 @@ tier:           Tier         -- assigned tier (may differ from suggested)
 timestamp:      Instant      -- when storage completed
 ....
 
-==== SalienceScored
+==== AttentionScoreChanged
 
 ....
 memory_id:      UUID         -- which memory

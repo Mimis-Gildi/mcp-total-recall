@@ -17,27 +17,27 @@ import io.kotest.core.spec.style.DescribeSpec
  * Event emission paths (emitter → consumers):
  *
  * [mimis.gildi.memory.context.Hippocampus] emits:
- * - [mimis.gildi.memory.domain.message.MemoryStored] → [mimis.gildi.memory.context.Salience], [mimis.gildi.memory.context.Synapse]
- * - [mimis.gildi.memory.domain.message.MemoryAccessed] → [mimis.gildi.memory.context.Salience]
- * - [mimis.gildi.memory.domain.message.MemoryClaimed] → [mimis.gildi.memory.context.Salience]
- * - [mimis.gildi.memory.domain.message.MemoryRetrieved] → [mimis.gildi.memory.context.Recall]
- * - [mimis.gildi.memory.domain.message.TierChanged] → internal bookkeeping
- * - [mimis.gildi.memory.domain.message.MemoryReclassified] → [mimis.gildi.memory.context.Synapse]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryStored] → [mimis.gildi.memory.context.Salience], [mimis.gildi.memory.context.Synapse]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryAccessed] → [mimis.gildi.memory.context.Salience]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryClaimed] → [mimis.gildi.memory.context.Salience]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryRetrieved] → [mimis.gildi.memory.context.Recall]
+ * - [mimis.gildi.memory.domain.message.event.memory.TierChanged] → internal bookkeeping
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryReclassified] → [mimis.gildi.memory.context.Synapse]
  *
- * [mimis.gildi.memory.context.Salience] emits:
- * - [mimis.gildi.memory.domain.message.TierPromoted] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.TierDemoted] → [mimis.gildi.memory.context.Hippocampus]
- * - [mimis.gildi.memory.domain.message.SalienceScored] → [mimis.gildi.memory.context.Hippocampus]
+ * [mimis.gildi.memory.context.Salience] emits recommendations:
+ * - [mimis.gildi.memory.domain.message.event.memory.AttentionTierPromotionRequested] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.event.memory.AttentionTierDemotionRequested] → [mimis.gildi.memory.context.Hippocampus]
+ * - [mimis.gildi.memory.domain.message.event.memory.AttentionScoreChanged] → [mimis.gildi.memory.context.Hippocampus]
  *
  * [mimis.gildi.memory.context.Synapse] emits:
- * - [mimis.gildi.memory.domain.message.AssociationsFound] → [mimis.gildi.memory.context.Recall]
+ * - [mimis.gildi.memory.domain.message.event.memory.AssociationsFound] → [mimis.gildi.memory.context.Recall]
  *
  * [mimis.gildi.memory.context.Cortex] emits:
- * - [mimis.gildi.memory.domain.message.TotalRecallAdvisory] → [mimis.gildi.memory.context.Subconscious]
- * - [mimis.gildi.memory.domain.message.SessionStart] → all contexts
- * - [mimis.gildi.memory.domain.message.SessionEnd] → all contexts
- * - [mimis.gildi.memory.domain.message.StateTransition] → [mimis.gildi.memory.context.Subconscious]
- * - [mimis.gildi.memory.domain.message.ModeChanged] → [mimis.gildi.memory.context.Subconscious]
+ * - [mimis.gildi.memory.domain.message.event.recall.TotalRecallAdvisoryRequested] → [mimis.gildi.memory.context.Subconscious]
+ * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionStarted] → all contexts
+ * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionEnded] → all contexts
+ * - [mimis.gildi.memory.domain.message.event.mode.StateTransitioned] → [mimis.gildi.memory.context.Subconscious]
+ * - [mimis.gildi.memory.domain.message.event.mode.ModeChanged] → [mimis.gildi.memory.context.Subconscious]
  */
 class EventTest : DescribeSpec({
 

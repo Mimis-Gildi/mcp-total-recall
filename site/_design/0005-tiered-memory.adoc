@@ -130,11 +130,11 @@ Hippocampus receives commands from three sources.
 | Subconscious (background)
 | Flushes all in-memory state to cold storage within timeout, coordinates graceful convergence
 
-| TierPromoted
+| AttentionTierPromotionRequested
 | Salience (scoring decision)
 | Moves memory to higher tier based on salience score, persists, emits TierChanged
 
-| TierDemoted
+| AttentionTierDemotionRequested
 | Salience (scoring decision)
 | Moves memory to lower tier based on decay, persists, emits TierChanged
 |===
@@ -180,7 +180,7 @@ Six events. Each one is a fact -- something that already happened and was persis
 
 This is the defining invariant of the aggregate root pattern.
 
-Salience computes scores. It does not write to storage. It sends TierPromoted or TierDemoted to Hippocampus, and Hippocampus persists the change.
+Salience computes scores. It does not write to storage. It sends AttentionTierPromotionRequested or AttentionTierDemotionRequested to Hippocampus, and Hippocampus persists the change.
 
 Synapse manages relationships. It does not write memories to storage. If an association should affect a memory's tier, it sends a command to Hippocampus.
 

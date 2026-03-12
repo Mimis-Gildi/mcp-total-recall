@@ -130,7 +130,7 @@ Our TEAM_NORMS say: _clever is suspicious, clear is the goal._
 Using seven spec styles isn't clever.
 It's clear.
 Each test reads like the thing it's testing.
-A lifecycle state machine reads like "When SessionStart, should carry the instance ID."
+A lifecycle state machine reads like "When SessionStarted, should carry the instance ID."
 A value object shape reads like "memory holds its shape with defaults."
 
 The clever thing would be forcing everything into one style and writing a long ADR defending the choice.

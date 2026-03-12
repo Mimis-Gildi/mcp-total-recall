@@ -26,7 +26,7 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *SalienceScore* -- score, last access, decay rate, claimed flag.
 * *AssociationDirection* -- enum: `CREATE`, `STRENGTHEN`, `WEAKEN`.
 * *WorkingMode* -- enum: `TASK`, `CONVERSATION`, `IDLE`.
-* *SessionEndReason* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
+* *SessionEndCause* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
 
 === Domain Messages (4 sealed hierarchies)
 
@@ -34,8 +34,8 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 
 * *Command* -- 7 sealed variants. `StoreCommand`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ConsolidateCommand`, `ShutdownCommand`, `DecaySweep`.
 * *Query* -- 2 sealed variants. `SearchQuery`, `ReflectQuery`.
-* *Event* -- 15 sealed variants. Every state change in the system is a named, typed event.
-* *Notification* -- 3 sealed variants. `BreakNotification`, `SessionAuditPrompt`, `TotalRecallAdvisory`.
+* *Event* -- 17 sealed variants. Every state change in the system is a named, typed event.
+* *Notification* -- 3 sealed variants. `BreakNotification`, `SessionAuditPrompt`, `TotalRecallNotification`.
 
 === Port Interfaces (5 interfaces)
 

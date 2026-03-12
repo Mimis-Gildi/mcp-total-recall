@@ -10,16 +10,16 @@ package mimis.gildi.memory.context
  *
  * Salience consumes
  *
- * - [mimis.gildi.memory.domain.message.MemoryStored] and
- * - [mimis.gildi.memory.domain.message.MemoryAccessed]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryStored] and
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryAccessed]
  *
  * to calculate decay curves.
  *
- * It emits
+ * It emits recommendations:
  *
- * - [mimis.gildi.memory.domain.message.SalienceScored],
- * - [mimis.gildi.memory.domain.message.TierPromoted],
- * - and [mimis.gildi.memory.domain.message.TierDemoted].
+ * - [mimis.gildi.memory.domain.message.event.memory.AttentionScoreChanged],
+ * - [mimis.gildi.memory.domain.message.event.memory.AttentionTierPromotionRequested],
+ * - and [mimis.gildi.memory.domain.message.event.memory.AttentionTierDemotionRequested].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0006-salience/">Design: Salience</a>
  */

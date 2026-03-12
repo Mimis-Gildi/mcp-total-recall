@@ -11,8 +11,8 @@ package mimis.gildi.memory.context
  *
  * Recall consumes
  *
- * - [mimis.gildi.memory.domain.message.MemoryRetrieved] and
- * - [mimis.gildi.memory.domain.message.AssociationsFound]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryRetrieved] and
+ * - [mimis.gildi.memory.domain.message.event.memory.AssociationsFound]
  *
  * to build complete search results for the mind.
  *

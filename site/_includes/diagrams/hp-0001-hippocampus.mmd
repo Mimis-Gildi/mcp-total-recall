@@ -25,8 +25,8 @@ graph LR
     CX -- "ReclassifyCommand" --> HP
     SB -- "ConsolidateCommand" --> HP
     SB -- "ShutdownCommand" --> HP
-    SL_IN -- "TierPromoted" --> HP
-    SL_IN -- "TierDemoted" --> HP
+    SL_IN -- "AttentionTierPromotionRequested" --> HP
+    SL_IN -- "AttentionTierDemotionRequested" --> HP
 
     HP -- "MemoryStored" --> SL_OUT
     HP -- "MemoryAccessed" --> SL_OUT

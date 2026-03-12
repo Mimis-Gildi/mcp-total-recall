@@ -24,7 +24,7 @@ sequenceDiagram
     deactivate HP
 
     CX->>SL: Distribute thresholds
-    CX->>SB: SessionStart event
+    CX->>SB: SessionStarted event
     activate SB
     SB->>SB: Begin session tracking
     deactivate SB
@@ -40,7 +40,7 @@ sequenceDiagram
     activate CX
     Note right of M: instance_id: String<br/>reason: explicit, timeout, or crash
 
-    CX->>SB: SessionEnd event
+    CX->>SB: SessionEnded event
     activate SB
 
     CX-->>M: session_end response

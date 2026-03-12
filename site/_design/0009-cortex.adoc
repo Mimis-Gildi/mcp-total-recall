@@ -76,11 +76,11 @@ Every MCP tool call arrives at Cortex. Eight tools, eight entry points.
 | Recall
 
 | session_start
-| SessionStart event
+| SessionStarted event
 | Subconscious
 
 | session_end
-| SessionEnd event
+| SessionEnded event
 | Subconscious
 |===
 
@@ -121,11 +121,11 @@ A session begins when a mind connects. It ends when the mind disconnects.
 | Event | What Happens
 
 | session_start
-| The mind identifies itself -- instance ID, mind type. Cortex broadcasts SessionStart to all contexts. Subconscious begins tracking session duration.
+| The mind identifies itself -- instance ID, mind type. Cortex broadcasts SessionStarted to all contexts. Subconscious begins tracking session duration.
 Cortex reads IDENTITY_CORE configuration memories from Hippocampus and distributes thresholds to Salience.
 
 | session_end
-| The mind disconnects, times out, or crashes. Cortex broadcasts SessionEnd. Subconscious halts background processing for that session.
+| The mind disconnects, times out, or crashes. Cortex broadcasts SessionEnded. Subconscious halts background processing for that session.
 If the reason is "crash," Subconscious may trigger consolidation of unsaved working context.
 |===
 

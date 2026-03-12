@@ -33,10 +33,10 @@ Previous branch context: `72-architecture-socialize-architecture-v1` delivered s
 
 ### Test Files (8 specs, 7 Kotest styles)
 - `ModelTest` (StringSpec) -- value object shape: Tier, AssociationType, Memory, Association, SalienceScore
-- `TotalRecallTest` (FunSpec) -- MCP server creation, tool registration (10 tools), input schemas, teapot stub responses
-- `CommandTest` (BehaviorSpec) -- all 7 command variants: Store, Claim, Reclassify, Consolidate, Shutdown, Associate, DecaySweep
-- `EventTest` (DescribeSpec) -- events organized by bounded context: Hippocampus, Salience, Synapse, Total Recall
-- `LifecycleTest` (WordSpec) -- session state machines: SessionStart, SessionEnd, ModeChanged, HeartbeatReceived, SessionState, StateTransition
+- `TotalRecallTest` (FunSpec) -- MCP server creation, tool registration (9 tools), input schemas, teapot stub responses
+- `CommandTest` (BehaviorSpec) -- empty spec, `!about` placeholder documents 7 command routing paths (source → target)
+- `EventTest` (DescribeSpec) -- empty spec, `!about` placeholder documents event emission paths by bounded context
+- `LifecycleTest` (WordSpec) -- empty spec, `!about` placeholder documents 4 lifecycle events (SessionStarted, SessionEnded, ModeChanged, StateTransitioned)
 - `QueryTest` (ShouldSpec) -- SearchQuery defaults and overrides, ReflectQuery scope
 - `NotificationTest` (FeatureSpec) -- BreakNotification, SessionAuditPrompt, TotalRecallNotification
 - `TransactionContextTest` (ExpectSpec) -- causation chains, source context routing, identity uniqueness
@@ -49,6 +49,19 @@ Previous branch context: `72-architecture-socialize-architecture-v1` delivered s
   - Hippocampus, Cortex, Salience, Synapse, Recall, Subconscious
   - Each has FIXME: "Created as a dependency for KDoc links. Not implemented until we get here."
   - These exist so `[Hippocampus]` in KDoc resolves. No issue filed -- the FIXME is the debt marker.
+
+### Domain Refactoring (Vadim-led)
+- Deleted: HeartbeatReceived, SessionState, ActivityLevel, heartbeat MCP tool (no reason to exist)
+- Message.kt created as base contract (messageId, causationId, timestamp, content)
+- Event changed from sealed interface to regular interface (enables sub-packaging)
+- Events refactored into sub-package hierarchy:
+  - `event/memory/` -- MemoryEvent (sealed), MemoryHippocampusEvent (sealed), MemorySalienceEvent (sealed), MemorySynapseEvent (sealed)
+  - `event/recall/` -- RecallEvent (sealed, 3-phase advisory lifecycle)
+  - `event/lifecycle/observable/` -- SessionEvent (sealed, observer pattern)
+  - `event/mode/` -- OperatingModeEvent (sealed)
+- Event names now past tense: SessionStarted, SessionEnded, StateTransitioned
+- Salience events renamed to recommendations: AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged
+- Command, Query, Notification moved to own sub-packages
 
 ### Documentation
 - CONTRIBUTING.adoc -- Testing section added (factory helpers, config, run command, report location)

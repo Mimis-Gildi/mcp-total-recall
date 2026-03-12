@@ -11,7 +11,7 @@ package mimis.gildi.memory.context
  *
  * "Subconscious" consumes
  *
- * - [mimis.gildi.memory.domain.message.ModeChanged]
+ * - [mimis.gildi.memory.domain.message.event.mode.ModeChanged]
  *
  * to detect sustained task mode and trigger
  *

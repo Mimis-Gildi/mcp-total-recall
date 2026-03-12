@@ -22,8 +22,8 @@ This is where we are. The architecture phase produced:
 
 * Hexagonal architecture with 5 port faces (2 inbound, 3 outbound)
 * 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
-* 27 message variants (7 commands, 2 queries, 15 events, 3 notifications) with TransactionContext
-* Domain model: Memory, Tier, Association, SalienceScore, WorkingMode, SessionEndReason
+* 29 message variants (7 commands, 2 queries, 17 events, 3 notifications) with TransactionContext
+* Domain model: Memory, Tier, Association, SalienceScore, WorkingMode, SessionEndCause
 * MCP server on stdio with 9 teapot-stub tools
 * ADR-0001 through ADR-0008
 

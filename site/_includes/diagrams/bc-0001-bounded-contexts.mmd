@@ -27,9 +27,9 @@ graph LR
 
     Hippocampus -- "MemoryStored<br/>MemoryClaimed" --> Synapse
     Hippocampus -- "MemoryStored<br/>MemoryAccessed" --> Salience
-    Salience -- "TierPromoted<br/>TierDemoted" --> Hippocampus
+    Salience -- "AttentionTierPromotionRequested<br/>AttentionTierDemotionRequested" --> Hippocampus
     Synapse -- "AssociationsFound" --> Recall
-    Salience -- "SalienceScored" --> Recall
+    Salience -- "AttentionScoreChanged" --> Recall
     Hippocampus -- "MemoryRetrieved" --> Recall
     Cortex -- "StoreCommand<br/>ClaimCommand<br/>ReclassifyCommand" --> Hippocampus
     Cortex -- "SearchQuery<br/>ReflectQuery" --> Recall

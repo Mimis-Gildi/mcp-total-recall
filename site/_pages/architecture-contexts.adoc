@@ -85,8 +85,8 @@ Defined as `Tier` enum with decay semantics per variant.
 * `ReclassifyCommand` -- from Cortex. Mind-initiated tier change with reason.
 * `ConsolidateCommand` -- from Subconscious. Merge related memories.
 * `ShutdownCommand` -- from Subconscious. Begin graceful convergence.
-* `TierPromoted` -- from Salience. Score rose above promotion threshold.
-* `TierDemoted` -- from Salience. Score dropped below demotion threshold.
+* `AttentionTierPromotionRequested` -- from Salience. Score rose above promotion threshold.
+* `AttentionTierDemotionRequested` -- from Salience. Score dropped below demotion threshold.
 
 '''
 
@@ -182,9 +182,9 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 === Events Produced
 
-* `SalienceScored` -- current score for a memory. Consumed by Recall for ranking.
-* `TierPromoted` -- memory promoted to higher tier. Consumed by Hippocampus.
-* `TierDemoted` -- memory demoted to lower tier. Consumed by Hippocampus.
+* `AttentionScoreChanged` -- current score for a memory. Consumed by Recall for ranking.
+* `AttentionTierPromotionRequested` -- memory promoted to higher tier. Consumed by Hippocampus.
+* `AttentionTierDemotionRequested` -- memory demoted to lower tier. Consumed by Hippocampus.
 
 '''
 
@@ -206,7 +206,7 @@ Every result set reflects what the mind would naturally recall first -- the vivi
 === Events Consumed
 
 * `MemoryRetrieved` -- from Hippocampus. Raw candidates matching a query.
-* `SalienceScored` -- from Salience. Scores for ranking candidates.
+* `AttentionScoreChanged` -- from Salience. Scores for ranking candidates.
 * `AssociationsFound` -- from Synapse. Related memories to include in results.
 
 === Queries Accepted
@@ -236,9 +236,9 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 
 === Events Consumed
 
-* `SessionStart` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
-* `SessionEnd` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
-* `StateTransition` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
+* `SessionStarted` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
+* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
+* `StateTransitioned` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
 
 === Commands Produced
 
@@ -293,7 +293,7 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 | `BreakNotification` through Notification Port
 
 | *Session audit*
-| Before session end (triggered by `SessionEnd`)
+| Before session end (triggered by `SessionEnded`)
 | `SessionAuditPrompt` through Notification Port
 
 | *Consolidation*
@@ -304,7 +304,7 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 === Events Consumed
 
 * `ModeChanged` -- from Cortex. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
-* `SessionEnd` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
+* `SessionEnded` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
 
 === Commands Produced
 

@@ -11,12 +11,12 @@ package mimis.gildi.memory.context
  * Synapse is a dependent aggregate with its own storage, accessed only internally.
  * It consumes
  *
- * - [mimis.gildi.memory.domain.message.MemoryStored]
- * - and [mimis.gildi.memory.domain.message.MemoryReclassified]
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryStored]
+ * - and [mimis.gildi.memory.domain.message.event.memory.MemoryReclassified]
  *
  * to update associations.
  *
- * It emits [mimis.gildi.memory.domain.message.AssociationsFound].
+ * It emits [mimis.gildi.memory.domain.message.event.memory.AssociationsFound].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0007-synapse/">Design: Synapse</a>
  */

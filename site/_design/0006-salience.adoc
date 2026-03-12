@@ -86,20 +86,20 @@ When a score crosses a threshold, Salience calls it out.
 |===
 | Output | Meaning | Who Hears
 
-| TierPromoted
+| AttentionTierPromotionRequested
 | Score rose above the promotion threshold. Move this memory up.
 | Hippocampus (via Memory Event Store)
 
-| TierDemoted
+| AttentionTierDemotionRequested
 | Score dropped below the demotion threshold. Move this memory down.
 | Hippocampus (via Memory Event Store)
 
-| SalienceScored
+| AttentionScoreChanged
 | Current score snapshot for a memory. Emitted after every recalculation.
 | Recall
 |===
 
-TierPromoted and TierDemoted are recommendations. Hippocampus decides whether to act on them. In practice, it does -- the aggregate root trusts the scoring engine's math. But the write authority belongs to Hippocampus.
+AttentionTierPromotionRequested and AttentionTierDemotionRequested are recommendations. Hippocampus decides whether to act on them. In practice, it does -- the aggregate root trusts the scoring engine's math. But the write authority belongs to Hippocampus.
 
 == The Sweep
 
@@ -143,7 +143,7 @@ The coupling is one-directional in authority. Hippocampus does not ask Salience 
 
 == Relationship to Recall
 
-Recall needs scores to rank search results. Salience emits SalienceScored after every recalculation. Recall maintains its own copy of current scores, built from those events. At search time, Recall assembles memories from Hippocampus, scores from its local copy, and associations from Synapse. No query to Salience needed.
+Recall needs scores to rank search results. Salience emits AttentionScoreChanged after every recalculation. Recall maintains its own copy of current scores, built from those events. At search time, Recall assembles memories from Hippocampus, scores from its local copy, and associations from Synapse. No query to Salience needed.
 
 Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
 
@@ -166,7 +166,7 @@ Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
 | DecaySweep from Subconscious, thresholds from Cortex
 
 | Calls out
-| TierPromoted and TierDemoted (to Hippocampus), SalienceScored (to Recall)
+| AttentionTierPromotionRequested and AttentionTierDemotionRequested (to Hippocampus), AttentionScoreChanged (to Recall)
 
 | Key invariant
 | Computes, never persists. No relationship with BackingServicePort.

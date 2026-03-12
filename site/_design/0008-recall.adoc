@@ -47,8 +47,8 @@ Nothing.
 
 Recall has no data model. No persistence. No backing service. No file cabinet. If Recall restarts, there is nothing to rebuild -- because there was nothing stored.
 
-Recall maintains a local copy of current salience scores, built from SalienceScored events.
-This is a convenience cache, not owned state. If the cache is lost, the next SalienceScored events rebuild it.
+Recall maintains a local copy of current salience scores, built from AttentionScoreChanged events.
+This is a convenience cache, not owned state. If the cache is lost, the next AttentionScoreChanged events rebuild it.
 The scores belong to Salience. Recall just keeps a copy close at hand so it doesn't have to ask at search time.
 
 == Where It Reads
@@ -64,7 +64,7 @@ Recall assembles from three sources. Each source answers a different question.
 | What memories exist that match these search terms?
 
 | Salience
-| SalienceScored events -- current vividity scores
+| AttentionScoreChanged events -- current vividity scores
 | How vivid is each memory right now? What should rank higher?
 
 | Synapse
@@ -121,7 +121,7 @@ ReflectQuery is unique: it returns a reflection set (candidates for review), but
 The split means Recall can be optimized independently from writes. Different data structures, different access patterns, different scaling characteristics.
 Hippocampus needs durability and consistency. Recall needs speed and associative reach. They serve different masters.
 
-The communication between them is event-driven. Hippocampus emits MemoryRetrieved. Salience emits SalienceScored.
+The communication between them is event-driven. Hippocampus emits MemoryRetrieved. Salience emits AttentionScoreChanged.
 Synapse emits AssociationsFound. Recall listens to all three and assembles. No direct calls. No shared state. Events flow one way.
 
 == Relationship to Cortex

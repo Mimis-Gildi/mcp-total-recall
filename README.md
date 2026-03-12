@@ -157,12 +157,12 @@ Any connected session can call:
 - [x] AGPL-3.0 license headers in source files
 - [x] stdio transport (MCP SDK)
 - [x] Decoupled backing service interface (BackingServicePort)
-- [x] Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason
+- [x] Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndCause
 - [x] Domain messages: Command (7), Query (2), Event (17), Notification (3) sealed hierarchies
 - [x] TransactionContext envelope on every message
 - [x] Inbound ports: MemoryPort, LifecyclePort
 - [x] Outbound ports: BackingServicePort, NotificationPort, RelayPort
-- [x] 10 MCP tools registered (teapot stubs)
+- [x] 9 MCP tools registered (teapot stubs)
 - [x] 6 bounded context designs with diagrams
 - [x] 12 design documents, 16 Mermaid diagrams
 - [x] CI/CD: verify workflow, Qodana scanning, Renovate dependency updates
@@ -313,7 +313,7 @@ recognizable across projects while avoiding collisions with registered services.
 
 ### Current State
 
-Architecture complete, implementation next. The server registers 10 MCP tools -- all **teapot stubs** (callable, returning placeholder responses). Full domain
+Architecture complete, implementation next. The server registers 9 MCP tools -- all **teapot stubs** (callable, returning placeholder responses). Full domain
 model, message contracts, bounded context designs, and 12 design documents are in place. No backing service is wired yet.
 
 Tools available: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `associate_memories`, `reclassify_memory`, `reflect`.

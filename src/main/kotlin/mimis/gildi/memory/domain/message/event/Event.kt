@@ -5,14 +5,24 @@ import mimis.gildi.memory.domain.message.TransactionContext
 
 /**
  * Events are facts. Something happened. Zero, one, or many consumers.
+ * Every event carries a [TransactionContext] for chain of custody.
  *
- * Grouped by bounded context:
+ * Sub-hierarchies:
  *
- * - [mimis.gildi.memory.context.Hippocampus] (storage),
- * - [mimis.gildi.memory.context.Salience] (scoring),
- * - [mimis.gildi.memory.context.Synapse] (associations),
- * - [mimis.gildi.memory.context.Cortex] (lifecycle),
- * - and [mimis.gildi.memory.context.Subconscious] (background).
+ * - [mimis.gildi.memory.domain.message.event.memory.MemoryEvent]:
+ * 1. storage ([mimis.gildi.memory.context.Hippocampus]),
+ * 2. scoring ([mimis.gildi.memory.context.Salience]),
+ * 3. associations ([mimis.gildi.memory.context.Synapse]).
+ *
+ * - [mimis.gildi.memory.domain.message.event.recall.RecallEvent]:
+ * 1. deep traversal advisory lifecycle ([mimis.gildi.memory.context.Recall]).
+ *
+ * - [mimis.gildi.memory.domain.message.event.lifecycle.observable.SessionEvent]:
+ * 1. session lifecycle, observable by all contexts ([mimis.gildi.memory.context.Cortex]).
+ *
+ * - [mimis.gildi.memory.domain.message.event.mode.OperatingModeEvent]:
+ * 1. working mode and state transitions ([mimis.gildi.memory.context.Cortex]),
+ * 2. consumed by [mimis.gildi.memory.context.Subconscious] for break detection.
  */
 interface Event: Message {
     val tx: TransactionContext

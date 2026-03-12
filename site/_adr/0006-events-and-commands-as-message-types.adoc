@@ -76,7 +76,7 @@ data class ReflectQuery(...) : Query
 sealed interface Event
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
-// ... 15 total variants
+// ... 17 total variants
 
 sealed interface Notification
 data class BreakNotification(...) : Notification
@@ -168,8 +168,8 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 
 * *Commands:* 7 variants (StoreCommand, ClaimCommand, AssociateCommand, ReclassifyCommand, ConsolidateCommand, ShutdownCommand, DecaySweep)
 * *Queries:* 2 variants (SearchQuery, ReflectQuery)
-* *Events:* 15 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, SalienceScored, AssociationsFound,
-MemoryReclassified, TotalRecallAdvisory, SessionStart, SessionEnd, StateTransition, ModeChanged)
+* *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
+MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished, TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
 * *Notifications:* 3 variants (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.

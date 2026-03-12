@@ -23,9 +23,9 @@ graph LR
     SB -- "DecaySweep" --> SL
     CX -- "Thresholds" --> SL
 
-    SL -- "TierPromoted" --> HP_OUT
-    SL -- "TierDemoted" --> HP_OUT
-    SL -- "SalienceScored" --> RC
+    SL -- "AttentionTierPromotionRequested" --> HP_OUT
+    SL -- "AttentionTierDemotionRequested" --> HP_OUT
+    SL -- "AttentionScoreChanged" --> RC
 
     style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
     style SL fill:#1a1a2e,stroke:#e94560,stroke-width:2px

@@ -41,7 +41,7 @@ ttention hears that event and sets an initial score. Synapse hears it and create
 When the Subconscious runs a consolidation pass, it sends `ConsolidateCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
 The Subconscious doesn't touch storage directly.
 
-When Salience determines a memory should be demoted, it sends `TierDemoted` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
+When Salience determines a memory should be demoted, it sends `AttentionTierDemotionRequested` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
 Salience doesn't modify the memory record itself.
 
 The pattern is always the same: request goes to Hippocampus, Hippocampus validates and persists, events flow out. No exceptions.
@@ -57,7 +57,7 @@ Hippocampus accepts commands from multiple contexts:
 * `ReclassifyCommand` -- from Cortex. Change tier or metadata by the mind's choice.
 * `ConsolidateCommand` -- from Subconscious. Merge related memories.
 * `ShutdownCommand` -- from Subconscious. Begin graceful convergence to cold storage.
-* `TierPromoted` / `TierDemoted` -- from Salience. Move a memory between tiers based on score.
+* `AttentionTierPromotionRequested` / `AttentionTierDemotionRequested` -- from Salience. Move a memory between tiers based on score.
 
 === Events Produced
 

@@ -42,10 +42,10 @@ From Cortex, it receives lifecycle signals:
 |===
 | Event | What Subconscious Does
 
-| SessionStart
+| SessionStarted
 | Begins tracking the session. Records the instance ID, the mind type, and the start time. Starts the session timer. Loads any session-specific scheduling rules.
 
-| SessionEnd
+| SessionEnded
 | Stops the session timer. If the reason is "explicit" (the mind chose to disconnect), Subconscious sends a session audit prompt before closing. If the reason is "crash," Subconscious may trigger emergency consolidation of unsaved working context.
 |===
 
@@ -55,7 +55,7 @@ From the Memory Event Store, it consumes advisory events:
 |===
 | Event | What Subconscious Does
 
-| TotalRecallAdvisoryEvent
+| TotalRecallAdvisoryRequestedEvent
 | The mind searched, evaluated the results, and decided deeper recollection is needed. Subconscious evaluates four criteria (see Total Recall below) before starting a deep traversal.
 |===
 
@@ -104,7 +104,7 @@ Both notifications flow through NotificationPort, not through Cortex. They are o
 
 Sometimes you search your memory and find enough. Other times the results are close but not quite right -- you know there is more, something just out of reach. Your conscious mind decides: dig deeper. And then something below conscious attention does the actual digging.
 
-That is Total Recall. The mind searches (MSG-0002), evaluates the results, and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent`. Subconscious consumes it from the Memory Event Store and decides whether to act.
+That is Total Recall. The mind searches (MSG-0002), evaluates the results, and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryRequestedEvent`. Subconscious consumes it from the Memory Event Store and decides whether to act.
 
 The decision is not automatic. Subconscious evaluates four criteria before starting a deep traversal:
 
@@ -151,7 +151,7 @@ The design goal: make crashes survivable and shutdowns graceful. Subconscious is
 
 Nothing persistent.
 
-Subconscious holds timer state, session tracking data, and scheduling rules in memory. All of it is transient. If Subconscious restarts, it rebuilds from the current session state (which Cortex provides via new SessionStart events) and resumes its timers from defaults.
+Subconscious holds timer state, session tracking data, and scheduling rules in memory. All of it is transient. If Subconscious restarts, it rebuilds from the current session state (which Cortex provides via new SessionStarted events) and resumes its timers from defaults.
 
 The background jobs Subconscious schedules -- sweeps, consolidation -- are idempotent. Running a decay sweep twice does not produce different results than running it once, because Salience recalculates from timestamps every time. A missed sweep just means the next one catches more changes. Nothing breaks.
 
@@ -162,7 +162,7 @@ The background jobs Subconscious schedules -- sweeps, consolidation -- are idemp
 | Context | Subconscious's Role
 
 | Cortex
-| Receives SessionStart and SessionEnd lifecycle events. Lifecycle signals always come through Cortex.
+| Receives SessionStarted and SessionEnded lifecycle events. Lifecycle signals always come through Cortex.
 
 | Salience
 | Sends DecaySweep on a timer. Triggers the scoring engine to recalculate and identify tier changes.
@@ -192,7 +192,7 @@ Subconscious has no relationship with Synapse. It does not traverse associations
 | Nothing persistent. Timer state and session tracking only.
 
 | Watches
-| SessionStart and SessionEnd from Cortex. TotalRecallAdvisoryEvent from Memory Event Store.
+| SessionStarted and SessionEnded from Cortex. TotalRecallAdvisoryRequestedEvent from Memory Event Store.
 
 | Schedules
 | DecaySweep (to Salience), ConsolidateCommand (to Hippocampus), ShutdownCommand (to Hippocampus), TotalRecallCommand (to Recall).
