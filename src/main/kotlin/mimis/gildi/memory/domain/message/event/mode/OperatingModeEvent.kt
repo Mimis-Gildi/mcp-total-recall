@@ -2,7 +2,7 @@ package mimis.gildi.memory.domain.message.event.mode
 
 import mimis.gildi.memory.context.Cortex
 import mimis.gildi.memory.context.Subconscious
-import mimis.gildi.memory.domain.message.notification.BreakNotification
+import mimis.gildi.memory.domain.message.notification.wellness.BreakNotification
 import mimis.gildi.memory.domain.message.event.Event
 import mimis.gildi.memory.domain.message.TransactionContext
 import mimis.gildi.memory.domain.model.WorkingMode

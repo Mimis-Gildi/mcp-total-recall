@@ -3,7 +3,7 @@ package mimis.gildi.memory.domain.message.event.recall
 import mimis.gildi.memory.context.Cortex
 import mimis.gildi.memory.context.Subconscious
 import mimis.gildi.memory.domain.message.event.Event
-import mimis.gildi.memory.domain.message.notification.TotalRecallNotification
+import mimis.gildi.memory.domain.message.notification.recall.TotalRecallNotification
 import mimis.gildi.memory.domain.message.TransactionContext
 import java.time.Instant
 import java.util.UUID

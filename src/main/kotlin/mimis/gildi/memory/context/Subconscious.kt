@@ -15,7 +15,7 @@ package mimis.gildi.memory.context
  *
  * to detect sustained task mode and trigger
  *
- * - [mimis.gildi.memory.domain.message.notification.BreakNotification].
+ * - [mimis.gildi.memory.domain.message.notification.wellness.BreakNotification].
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0010-subconscious/">Design: Subconscious</a>
  */

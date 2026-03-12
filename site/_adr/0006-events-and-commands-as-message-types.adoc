@@ -54,7 +54,7 @@ Notifications flow outward through the Notification Port. The mind can act on th
 The separation matters. Commands and Queries flow inward (toward the domain) -- Commands change state, Queries read it. This is CQRS at the message level.
 Events flow between contexts. Notifications flow outward (toward the mind). Each direction has different semantics and different failure modes.
 
-Command, Event, and Notification are implemented as Kotlin `sealed interface` hierarchies. Query is a regular `interface` with sealed sub-hierarchies (currently `RecallQuery`). Each variant is a data class with a typed payload.
+Command and Event are implemented as Kotlin `sealed interface` hierarchies. Query is a regular `interface` with sealed sub-hierarchies (currently `RecallQuery`). Notification is a regular `interface` with three sealed sub-hierarchies (`WellnessNotification`, `AuditNotification`, `RecallNotification`). Each variant is a data class with a typed payload.
 The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
 == Reference-Level Explanation
@@ -88,11 +88,14 @@ data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
 // ... 17 total variants
 
-sealed interface Notification
-data class BreakNotification(...) : Notification
-data class SessionAuditPrompt(...) : Notification
-data class TotalRecallNotification(...) : Notification
-// ... 3 total variants
+interface Notification : Message
+sealed interface WellnessNotification : Notification
+data class BreakNotification(...) : WellnessNotification
+sealed interface AuditNotification : Notification
+data class SessionAuditPrompt(...) : AuditNotification
+sealed interface RecallNotification : Notification
+data class TotalRecallNotification(...) : RecallNotification
+// ... 3 sub-hierarchies, 1 variant each
 ----
 
 Package: `mimis.gildi.memory.domain.message`.
@@ -180,7 +183,7 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 * *Queries:* 1 sub-hierarchy (RecallQuery) with 2 variants (SearchQuery, ReflectQuery)
 * *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
 MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished, TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
-* *Notifications:* 3 variants (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
+* *Notifications:* 3 sub-hierarchies (WellnessNotification, AuditNotification, RecallNotification) with 1 variant each (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.
 

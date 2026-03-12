@@ -6,15 +6,12 @@
 package mimis.gildi.memory.domain.message.command
 
 import mimis.gildi.memory.domain.message.Message
-import mimis.gildi.memory.domain.message.TransactionContext
 import java.util.UUID
 
 /**
  * Commands are requests to change state. They carry intent.
  * A command has exactly one target. May be accepted, rejected, or ignored.
  *
- * @property tx chain of custody -- session, request, causation, source context.
- * @property metadata optional key-value pairs the issuer attaches for routing or auditing.
  * @property responses optional set of messageIds this command is responding to.
  *
  * Sub-hierarchies by target:
@@ -32,7 +29,5 @@ import java.util.UUID
  *   1. system lifecycle (all bounded contexts).
  */
 interface Command : Message {
-    val tx: TransactionContext
-    val metadata: Map<String, String>?
     val responses: Set<UUID>?
 }

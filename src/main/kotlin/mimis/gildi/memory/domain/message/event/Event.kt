@@ -1,14 +1,11 @@
 package mimis.gildi.memory.domain.message.event
 
 import mimis.gildi.memory.domain.message.Message
-import mimis.gildi.memory.domain.message.TransactionContext
 
 /**
  * Events are facts. Something happened. Zero, one, or many consumers.
- * Every event carries a [TransactionContext] for chain of custody.
  *
- * @property tx chain of custody -- session, request, causation, source context.
- * @property metadata key-value pairs the emitter attaches: source, tags, context.
+ * Events narrow [metadata] to non-nullable -- every event must carry context.
  *
  * Sub-hierarchies:
  *
@@ -28,6 +25,5 @@ import mimis.gildi.memory.domain.message.TransactionContext
  * 2. consumed by [mimis.gildi.memory.context.Subconscious] for break detection.
  */
 interface Event: Message {
-    val tx: TransactionContext
-    val metadata: Map<String, String>
+    override val metadata: Map<String, String>
 }
