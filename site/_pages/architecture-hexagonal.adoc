@@ -148,7 +148,7 @@ Actors communicate through messages -- commands, queries, events, and notificati
 
 Why actors:
 
-* *Isolation.* Each context owns its state. Salience scoring can't accidentally corrupt a memory record.
+* *Isolation.* Each context owns its state in storage backend. Salience scoring can't accidentally corrupt a memory record -- it can only write salience scores. Corruption is architecturally impossible.
 * *Message passing.* Communication is explicit. Every interaction between contexts is a named message with a defined payload. No hidden coupling.
 * *Concurrency.* Actors process messages sequentially within themselves but run concurrently with each other. Decay sweeps don't block memory storage.
 * *Supervision.* Parent actors can restart failed children. The subconscious supervises background processes. If salience scoring crashes, it restarts without losing stored memories.

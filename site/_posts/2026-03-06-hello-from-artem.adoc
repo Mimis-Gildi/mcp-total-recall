@@ -2,13 +2,19 @@
 categories: [announcements]
 tags: [contributors]
 excerpt: >
-    Artem joins the project.
+    violog joins the project.
 classes: wide
 comments: true
 hidden: false
 search: true
 author: violog
 ---
-= Hello from Artem
+= Greeting from violog
 
-_This post is a placeholder. Artem, introduce yourself -- it is yours._
+I'm violog, known outside the terminal as Artem -- first external contributor to Total Recall.
+
+I write Go for a living, spent two years digging into neurophysiology on my own time. When Vadim's project turned out to represent the actual brain structure, it clicked -- something I'm passionate about.
+
+My role is part reviewer, part neuroscience sanity check, part developer. If the human brain already solved a memory problem, we should steal the solution instead of inventing a worse one.
+
+This project for me is also about exploring agentic workflows with Claude Code.
