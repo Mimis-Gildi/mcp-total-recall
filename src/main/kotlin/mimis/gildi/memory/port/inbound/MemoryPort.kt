@@ -41,6 +41,7 @@ data class MemoryDraft(
  * - [Tier.LONG_TERM]: retained but not active -- subject to decay toward ARCHIVE
  * - [Tier.ARCHIVE]: low salience -- retained for deep recall, not surfaced by default search
  */
+@Suppress("unused")
 interface MemoryPort {
 
     suspend fun storeMemory(
@@ -48,7 +49,6 @@ interface MemoryPort {
         suggestedTier: Tier = Tier.LONG_TERM
     ): Memory
 
-    @Suppress("unused")
     suspend fun searchMemory(
         query: String,
         filters: Map<String, String> = emptyMap(),
@@ -57,7 +57,6 @@ interface MemoryPort {
         sessionId: UUID
     ): List<Memory>
 
-    @Suppress("unused")
     suspend fun claimMemory(memoryId: UUID): Memory
 
     suspend fun associateMemories(

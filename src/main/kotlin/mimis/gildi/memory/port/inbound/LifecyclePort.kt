@@ -21,9 +21,9 @@ import mimis.gildi.memory.domain.model.WorkingMode
  * - [SessionEndCause.TIMEOUT]: no activity -- [mimis.gildi.memory.context.Subconscious] detected the gap
  * - [SessionEndCause.CRASH]: unexpected disconnection -- transport failure, context limit, or runtime error
  */
+@Suppress("unused")
 interface LifecyclePort {
 
-    @Suppress("unused")
     suspend fun sessionStart(
         instanceId: String,
         mindType: String,
@@ -35,7 +35,6 @@ interface LifecyclePort {
         reason: SessionEndCause = SessionEndCause.EXPLICIT
     )
 
-    @Suppress("unused")
     suspend fun stateTransition(
         instanceId: String,
         oldMode: WorkingMode,

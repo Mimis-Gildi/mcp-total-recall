@@ -22,6 +22,7 @@ import java.util.UUID
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/architecture/0008-sqlite-primary/">ADR-0008: SQLite Primary</a>
  */
+@Suppress("unused")
 interface BackingServicePort {
 
     suspend fun save(memory: Memory)
