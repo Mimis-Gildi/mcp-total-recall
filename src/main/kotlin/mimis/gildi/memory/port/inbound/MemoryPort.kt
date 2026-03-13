@@ -31,6 +31,13 @@ data class MemoryDraft(
  *
  * Conscience-universal: the contract is the same whether the connected
  * mind is Claude, a human with a UI, or any future conscious system.
+ *
+ * Memory tiers (used by [storeMemory] and [reclassifyMemory]):
+ *
+ * - [Tier.IDENTITY_CORE]: who I am -- resists all decay, never demoted automatically
+ * - [Tier.ACTIVE_CONTEXT]: currently relevant -- high salience, frequently accessed
+ * - [Tier.LONG_TERM]: retained but not active -- subject to decay toward ARCHIVE
+ * - [Tier.ARCHIVE]: low salience -- retained for deep recall, not surfaced by default search
  */
 interface MemoryPort {
 

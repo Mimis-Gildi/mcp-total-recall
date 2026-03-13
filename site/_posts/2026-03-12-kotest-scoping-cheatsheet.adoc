@@ -3,7 +3,7 @@ categories: [engineering]
 tags: [testing, kotest, scoping, fixtures, cheatsheet]
 excerpt: >
     Kotest scoping mechanics for stateful test fixtures.
-    Containers, leaves, isolation modes, and how TxChain works.
+    Containers, leaves, isolation modes, and how TransactionTestContext works.
 classes: wide
 comments: true
 hidden: false
@@ -142,7 +142,7 @@ Mutable state belongs *inside containers*, where execution is sequential.
 | Created once when the container is discovered.
   Shared by all leaves in that container.
   Safe because leaves execute sequentially within a container.
-  **This is where stateful fixtures like TxChain live.**
+  **This is where stateful fixtures like TransactionTestContext live.**
 
 | **Per-test fresh**
 | Declared inside a leaf body (`test`, `expect`, `it`)

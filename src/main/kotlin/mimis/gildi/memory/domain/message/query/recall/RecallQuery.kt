@@ -18,7 +18,7 @@ sealed interface RecallQuery : Query
  *
  * The fast path returns immediately;
  * deep association traversal continues in the background and may produce a
- * [mimis.gildi.memory.domain.message.notification.TotalRecallNotification] later.
+ * [mimis.gildi.memory.domain.message.notification.recall.TotalRecallNotification] later.
  *
  * @property tx chain of custody.
  * @property query free-text search -- semantics TBD (keyword, embedding, hybrid).
@@ -46,8 +46,15 @@ data class SearchQuery(
  * [Recall]. Introspective query -- the mind asks, "what do I know?"
  * Used for consolidation, self-assessment, and memory hygiene.
  *
+ * Reflection scopes:
+ *
+ * - [ReflectionScope.ALL]: no filter, reflect on everything
+ * - [ReflectionScope.STALE]: decaying salience, candidates for consolidation or archival
+ * - [ReflectionScope.RECENT]: recently stored or accessed, fresh context
+ * - [ReflectionScope.WEAK_ASSOCIATIONS]: low-strength links, candidates for strengthening or pruning
+ *
  * @property tx chain of custody.
- * @property scope what to reflect on -- ALL, RECENT, DECAYING, or CLAIMED.
+ * @property scope what subset of memories to reflect on. Defaults to [ReflectionScope.ALL].
  * @property timeSpanDays optional window -- null means all time.
  * @property maxCandidates an optional cap on candidates surfaced -- null means no limit.
  */

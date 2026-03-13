@@ -25,10 +25,16 @@ sealed interface OperatingModeEvent: Event {
  * [Cortex]. Working mode changed.
  * Feeds [Subconscious] break detection -- sustained TASK mode triggers [BreakNotification].
  *
+ * Working modes:
+ *
+ * - [WorkingMode.TASK]: focused execution -- sustained TASK triggers break detection
+ * - [WorkingMode.CONVERSATION]: dialogue with the mind's human -- normal interaction
+ * - [WorkingMode.IDLE]: no active interaction -- session alive but quiet
+ *
  * @property tx chain of custody.
  * @property instanceId which mind.
- * @property mode current working mode.
- * @property retiredMode previous working mode.
+ * @property mode current working mode after this transition.
+ * @property retiredMode previous working mode before this transition.
  */
 data class ModeChanged(
     // Message properties

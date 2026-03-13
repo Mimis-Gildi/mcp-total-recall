@@ -21,13 +21,13 @@ import io.kotest.core.spec.style.StringSpec
  *
  * Enums:
  *
- * - [mimis.gildi.memory.domain.model.Tier]: WORKING, SHORT_TERM, LONG_TERM, IDENTITY_CORE
+ * - [mimis.gildi.memory.domain.model.Tier]: IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE
  * - [mimis.gildi.memory.domain.model.AssociationType]: TEMPORAL, CAUSAL, THEMATIC, EMOTIONAL, PERSON
  * - [mimis.gildi.memory.domain.model.AssociationDirection]: CREATE, STRENGTHEN, WEAKEN
- * - [mimis.gildi.memory.domain.model.WorkingMode]: CONVERSATION, TASK, REFLECTION, IDLE
- * - [mimis.gildi.memory.domain.model.SessionEndCause]: NORMAL, TIMEOUT, ERROR, CONTEXT_LIMIT
- * - [mimis.gildi.memory.domain.model.MergeStrategy]: REPLACE, APPEND, WEIGHTED
- * - [mimis.gildi.memory.domain.model.ReflectionScope]: ALL, STALE, RECENT, UNCLAIMED
+ * - [mimis.gildi.memory.domain.model.WorkingMode]: TASK, CONVERSATION, IDLE
+ * - [mimis.gildi.memory.domain.model.SessionEndCause]: EXPLICIT, TIMEOUT, CRASH
+ * - [mimis.gildi.memory.domain.model.MergeStrategy]: COMBINE, KEEP_NEWEST, SUMMARIZE
+ * - [mimis.gildi.memory.domain.model.ReflectionScope]: ALL, STALE, RECENT, WEAK_ASSOCIATIONS
  */
 class ModelTest : StringSpec({
 

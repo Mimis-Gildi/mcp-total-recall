@@ -101,7 +101,7 @@ Domain object factories live in `mimis.gildi.memory.testing.Fixtures`:
 [source,kotlin]
 ----
 val m = aMemory(tier = Tier.IDENTITY_CORE, claimed = true)
-val tx = aTx(source = "Hippocampus")
+val tx = aTransactionContext(CONTEXT_COMPONENT_HIPPOCAMPUS)
 val s = aSalienceScore(score = 0.95, decayRate = 0.01)
 ----
 

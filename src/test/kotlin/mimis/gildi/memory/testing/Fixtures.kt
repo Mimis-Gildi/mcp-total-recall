@@ -119,12 +119,21 @@ fun aMemory(
 /**
  * Build an [Association] with sensible defaults. Override what you need.
  *
+ * Association types and purpose:
+ *
+ * - [AssociationType.TEMPORAL]: memories stored close in time, e.g., same session or conversation turn
+ * - [AssociationType.CAUSAL]: one memory triggered or led to another, e.g., a command producing an event
+ * - [AssociationType.THEMATIC]: shared topic or concept, e.g., two memories about the Sanctuary
+ * - [AssociationType.EMOTIONAL]: shared emotional context, e.g., both stored during distress or joy
+ * - [AssociationType.PERSON]: connected through a person, e.g., both memories involve the same mind
+ *
  * @param memoryId the target memory this association points to. Defaults to random.
  * @param type semantic category of the link. Defaults to [AssociationType.THEMATIC].
  * @param strength how strong the link is (0.0--1.0). Defaults to 0.5.
- * @param direction what operation to perform: [AssociationDirection.CREATE], STRENGTHEN, or WEAKEN. Defaults to CREATE.
+ * @param direction what operation to perform: [AssociationDirection.CREATE], [AssociationDirection.STRENGTHEN], or [AssociationDirection.WEAKEN]. Defaults to CREATE.
  * @param bidirectional whether the link applies in both directions. Defaults to true.
  */
+@Suppress("unused")
 fun anAssociation(
     memoryId: UUID = UUID.randomUUID(),
     type: AssociationType = AssociationType.THEMATIC,
@@ -147,6 +156,7 @@ fun anAssociation(
  * @param lastAccessed when the memory was last read -- decay is calculated relative to this. Defaults to now.
  * @param decayRate how fast the score drops per time unit. Defaults to 0.05.
  */
+@Suppress("unused")
 fun aSalienceScore(
     memoryId: UUID = UUID.randomUUID(),
     score: Double = 0.5,
