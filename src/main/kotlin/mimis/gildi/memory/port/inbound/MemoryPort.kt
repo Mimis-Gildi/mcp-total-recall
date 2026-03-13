@@ -3,6 +3,8 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+@file:Suppress("unused")
+
 package mimis.gildi.memory.port.inbound
 
 import mimis.gildi.memory.domain.model.Association
@@ -41,7 +43,6 @@ data class MemoryDraft(
  */
 interface MemoryPort {
 
-    @Suppress("unused")
     suspend fun storeMemory(
         memory: MemoryDraft,
         suggestedTier: Tier = Tier.LONG_TERM
@@ -59,7 +60,6 @@ interface MemoryPort {
     @Suppress("unused")
     suspend fun claimMemory(memoryId: UUID): Memory
 
-    @Suppress("unused")
     suspend fun associateMemories(
         memoryA: UUID,
         memoryB: UUID,
@@ -67,14 +67,12 @@ interface MemoryPort {
         strength: Double
     ): List<Association>
 
-    @Suppress("unused")
     suspend fun reclassifyMemory(
         memoryId: UUID,
         newTier: Tier,
         reason: String
     ): Memory
 
-    @Suppress("unused")
     suspend fun reflect(
         scope: ReflectionScope = ReflectionScope.ALL,
         timeSpanDays: Int? = null,

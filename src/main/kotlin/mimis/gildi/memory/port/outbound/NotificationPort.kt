@@ -11,9 +11,15 @@ import mimis.gildi.memory.domain.message.notification.Notification
  * Outbound port for mind-directed notifications. The adapter decides
  * delivery: MCP server notification for Claude, push notification
  * for a UI, etc.
+ *
+ * Called by:
+ *
+ * - [mimis.gildi.memory.context.Subconscious]: sends [mimis.gildi.memory.domain.message.notification.wellness.BreakNotification]
+ * - [mimis.gildi.memory.context.Cortex]: sends [mimis.gildi.memory.domain.message.notification.audit.SessionAuditPrompt]
+ *   and [mimis.gildi.memory.domain.message.notification.recall.TotalRecallNotification]
  */
+@Suppress("unused")
 interface NotificationPort {
 
-    @Suppress("unused")
     suspend fun send(notification: Notification)
 }

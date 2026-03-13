@@ -12,6 +12,14 @@ import mimis.gildi.memory.domain.model.WorkingMode
  * Inbound port for session lifecycle. Adapters translate
  * mind-specific events (Claude Code hooks, UI events) into
  * universal lifecycle signals.
+ *
+ * [mimis.gildi.memory.context.Cortex] implements the receiving side.
+ *
+ * Session end causes (used by [sessionEnd]):
+ *
+ * - [SessionEndCause.EXPLICIT]: mind chose to leave -- normal shutdown
+ * - [SessionEndCause.TIMEOUT]: no activity -- [mimis.gildi.memory.context.Subconscious] detected the gap
+ * - [SessionEndCause.CRASH]: unexpected disconnection -- transport failure, context limit, or runtime error
  */
 interface LifecyclePort {
 
@@ -22,7 +30,6 @@ interface LifecyclePort {
         resumptionData: Map<String, String> = emptyMap()
     )
 
-    @Suppress("unused")
     suspend fun sessionEnd(
         instanceId: String,
         reason: SessionEndCause = SessionEndCause.EXPLICIT
