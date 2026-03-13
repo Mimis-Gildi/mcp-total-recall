@@ -11,7 +11,8 @@
       <option name="taskNames">
         <list>
           <option value=":test" />
-          <option value="--tests 'mimis.gildi.memory.TotalRecallTest'" />
+          <option value="--tests" />
+          <option value="'mimis.gildi.memory.TotalRecallTest'" />
         </list>
       </option>
       <option name="vmOptions" />

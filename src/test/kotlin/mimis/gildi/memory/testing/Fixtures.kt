@@ -3,132 +3,85 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+
+/**
+ * Test fixture factories and shared constants.
+ *
+ * Every factory follows the `a<Thing>()` / `an<Thing>()` naming convention
+ * and returns a domain object with sensible defaults. Override only what your test cares about.
+ *
+ * ## Bounded context constants
+ *
+ * `CONTEXT_COMPONENT_*` constants name the bounded contexts that appear in
+ * [TransactionContext.sourceContext]. Tests use these instead of raw strings
+ * so that renames propagate through the compiler.
+ *
+ * ## Shared fixtures
+ *
+ * - [testServer] -- lazy [Server] instance for protocol-level tests (no backing services)
+ * - [rootTransaction] -- lazy global [TransactionContext] anchored to [CONTEXT_COMPONENT_MIND],
+ *   used as a default session baseline (e.g., [aMemory] falls back to its sessionId)
+ */
 package mimis.gildi.memory.testing
 
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import mimis.gildi.memory.createServer
 import mimis.gildi.memory.domain.message.TransactionContext
+import mimis.gildi.memory.domain.message.TransactionTestContext
 import mimis.gildi.memory.domain.model.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
+
+/** Default source for tests that don't care which context emitted the message. */
+const val CONTEXT_COMPONENT_DEFAULT = "Test"
+
+/** The mind itself -- entry point for all interactions. */
+const val CONTEXT_COMPONENT_MIND = "Mind"
+
+// Bounded context FQNs -- mirror the package structure in `mimis.gildi.memory.context.*`.
+const val CONTEXT_COMPONENT_CORTEX = "mimis.gildi.memory.context.Cortex"
+const val CONTEXT_COMPONENT_HIPPOCAMPUS = "mimis.gildi.memory.context.Hippocampus"
+const val CONTEXT_COMPONENT_SALIENCE = "mimis.gildi.memory.context.Salience"
+const val CONTEXT_COMPONENT_SYNAPSE = "mimis.gildi.memory.context.Synapse"
+const val CONTEXT_COMPONENT_RECALL = "mimis.gildi.memory.context.Recall"
+const val CONTEXT_COMPONENT_SUBCONSCIOUS = "mimis.gildi.memory.context.Subconscious"
+
+/** Outbound notification port -- terminal node in causation chains. */
+const val CONTEXT_COMPONENT_NOTIFICATION = "NotificationPort"
+
+/** Top-level search entry point (Total Recall's primary use case). */
+const val CONTEXT_COMPONENT_SEARCH = "Total Recall Search"
 
 /** Shared immutable server for non-mutating tests. Created once per test run. */
 val testServer: Server by lazy { createServer() }
 
-/*
- * Domain object factories. Sensible defaults override what you need.
- *
- *   val tx = aTx(source = "Hippocampus", causationId = rootCause)
- *   val m = aMemory(tier = Tier.IDENTITY_CORE, claimed = true)
- *   val s = aSalienceScore(score = 0.95, decayRate = 0.01)
- *
- * Memoization is scoped, not global. Use TxChain to scope a conversation:
- *
- *   describe("Hippocampus events") {
- *       val chain = TxChain(source = "Hippocampus")
- *       it("stores") { MemoryStored(tx = chain.next(), ...) }
- *       it("accesses") { MemoryAccessed(tx = chain.next(), ...) }  // chained
- *   }
- *
- * Each TxChain owns its session, request, and causation chain.
- * Kotest scoping (describe/context blocks) is the natural boundary.
- *
- * For standalone transactions where you wire everything yourself, use aTx().
- * causationId has no default -- you must understand what caused this message:
- *
- *   - Root cause (nothing caused me): causationId = messageId, or use rootCauseTx()
- *   - Reaction (caused by a prior message): causationId = priorTx.messageId
- *   - Shape test (causation irrelevant): causationId = UUID.randomUUID()
- */
+/** Global chain anchor. Tests that need a default sessionId (e.g., [aMemory]) fall back here. */
+val rootTransaction: TransactionContext by lazy { aTransactionContext(CONTEXT_COMPONENT_MIND) }
+
 
 /**
  * Build a standalone [TransactionContext] with explicit wiring.
  *
+ * TransactionContext is the chain-of-custody envelope -- it identifies WHO sent the message
+ * and WHICH conversation it belongs to. Identity fields (messageId, causationId, timestamp)
+ * live on [mimis.gildi.memory.domain.message.Message], not here.
+ *
  * @param source which bounded context produced this message -- "Cortex", "Hippocampus", "Salience", etc.?
- * @param causationId the messageId of the message that caused this one. Required -- you must know the cause.
- *   Root cause: use your own messageId (or call [rootCauseTx]). Reaction: use the prior message's messageId.
- *   Shape test where causation is irrelevant: pass `UUID.randomUUID()`.
+ * @param instanceId which mind instance owns this chain -- defaults to random (standalone).
  * @param sessionId which conversation this belongs to -- defaults to random (standalone, not scoped).
  * @param requestId which user action triggered this -- defaults to random (standalone, not scoped).
- * @param messageId unique identity of THIS message -- always fresh, never reuse.
- * @param timestamp when this message was created.
  */
-//fun aTx(
-//    source: String = "Test",
-//    causationId: UUID,
-//    sessionId: UUID = UUID.randomUUID(),
-//    requestId: UUID = UUID.randomUUID(),
-//    messageId: UUID = UUID.randomUUID(),
-//    timestamp: Instant = Instant.now()
-//) = TransactionContext(
-//    sessionId = sessionId,
-//    requestId = requestId,
-////    messageId = messageId,
-////    causationId = causationId,
-////    timestamp = timestamp,
-////    sourceContext = source
-//)
-
-/**
- * Convenience for root-cause transactions -- `causationId` equals `messageId`.
- * "Nothing caused me. I'm the origin."
- */
-//fun rootCauseTx(
-//    source: String = "Test",
-//    sessionId: UUID = UUID.randomUUID(),
-//    requestId: UUID = UUID.randomUUID(),
-//    timestamp: Instant = Instant.now()
-//): TransactionContext {
-//    val messageId = UUID.randomUUID()
-//    return TransactionContext(
-//        sessionId = sessionId,
-//        requestId = requestId,
-//        messageId = messageId,
-//        causationId = messageId,
-//        timestamp = timestamp,
-//        sourceContext = source
-//    )
-//}
-
-/**
- * Scoped causation chain factory. Each instance IS a conversation.
- *
- * Owns its own [sessionId] and [requestId]. Each [next] call produces
- * a new message whose causationId points to the previous message's messageId.
- * The first call is a root cause (causationId == messageId).
- *
- * @property sessionId this conversation's session -- unique per chain instance.
- * @param source which bounded context this chain represents.
- */
-class TxChain(
-    val sessionId: UUID = UUID.randomUUID(),
-    private val source: String = "Test"
-) {
-    val requestId: UUID = UUID.randomUUID()
-    private var lastMessageId: UUID? = null
-
-    /**
-     * Produce the next [TransactionContext] in the chain.
-     * First call: root cause (causationId == messageId).
-     * Subsequent calls: causationId == previous message's messageId.
-     */
-//    fun next(
-//        timestamp: Instant = Instant.now()
-//    ): TransactionContext {
-//        val messageId = UUID.randomUUID()
-//        val causationId = lastMessageId ?: messageId
-//        lastMessageId = messageId
-
-//        return TransactionContext(
-//            sessionId = sessionId,
-//            requestId = requestId,
-//            messageId = messageId,
-//            causationId = causationId,
-//            timestamp = timestamp,
-//            sourceContext = source
-//        )
-//    }
-}
+fun aTransactionContext(
+    source: String = "Test",
+    instanceId: UUID = UUID.randomUUID(),
+    sessionId: UUID = UUID.randomUUID(),
+    requestId: UUID = UUID.randomUUID()
+): TransactionContext = TransactionTestContext(
+    instanceId = instanceId,
+    sessionId = sessionId,
+    requestId = requestId,
+    sourceContext = source
+)
 
 /**
  * Build a [Memory] with sensible defaults. Override what you need.
@@ -143,13 +96,14 @@ class TxChain(
  * @param claimed whether the mind has actively claimed this memory. Claimed memories resist decay.
  */
 fun aMemory(
+    transactionContext: TransactionContext? = null,
+    sessionId: UUID? = null,
     id: UUID = UUID.randomUUID(),
     content: String = "the tree grows",
     metadata: Map<String, String> = emptyMap(),
     tier: Tier = Tier.LONG_TERM,
     createdAt: Instant = Instant.now(),
     lastAccessed: Instant = createdAt,
-    sessionId: UUID = UUID.randomUUID(),
     claimed: Boolean = false
 ) = Memory(
     id = id,
@@ -158,7 +112,7 @@ fun aMemory(
     tier = tier,
     createdAt = createdAt,
     lastAccessed = lastAccessed,
-    sessionId = sessionId,
+    sessionId = sessionId ?: transactionContext?.sessionId ?: rootTransaction.sessionId,
     claimed = claimed
 )
 

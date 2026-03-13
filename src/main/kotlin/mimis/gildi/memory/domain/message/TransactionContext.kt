@@ -18,9 +18,17 @@ import java.util.UUID
  *
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/design/0011-transaction-context/">Design Spec: TransactionContext</a>
  */
-data class TransactionContext(
-    val instanceId: UUID,
-    val sessionId: UUID,
-    val requestId: UUID,
+interface TransactionContext {
+    val instanceId: UUID
+    val sessionId: UUID
+    val requestId: UUID
     val sourceContext: String
-)
+}
+
+/** Default production implementation. Immutable data class. */
+data class DefaultTransactionContext(
+    override val instanceId: UUID = UUID.randomUUID(),
+    override val sessionId: UUID = UUID.randomUUID(),
+    override val requestId: UUID = UUID.randomUUID(),
+    override val sourceContext: String
+) : TransactionContext

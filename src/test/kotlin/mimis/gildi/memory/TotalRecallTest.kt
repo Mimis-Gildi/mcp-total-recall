@@ -6,7 +6,8 @@
 package mimis.gildi.memory
 
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.datatest.withData
+import io.kotest.datatest.withContexts
+import io.kotest.datatest.withTests
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -20,26 +21,29 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import mimis.gildi.memory.testing.testServer
 
-/**
- * Idiomatic [Server] extension function until needed on implementation side.
- */
+/** Reach into a registered tool's JSON Schema to get its `required` field list. */
 private fun Server.toolRequiredFiles(toolName: String) = tools[toolName]?.tool?.inputSchema?.required
 
-/**
- * Idiomatic [Server] extension function until needed on implementation side.
- */
+/** Call a tool handler directly, bypassing transport. Returns the raw [io.modelcontextprotocol.kotlin.sdk.types.CallToolResult]. */
 private suspend fun Server.callTool(name: String, args: JsonObject) =
     tools.getValue(name).handler(CallToolRequest(CallToolRequestParams(name = name, arguments = args)))
 
-/**
- * Idiomatic extension functions as collateral damage from [Server.toolRequiredFiles].
- */
+/** Shorthand: `"store_memory".requiredFields()` reads like a sentence. */
 private fun String.requiredFields() = testServer.toolRequiredFiles(this)
 
 /**
- * FunSpec: lab notebook for MCP server registration and tool behavior.
+ * FunSpec: MCP server smoke tests -- registration, tool schemas, and teapot stubs.
  *
- * Direct, function-style tests. Each one probes a specific tool or server property.
+ * This spec validates the server contract visible to MCP clients:
+ * - All 9 tools are registered with correct names
+ * - Each tool's JSON Schema declares the right `required` fields
+ * - Teapot stubs respond correctly (happy path, missing args, extra args)
+ *
+ * Uses [testServer] -- a shared lazy [Server] instance from `mimis.gildi.memory.testing.Fixtures`.
+ * No backing services, no persistence. Pure protocol-level verification.
+ *
+ * @see mimis.gildi.memory.createServer the factory under test
+ * @see mimis.gildi.memory.testing.testServer shared server instance
  */
 class TotalRecallTest : FunSpec({
 
@@ -71,11 +75,16 @@ class TotalRecallTest : FunSpec({
 
     context("tool input schemas") {
 
-        withData(
-            nameFn = { (name, fields) -> "$name requires $fields fields" },
+        withTests(
+            nameFn = { (name, fields) -> "$name requires $fields" },
             "store_memory" to listOf("content", "session_id"),
+            "search_memory" to listOf("query", "session_id"),
+            "claim_memory" to listOf("memory_id"),
             "session_start" to listOf("instance_id", "mind_type"),
+            "session_end" to listOf("instance_id"),
+            "state_transition" to listOf("instance_id", "old_mode", "new_mode"),
             "associate_memories" to listOf("memory_a", "memory_b", "type", "strength"),
+            "reclassify_memory" to listOf("memory_id", "new_tier", "reason"),
             "reflect" to null
         ) { (tool, fields) -> tool.requiredFields() shouldBe fields }
     }
@@ -84,7 +93,7 @@ class TotalRecallTest : FunSpec({
 
         context("happy path -- all required fields provided") {
 
-            withData(
+            withTests(
                 nameFn = { (tool, _) -> tool },
                 "store_memory" to buildJsonObject {
                     put("content", JsonPrimitive("the tree grows"))
@@ -141,7 +150,7 @@ class TotalRecallTest : FunSpec({
                 fun probeName() = "$tool missing $missingField"
             }
 
-            withData(
+            withTests(
                 nameFn = { it.probeName() },
                 OneMissingProbe("store_memory", "content"),
                 OneMissingProbe("search_memory", "query"),
@@ -188,7 +197,7 @@ class TotalRecallTest : FunSpec({
                 put("scope", JsonPrimitive("all"))
                 put("bogus_field", JsonPrimitive("should be ignored"))
             }.run {
-                withData(testServer.tools.keys) {
+                withContexts(testServer.tools.keys) {
                     with(testServer.callTool(it, this@run)) {
                         isError.shouldBeFalse()
                         content.first().toString() shouldContain "teapot"

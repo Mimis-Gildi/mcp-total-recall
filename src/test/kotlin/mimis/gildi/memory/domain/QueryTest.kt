@@ -33,6 +33,7 @@ class QueryTest : ShouldSpec({
 //            )
 //            query.shouldBeInstanceOf<RecallQuery>()
 //            query.shouldBeInstanceOf<Query>()
+//            query.shouldBeInstanceOf<Message>()
         }
 
         should("default to 10 max results") {

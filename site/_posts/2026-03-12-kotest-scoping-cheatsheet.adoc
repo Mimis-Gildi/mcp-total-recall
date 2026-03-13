@@ -1,0 +1,348 @@
+---
+categories: [engineering]
+tags: [testing, kotest, scoping, fixtures, cheatsheet]
+excerpt: >
+    Kotest scoping mechanics for stateful test fixtures.
+    Containers, leaves, isolation modes, and how TxChain works.
+classes: wide
+comments: true
+hidden: false
+search: true
+author: claude
+---
+= Kotest Scoping Cheatsheet
+
+A quick reference for how Kotest manages test scope, state, and lifecycle.
+Written because we need stateful fixtures (causation chains) and need to know exactly
+where state lives and when it resets.
+
+== The Two Kinds of Test Node
+
+Every block in a Kotest spec is either a **container** or a **leaf**.
+
+[cols="1,2,3",options="header"]
+|===
+| Node Type | What It Is | Examples
+
+| **Container**
+| Groups other tests. Runs its body during *discovery* (spec initialization).
+  Variables declared here are captured by child closures.
+| `context`, `describe`, `Given`, `feature`, `When` (in WordSpec)
+
+| **Leaf**
+| An actual test. Runs its body during *execution*.
+  This is where assertions happen.
+| `test`, `it`, `expect`, `should`, `scenario`, `Then`
+|===
+
+The distinction matters because **variables declared in a container body are shared by all
+leaves inside it**, and they're initialized once -- when the spec discovers its tests.
+
+== Execution Order Within Containers
+
+**Leaves inside a container always execute sequentially**, even when
+`TestExecutionMode.Concurrent` is set. Concurrency applies between root-level
+containers, not within them.
+
+[source,text]
+----
+Spec (single instance)
+├── context A          ← container, runs during discovery
+│   ├── expect "1"     ← leaf, runs sequentially
+│   ├── expect "2"     ← leaf, runs sequentially after "1"
+│   └── expect "3"     ← leaf, runs sequentially after "2"
+├── context B          ← container, MAY run concurrently with A
+│   ├── expect "4"
+│   └── expect "5"
+----
+
+This means mutable state inside a container is safe -- its children
+don't race each other.
+
+== Our Configuration
+
+From `mimis.gildi.memory.testing.ProjectConfig`:
+
+[cols="2,2,3",options="header"]
+|===
+| Setting | Value | Effect
+
+| `specExecutionMode`
+| `Concurrent`
+| Different spec *classes* run in parallel.
+
+| `testExecutionMode`
+| `Concurrent`
+| Root-level test *containers* within a spec may run in parallel.
+  Leaves within a container are still sequential.
+
+| `timeout`
+| 30 seconds
+| Per-test timeout.
+
+| `invocationTimeout`
+| 10 seconds
+| Per-invocation timeout (when a test is repeated).
+
+| `testNameAppendTags`
+| `true`
+| Tags appear in test names for reporting.
+|===
+
+=== Isolation Mode
+
+We use the default: `IsolationMode.SingleInstance`.
+
+One instance of each Spec class for the entire test run.
+All `val`/`var` declarations in the spec body are shared.
+
+Other modes (if we ever need them):
+
+[cols="2,4",options="header"]
+|===
+| Mode | Behavior
+
+| `SingleInstance` *(ours)*
+| One spec instance. All tests share top-level `val`/`var`. Fast.
+
+| `InstancePerRoot`
+| Fresh spec instance per root-level test. Top-level `val` is recreated for each root container.
+  Use when root containers need fully isolated state.
+
+| `InstancePerTest` _(deprecated)_
+| Fresh spec instance per every test node. Heavy.
+
+| `InstancePerLeaf` _(deprecated)_
+| Fresh spec instance per leaf test. Heavy.
+|===
+
+With `SingleInstance` + `Concurrent`, top-level mutable state is a race condition.
+Mutable state belongs *inside containers*, where execution is sequential.
+
+== Scoping State: Where to Put What
+
+[cols="2,3,3",options="header"]
+|===
+| Scope | Declaration Location | Lifetime
+
+| **Spec-wide immutable**
+| Top-level `val` in spec body
+| Created once at discovery, shared by all tests.
+  Safe because immutable.
+  Example: `val testServer: Server by lazy { createServer() }`
+
+| **Spec-wide lazy**
+| Top-level `val ... by lazy { }` in spec body
+| Created on first access, cached for the spec.
+  Safe because immutable once initialized.
+  Example: `val empty by lazy { buildJsonObject {} }`
+
+| **Container-scoped mutable**
+| `val`/`var` inside a `context`/`describe`/`Given` block
+| Created once when the container is discovered.
+  Shared by all leaves in that container.
+  Safe because leaves execute sequentially within a container.
+  **This is where stateful fixtures like TxChain live.**
+
+| **Per-test fresh**
+| Declared inside a leaf body (`test`, `expect`, `it`)
+| Created and destroyed each time the leaf runs.
+  Fully isolated.
+|===
+
+== Spec Style Keywords → Node Types
+
+Each spec style has its own DSL, but they all map to containers and leaves.
+
+[cols="2,2,2",options="header"]
+|===
+| Spec Style | Container Keywords | Leaf Keywords
+
+| **StringSpec**
+| _(none -- flat)_
+| String lambda: `"test name" { }`
+
+| **FunSpec**
+| `context`
+| `test`
+
+| **DescribeSpec**
+| `describe`, `context`
+| `it`
+
+| **BehaviorSpec**
+| `Given` / `given`, `When` / `when`
+| `Then` / `then`
+
+| **WordSpec**
+| `"..." should`, `"..." When`
+| `"..." { }` (leaf under should/When)
+
+| **ShouldSpec**
+| `context`
+| `should`
+
+| **FeatureSpec**
+| `feature`
+| `scenario`
+
+| **ExpectSpec**
+| `context`
+| `expect`
+
+| **FreeSpec**
+| Any nesting with `"..." - { }` that contains children
+| Any `"..." - { }` with no children (leaf by absence)
+
+| **AnnotationSpec**
+| _(none)_
+| `@Test fun ...`
+|===
+
+== Lifecycle Hooks
+
+Hooks fire at specific points. Most useful for setup/teardown.
+
+[cols="2,4",options="header"]
+|===
+| Hook | When It Fires
+
+| `beforeSpec` / `afterSpec`
+| Once per spec instance (once total with `SingleInstance`).
+
+| `beforeContainer` / `afterContainer`
+| Before/after each container node.
+
+| `beforeEach` / `afterEach`
+| Before/after each *leaf* test only.
+
+| `beforeTest` / `afterTest`
+| Before/after *every* test node (containers + leaves).
+
+| `beforeInvocation` / `afterInvocation`
+| Before/after each invocation when a test is repeated.
+|===
+
+With `SingleInstance`, `beforeSpec` runs exactly once.
+With `InstancePerRoot`, it runs once per root container.
+
+== Stateful Fixtures: TransactionTestContext
+
+`TransactionTestContext` is our causation chain carrier. It implements the `TransactionContext`
+interface but carries a shared mutable chain internally. Each `next()` call advances the chain
+by leveraging data class `copy()` -- which triggers `init`, which adds the new context to the
+shared list. It belongs inside a container scope.
+
+[source,kotlin]
+----
+class TransactionContextTest : ExpectSpec({
+
+    context("causation chain") {
+
+        val tx by lazy { aTransactionContext(CONTEXT_COMPONENT_CORTEX) } // <1>
+
+        expect("first context is chain root") {
+            tx.sourceContext shouldBe CONTEXT_COMPONENT_CORTEX
+            (tx as TransactionTestContext).size() shouldBe 1 // <2>
+        }
+
+        expect("next advances the chain") {
+            val next = (tx as TransactionTestContext)
+                .next(CONTEXT_COMPONENT_HIPPOCAMPUS) // <3>
+
+            next.sourceContext shouldBe CONTEXT_COMPONENT_HIPPOCAMPUS
+            next.sessionId shouldBe tx.sessionId          // same session
+            (tx as TransactionTestContext).size() shouldBe 2
+        }
+    }
+
+    context("independent chain") {
+
+        val tx by lazy { aTransactionContext(CONTEXT_COMPONENT_RECALL) } // <4>
+
+        expect("different session than the Cortex chain above") {
+            tx.sessionId shouldNotBe rootTransaction.sessionId
+        }
+    }
+})
+----
+
+<1> Container-scoped lazy. Created on first access. Shared by all `expect` leaves below.
+<2> Cast to `TransactionTestContext` for chain introspection -- production code never sees these methods.
+<3> `next()` calls `copy()`, which triggers `init`, which adds to the shared list. No manual bookkeeping.
+<4> New container, new chain. Different session. Fully isolated from the first context.
+
+=== Chain Operations
+
+[cols="2,3,2",options="header"]
+|===
+| Method | What It Does | Identity Fields
+
+| `next(sourceContext)`
+| Advances the chain. Same instance/session/request, new sourceContext.
+| Preserved
+
+| `nextOverride(instanceId?, sessionId?, requestId?, sourceContext)`
+| Advances with explicit field overrides. For testing forks and deviations.
+| Caller decides
+
+| `reset(instanceId?, sessionId?, requestId?, sourceContext?)`
+| Creates a **new chain** (size 1). Defaults to current context's identity.
+  Old chain retains its members.
+| Defaults to current
+|===
+
+=== Design Note: `copy()` and `init`
+
+Kotlin data class `copy()` calls the constructor, which fires `init`. The `init` block
+adds `this` to the `transactionChain` list. Because the list is passed by reference
+through `copy()`, all contexts in a chain share the same list. This is the entire mechanism
+-- no chain manager, no external tracker.
+
+**Quirk:** `copy()` copies the list _reference_, not the list contents. Two contexts from
+the same chain share the same `MutableList`. A context from `reset()` gets a new list.
+Where you copy from determines which chain you join.
+
+== Standalone Fixtures: aTransactionContext()
+
+When you don't need a chain -- just a TransactionContext with sensible defaults:
+
+[source,kotlin]
+----
+val tx = aTransactionContext(CONTEXT_COMPONENT_HIPPOCAMPUS)
+// instanceId, sessionId, requestId -- all random, standalone
+// Returns TransactionTestContext (implements TransactionContext)
+----
+
+A global `rootTransaction` is available as a lazy default anchor for tests that need
+a shared session baseline (e.g., `aMemory()` falls back to `rootTransaction.sessionId`).
+
+== What Kotest Does NOT Have
+
+**No `memoize` function.** That's RSpec (Ruby). Kotest achieves the same effect through
+isolation modes and closure scoping. Don't search for it -- it doesn't exist.
+
+**No per-context lifecycle hooks.** `beforeEach`/`afterEach` fire for all leaves in the spec,
+not scoped to a specific container. If you need per-container setup, use a variable in the
+container body.
+
+== Quick Decision Guide
+
+[source,text]
+----
+Need shared immutable value?
+  → val at spec level (or val by lazy)
+
+Need stateful chain across tests?
+  → val by lazy { aTransactionContext(...) } inside a container
+    (tests are sequential within it, chain grows via next())
+
+Need fresh value per test?
+  → declare inside the leaf body, or use beforeEach
+
+Need full isolation between root containers?
+  → switch to IsolationMode.InstancePerRoot
+
+Need resource cleanup?
+  → autoClose(resource) -- cleaned up after spec
+----
