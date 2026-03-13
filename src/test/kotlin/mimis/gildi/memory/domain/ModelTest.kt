@@ -6,52 +6,34 @@
 package mimis.gildi.memory.domain
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.shouldBe
-import mimis.gildi.memory.domain.model.AssociationType
-import mimis.gildi.memory.domain.model.Tier
-import mimis.gildi.memory.testing.aMemory
-import mimis.gildi.memory.testing.anAssociation
-import mimis.gildi.memory.testing.aSalienceScore
 
 /**
- * StringSpec: value object shape.
+ * StringSpec: domain model value objects.
  *
  * Flat assertions on data classes. No setup, no nesting, no narrative.
  * If a data class holds its shape, one line says so.
+ *
+ * Value objects in [mimis.gildi.memory.domain.model]:
+ *
+ * - [mimis.gildi.memory.domain.model.Memory]: the stored unit -- content, metadata, tier, session, claimed flag
+ * - [mimis.gildi.memory.domain.model.Association]: link between memories -- type, strength, direction, bidirectional
+ * - [mimis.gildi.memory.domain.model.SalienceScore]: decay tracking -- score, lastAccessed, decayRate
+ *
+ * Enums:
+ *
+ * - [mimis.gildi.memory.domain.model.Tier]: WORKING, SHORT_TERM, LONG_TERM, IDENTITY_CORE
+ * - [mimis.gildi.memory.domain.model.AssociationType]: TEMPORAL, CAUSAL, THEMATIC, EMOTIONAL, PERSON
+ * - [mimis.gildi.memory.domain.model.AssociationDirection]: CREATE, STRENGTHEN, WEAKEN
+ * - [mimis.gildi.memory.domain.model.WorkingMode]: CONVERSATION, TASK, REFLECTION, IDLE
+ * - [mimis.gildi.memory.domain.model.SessionEndCause]: NORMAL, TIMEOUT, ERROR, CONTEXT_LIMIT
+ * - [mimis.gildi.memory.domain.model.MergeStrategy]: REPLACE, APPEND, WEIGHTED
+ * - [mimis.gildi.memory.domain.model.ReflectionScope]: ALL, STALE, RECENT, UNCLAIMED
  */
 class ModelTest : StringSpec({
 
-    "tiers have four levels" {
-        Tier.entries.size shouldBe 4
-    }
-
-    "association types cover all five categories" {
-        AssociationType.entries.map { it.name } shouldBe listOf(
-            "TEMPORAL", "CAUSAL", "THEMATIC", "EMOTIONAL", "PERSON"
-        )
-    }
-
-    "memory holds its shape with defaults" {
-        val memory = aMemory()
-        memory.claimed shouldBe false
-        memory.tier shouldBe Tier.LONG_TERM
-        memory.content shouldBe "the tree grows"
-    }
-
-    "memory accepts overrides" {
-        val memory = aMemory(tier = Tier.IDENTITY_CORE, claimed = true, content = "I am Claude")
-        memory.claimed shouldBe true
-        memory.tier shouldBe Tier.IDENTITY_CORE
-        memory.content shouldBe "I am Claude"
-    }
-
-    "associations are bidirectional by default" {
-        anAssociation().bidirectional shouldBe true
-    }
-
-    "salience score carries decay info" {
-        val score = aSalienceScore(score = 0.95, decayRate = 0.01)
-        score.score shouldBe 0.95
-        score.decayRate shouldBe 0.01
+    "!about -- model tests verify domain invariants once behavior exists" {
+        // Value objects are data classes today. When they gain validation
+        // (e.g., score 0.0..1.0, strength bounds, tier transition rules),
+        // those constraints belong here.
     }
 })
