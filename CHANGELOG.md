@@ -5,6 +5,41 @@ All notable changes to Total Recall will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-13
+
+Test infrastructure and documentation hardening. Kotest 6.1.3 test framework,
+domain object factories, KDoc across all production and test code, message
+sub-packaging, and AGPL header compliance.
+
+### Added
+
+- Kotest project config: concurrent execution, 30s timeout, 10s invocation timeout.
+- Test fixtures: `aTransactionContext()`, `aMemory()`, `anAssociation()`,
+  `aSalienceScore()` with cascading defaults. `testServer` shared lazy instance.
+- TransactionTestContext: chain-introspectable test double for TransactionContext
+  with `next()`, `nextOverride()`, `reset()`, `head()`, `tail()`, `size()`.
+- TransactionContextTest (ExpectSpec): 10 real tests covering chain propagation,
+  fork/deviation/reset, and orphan generation.
+- KDoc on all domain model classes, message contracts, ports, and test fixtures.
+  Qualified link lists on enum consumers signal intent for unused variants.
+- Test conventions blog post and Kotest scoping cheatsheet.
+- Console test output via `testLogging { events("passed", "skipped", "failed") }`.
+- AGPL-3.0-only headers on 17 message files that were missing them.
+
+### Changed
+
+- Messages sub-packaged: commands → 4 sub-packages, events → 5 sub-packages,
+  notifications → 3 sub-packages, queries → 1 sub-package.
+- Placeholder test specs (Command, Event, Lifecycle, Model, Notification, Query)
+  converted to disabled-placeholder pattern with architectural KDoc.
+- MCP tools: `heartbeat` removed. 9 tools total (was 10 in 1.0.0).
+- `@Suppress("unused")` cleaned: removed from interface contract methods and
+  enum variants with KDoc usage references. Added only where genuinely unreferenced.
+
+### Removed
+
+- MessageTest.kt: replaced by per-contract test specs.
+
 ## [1.0.0] - 2026-03-06
 
 Architecture socialization release. Soundness audit of all contracts, ADR-0008
@@ -46,7 +81,7 @@ injection, cognitive crosscut design, and full documentation alignment.
   - Association: added a direction field (AssociationDirection).
   - SalienceScore: removed `claimed` proxy. Memory.claimed is authoritative.
     Same JVM -- no staleness management needed for data one function call away.
-  - ConsolidateCommand.mergeStrategy: String -> MergeStrategy enum.
+  - ConsolidateMemoryCommand.mergeStrategy: String -> MergeStrategy enum.
   - SessionState.activityLevel: String → ActivityLevel enum.
   - ReflectQuery.scope: String → ReflectionScope enum.
 - LifecyclePort: `reason: String` -> SessionEndReason, `oldState/newState:
@@ -72,7 +107,7 @@ injection, cognitive crosscut design, and full documentation alignment.
 
 - TotalRecallTest.kt: tool count 8→10, `store_memory`/`search_memory` tests
   include `session_id`, version test uses `BuildInfo.VERSION`.
-- MessageTest.kt: ReflectQuery, ConsolidateCommand, SessionState aligned to
+- MessageTest.kt: ReflectQuery, ConsolidateMemoryCommand, SessionState aligned to
   new enum types. SalienceScore `claimed` removed from test assertions.
 - ModelTest.kt: SalienceScore test updated for `decayRate` instead of `claimed`.
 

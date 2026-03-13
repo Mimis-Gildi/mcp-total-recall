@@ -10,7 +10,7 @@ classes: wide
 
 == Summary
 
-All communication between bounded contexts uses typed messages implemented as Kotlin sealed hierarchies. Commands change state (one producer, one consumer).
+All communication between bounded contexts uses typed messages implemented as Kotlin type hierarchies (sealed interfaces with sealed sub-hierarchies). Commands change state (one producer, one consumer).
 Queries request information (one producer, one consumer, must be answered). Events carry facts (one producer, many consumers).
 Notifications reach the connected mind. No context calls another's methods directly. No shared mutable state.
 
@@ -27,7 +27,7 @@ This works until it doesn't. Direct method calls create compile-time coupling --
 Call chains become hidden dependencies. Testing requires mocking entire context implementations.
 And the interactions between contexts are invisible -- buried in method signatures instead of named and documented.
 
-Messages make interactions explicit. A `StoreCommand` is a thing you can see, name, log, test, and reason about.
+Messages make interactions explicit. A `StoreMemoryCommand` is a thing you can see, name, log, test, and reason about.
 A method call `store(content, tier, metadata)` is the same operation hidden inside a call stack.
 When something goes wrong, the message is traceable. The method call requires a debugger.
 
@@ -54,8 +54,8 @@ Notifications flow outward through the Notification Port. The mind can act on th
 The separation matters. Commands and Queries flow inward (toward the domain) -- Commands change state, Queries read it. This is CQRS at the message level.
 Events flow between contexts. Notifications flow outward (toward the mind). Each direction has different semantics and different failure modes.
 
-All four are implemented as Kotlin `sealed interface` hierarchies. Each variant is a data class with a typed payload.
-The compiler guarantees exhaustive matching.
+Command and Event are implemented as Kotlin `sealed interface` hierarchies. Query is a regular `interface` with sealed sub-hierarchies (currently `RecallQuery`). Notification is a regular `interface` with three sealed sub-hierarchies (`WellnessNotification`, `AuditNotification`, `RecallNotification`). Each variant is a data class with a typed payload.
+The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
 == Reference-Level Explanation
 
@@ -65,24 +65,37 @@ The compiler guarantees exhaustive matching.
 [source,kotlin,opts=novalidate]
 ----
 sealed interface Command
-data class StoreCommand(...) : Command
-data class ClaimCommand(...) : Command
-// ... 7 total variants
+sealed interface MemoryCommand : Command
+data class StoreMemoryCommand(...) : MemoryCommand
+data class ClaimMemoryCommand(...) : MemoryCommand
+data class ReclassifyMemoryCommand(...) : MemoryCommand
+data class ConsolidateMemoryCommand(...) : MemoryCommand
+sealed interface AssociationCommand : Command
+data class AssociateCommand(...) : AssociationCommand
+sealed interface AttentionCommand : Command
+data class DecaySweep(...) : AttentionCommand
+sealed interface LifecycleCommand : Command
+data class ShutdownCommand(...) : LifecycleCommand
+// 7 total variants across 4 sub-hierarchies
 
-sealed interface Query
-data class SearchQuery(...) : Query
-data class ReflectQuery(...) : Query
+interface Query : Message
+sealed interface RecallQuery : Query
+data class SearchQuery(...) : RecallQuery
+data class ReflectQuery(...) : RecallQuery
 
 sealed interface Event
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
-// ... 16 total variants
+// ... 17 total variants
 
-sealed interface Notification
-data class BreakNotification(...) : Notification
-data class SessionAuditPrompt(...) : Notification
-data class TotalRecallNotification(...) : Notification
-// ... 3 total variants
+interface Notification : Message
+sealed interface WellnessNotification : Notification
+data class BreakNotification(...) : WellnessNotification
+sealed interface AuditNotification : Notification
+data class SessionAuditPrompt(...) : AuditNotification
+sealed interface RecallNotification : Notification
+data class TotalRecallNotification(...) : RecallNotification
+// ... 3 sub-hierarchies, 1 variant each
 ----
 
 Package: `mimis.gildi.memory.domain.message`.
@@ -107,7 +120,7 @@ This is appropriate for plugin systems. It is wrong for a domain where every mes
 * May be accepted, rejected, or ignored.
 * Produces events on success.
 
-Example flow: `StoreCommand` (Cortex -> Hippocampus) produces `MemoryStored` (consumed by Salience and Synapse).
+Example flow: `StoreMemoryCommand` (Cortex -> Hippocampus) produces `MemoryStored` (consumed by Salience and Synapse).
 
 === Query Semantics
 
@@ -166,11 +179,11 @@ Notifications are the only message type that crosses the hexagonal boundary outw
 
 === Message Catalog Counts
 
-* *Commands:* 7 variants (StoreCommand, ClaimCommand, AssociateCommand, ReclassifyCommand, ConsolidateCommand, ShutdownCommand, DecaySweep)
-* *Queries:* 2 variants (SearchQuery, ReflectQuery)
-* *Events:* 16 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, TierPromoted, TierDemoted, SalienceScored, AssociationsFound,
-MemoryReclassified, TotalRecallAdvisory, SessionStart, SessionEnd, StateTransition, ModeChanged, SessionState)
-* *Notifications:* 3 variants (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
+* *Commands:* 7 variants across 4 sub-hierarchies -- *MemoryCommand:* StoreMemoryCommand, ClaimMemoryCommand, ReclassifyMemoryCommand, ConsolidateMemoryCommand; *AssociationCommand:* AssociateCommand; *AttentionCommand:* DecaySweep; *LifecycleCommand:* ShutdownCommand
+* *Queries:* 1 sub-hierarchy (RecallQuery) with 2 variants (SearchQuery, ReflectQuery)
+* *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
+MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished, TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
+* *Notifications:* 3 sub-hierarchies (WellnessNotification, AuditNotification, RecallNotification) with 1 variant each (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.
 

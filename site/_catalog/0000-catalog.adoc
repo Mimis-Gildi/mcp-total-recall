@@ -160,7 +160,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Cortex
 | Per-instance working state. Entry point for all requests.
-| `LifecyclePort`, `TotalRecall.kt` (tool handlers), `WorkingMode.kt`, `SessionEndReason.kt`
+| `LifecyclePort`, `TotalRecall.kt` (tool handlers), `WorkingMode.kt`, `SessionEndCause.kt`
 | Stubs
 
 | Subconscious
@@ -196,7 +196,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 | `Notification.kt`
 |===
 
-NOTE: Event count 17 includes HeartbeatReceived (added in C-Audit-7). Notification count 3 includes TotalRecallNotification. All counts match code.
+NOTE: Notification count 3 includes TotalRecallNotification. All counts match code.
 
 == Ports to Code
 
@@ -211,8 +211,8 @@ NOTE: Event count 17 includes HeartbeatReceived (added in C-Audit-7). Notificati
 
 | `LifecyclePort`
 | Inbound
-| session_start, session_end, state_transition, heartbeat
-| `sessionStart`, `sessionEnd`, `stateTransition`, `heartbeat`
+| session_start, session_end, state_transition
+| `sessionStart`, `sessionEnd`, `stateTransition`
 
 | `BackingServicePort`
 | Outbound
@@ -239,13 +239,13 @@ Audit findings tracked in `INDEX.md`.
 === Resolved
 
 * *10 documentation mismatches* (D-Audit-1 through 10) -- all resolved. Port names aligned, event counts corrected, routing fixed, actor count fixed.
-* *8 of 9 code issues* (C-Audit-1 through 8) -- dead code removed, events documented, packages fixed, schemas aligned, enums created, Duration types, HeartbeatReceived added, SalienceScored wrapping.
-* *3 test gaps* (T-Audit-1 through 3) -- all resolved. Server tests expanded (10 tests), self-referential assertion fixed, full message coverage (17 tests).
+* *8 of 9 code issues* (C-Audit-1 through 8) -- dead code removed, events documented, packages fixed, schemas aligned, enums created, Duration types, AttentionScoreChanged wrapping.
+* *3 test gaps* (T-Audit-1 through 3) -- all resolved. Server tests expanded (10 tests), self-referential assertion fixed, full message coverage.
 
 === Open
 
 * *C-Audit-9* -- TotalRecall.kt refactoring pass. Deferred to rdd13r.
-* *F-Audit-6* -- MemoryRetrieved/SalienceScored/AssociationsFound identity crisis (events or response payloads?). Resolves with TransactionContext usage patterns.
+* *F-Audit-6* -- MemoryRetrieved/AttentionScoreChanged/AssociationsFound identity crisis (events or response payloads?). Resolves with TransactionContext usage patterns.
 
 == Design Documents
 

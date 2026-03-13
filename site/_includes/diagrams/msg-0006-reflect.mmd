@@ -65,7 +65,7 @@ sequenceDiagram
             activate CX
             CX->>HP: Command: Reclassify
             activate HP
-            Note left of HP: data class ReclassifyCommand
+            Note left of HP: data class ReclassifyMemoryCommand
             HP->>HP: Move memory, update metadata
             HP-->>CX: Command Response
             CX-->>M: reclassify_memory response

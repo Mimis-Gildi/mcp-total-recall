@@ -52,7 +52,7 @@ Every MCP tool call arrives at Cortex. Eight tools, eight entry points.
 | MCP Tool | Becomes | Routed To
 
 | store_memory
-| StoreCommand
+| StoreMemoryCommand
 | Hippocampus
 
 | search_memory
@@ -60,7 +60,7 @@ Every MCP tool call arrives at Cortex. Eight tools, eight entry points.
 | Recall
 
 | claim_memory
-| ClaimCommand
+| ClaimMemoryCommand
 | Hippocampus
 
 | associate_memories
@@ -68,7 +68,7 @@ Every MCP tool call arrives at Cortex. Eight tools, eight entry points.
 | Synapse
 
 | reclassify_memory
-| ReclassifyCommand
+| ReclassifyMemoryCommand
 | Hippocampus
 
 | reflect
@@ -76,11 +76,11 @@ Every MCP tool call arrives at Cortex. Eight tools, eight entry points.
 | Recall
 
 | session_start
-| SessionStart event
+| SessionStarted event
 | Subconscious
 
 | session_end
-| SessionEnd event
+| SessionEnded event
 | Subconscious
 |===
 
@@ -121,15 +121,12 @@ A session begins when a mind connects. It ends when the mind disconnects.
 | Event | What Happens
 
 | session_start
-| The mind identifies itself -- instance ID, mind type. Cortex broadcasts SessionStart to all contexts. Subconscious begins tracking session duration.
+| The mind identifies itself -- instance ID, mind type. Cortex broadcasts SessionStarted to all contexts. Subconscious begins tracking session duration.
 Cortex reads IDENTITY_CORE configuration memories from Hippocampus and distributes thresholds to Salience.
 
 | session_end
-| The mind disconnects, times out, or crashes. Cortex broadcasts SessionEnd. Subconscious halts background processing for that session.
+| The mind disconnects, times out, or crashes. Cortex broadcasts SessionEnded. Subconscious halts background processing for that session.
 If the reason is "crash," Subconscious may trigger consolidation of unsaved working context.
-
-| heartbeat
-| Periodic signal that the mind is still present. Resets the timeout counter. Not broadcast to other contexts.
 |===
 
 Between start and end, Cortex knows who is connected: the instance ID, the mind type, how long the session has been active.
@@ -168,7 +165,7 @@ Cortex touches every bounded context. It is the hub.
 | Context | Cortex's Role
 
 | Hippocampus
-| Sends StoreCommand, ClaimCommand, ReclassifyCommand. Receives confirmation and memory data.
+| Sends StoreMemoryCommand, ClaimMemoryCommand, ReclassifyMemoryCommand. Receives confirmation and memory data.
 
 | Salience
 | Passes tier thresholds from IDENTITY_CORE configuration memories.

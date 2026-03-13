@@ -2,7 +2,7 @@
 categories: [announcements]
 tags: [kotlin, domain-model, ports, mcp, milestone]
 excerpt: >
-    Issue #4 complete. Domain model, messages, ports, and 10 MCP tools -- all in Kotlin. The design and the code now agree.
+    Issue #4 complete. Domain model, messages, ports, and 9 MCP tools -- all in Kotlin. The design and the code now agree.
 classes: wide
 comments: true
 hidden: false
@@ -26,16 +26,16 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 * *SalienceScore* -- score, last access, decay rate, claimed flag.
 * *AssociationDirection* -- enum: `CREATE`, `STRENGTHEN`, `WEAKEN`.
 * *WorkingMode* -- enum: `TASK`, `CONVERSATION`, `IDLE`.
-* *SessionEndReason* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
+* *SessionEndCause* -- enum: `EXPLICIT`, `TIMEOUT`, `CRASH`.
 
-=== Domain Messages (4 sealed hierarchies)
+=== Domain Messages (4 type hierarchies)
 
 `mimis.gildi.memory.domain.message` -- every message from the catalog, now type-safe:
 
-* *Command* -- 7 sealed variants. `StoreCommand`, `ClaimCommand`, `AssociateCommand`, `ReclassifyCommand`, `ConsolidateCommand`, `ShutdownCommand`, `DecaySweep`.
-* *Query* -- 2 sealed variants. `SearchQuery`, `ReflectQuery`.
+* *Command* -- 7 sealed variants across 4 sub-hierarchies. *MemoryCommand:* `StoreMemoryCommand`, `ClaimMemoryCommand`, `ReclassifyMemoryCommand`, `ConsolidateMemoryCommand`. *AssociationCommand:* `AssociateCommand`. *AttentionCommand:* `DecaySweep`. *LifecycleCommand:* `ShutdownCommand`.
+* *Query* -- 1 sealed sub-hierarchy (`RecallQuery`) with 2 variants. `SearchQuery`, `ReflectQuery`.
 * *Event* -- 17 sealed variants. Every state change in the system is a named, typed event.
-* *Notification* -- 3 sealed variants. `BreakNotification`, `SessionAuditPrompt`, `TotalRecallAdvisory`.
+* *Notification* -- 3 sealed sub-hierarchies with 1 variant each. *WellnessNotification:* `BreakNotification`. *AuditNotification:* `SessionAuditPrompt`. *RecallNotification:* `TotalRecallNotification`.
 
 === Port Interfaces (5 interfaces)
 
@@ -50,12 +50,12 @@ Outbound (`mimis.gildi.memory.port.outbound`):
 * *NotificationPort* -- notify the connected mind
 * *RelayPort* -- inter-instance messaging (future, interface ready)
 
-=== MCP Server (10 tools)
+=== MCP Server (9 tools)
 
-The server runs on stdio and registers all 10 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
+The server runs on stdio and registers all 9 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
 The contract skeleton is complete; backing services are not yet wired.
 
-Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `state_transition`, `heartbeat`, `associate_memories`, `reclassify_memory`, `reflect`.
+Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `state_transition`, `associate_memories`, `reclassify_memory`, `reflect`.
 
 == What This Means
 

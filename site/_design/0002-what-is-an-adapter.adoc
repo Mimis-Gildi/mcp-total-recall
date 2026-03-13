@@ -97,7 +97,7 @@ Every one of those is a verb. Active Structure behavior. None of it belongs on t
 
 The Redis adapter is the cook on the storage side.
 
-Hippocampus finishes processing a `StoreCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, salience score. The domain is done. It walks away.
+Hippocampus finishes processing a `StoreMemoryCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, salience score. The domain is done. It walks away.
 
 The Redis adapter picks up the `Memory` object. It translates. It thinks in *storage language*: which Redis data structure? `HSET` for the memory fields.
 What key pattern? `memory:\{id\}`. What TTL? Tier-dependent. What serialization? JSON. It takes the port's object and turns it into Redis operations.

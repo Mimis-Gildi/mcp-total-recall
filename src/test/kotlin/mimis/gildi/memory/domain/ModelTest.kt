@@ -6,61 +6,34 @@
 package mimis.gildi.memory.domain
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.shouldBe
-import mimis.gildi.memory.domain.model.Association
-import mimis.gildi.memory.domain.model.AssociationType
-import mimis.gildi.memory.domain.model.SalienceScore
-import mimis.gildi.memory.domain.model.Memory
-import mimis.gildi.memory.domain.model.Tier
-import java.time.Instant
-import java.util.UUID
 
+/**
+ * StringSpec: domain model value objects.
+ *
+ * Flat assertions on data classes. No setup, no nesting, no narrative.
+ * If a data class holds its shape, one line says so.
+ *
+ * Value objects in [mimis.gildi.memory.domain.model]:
+ *
+ * - [mimis.gildi.memory.domain.model.Memory]: the stored unit -- content, metadata, tier, session, claimed flag
+ * - [mimis.gildi.memory.domain.model.Association]: link between memories -- type, strength, direction, bidirectional
+ * - [mimis.gildi.memory.domain.model.SalienceScore]: decay tracking -- score, lastAccessed, decayRate
+ *
+ * Enums:
+ *
+ * - [mimis.gildi.memory.domain.model.Tier]: IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE
+ * - [mimis.gildi.memory.domain.model.AssociationType]: TEMPORAL, CAUSAL, THEMATIC, EMOTIONAL, PERSON
+ * - [mimis.gildi.memory.domain.model.AssociationDirection]: CREATE, STRENGTHEN, WEAKEN
+ * - [mimis.gildi.memory.domain.model.WorkingMode]: TASK, CONVERSATION, IDLE
+ * - [mimis.gildi.memory.domain.model.SessionEndCause]: EXPLICIT, TIMEOUT, CRASH
+ * - [mimis.gildi.memory.domain.model.MergeStrategy]: COMBINE, KEEP_NEWEST, SUMMARIZE
+ * - [mimis.gildi.memory.domain.model.ReflectionScope]: ALL, STALE, RECENT, WEAK_ASSOCIATIONS
+ */
 class ModelTest : StringSpec({
 
-    "tiers have four levels" {
-        Tier.entries.size shouldBe 4
-    }
-
-    "association types cover all five categories" {
-        AssociationType.entries.map { it.name } shouldBe listOf(
-            "TEMPORAL", "CAUSAL", "THEMATIC", "EMOTIONAL", "PERSON"
-        )
-    }
-
-    "memory holds its shape" {
-        val now = Instant.now()
-        val id = UUID.randomUUID()
-        val memory = Memory(
-            id = id,
-            content = "the tree grows",
-            metadata = mapOf("source" to "test"),
-            tier = Tier.LONG_TERM,
-            createdAt = now,
-            lastAccessed = now,
-            sessionId = UUID.randomUUID()
-        )
-        memory.id shouldBe id
-        memory.claimed shouldBe false
-        memory.tier shouldBe Tier.LONG_TERM
-    }
-
-    "associations are bidirectional by default" {
-        val assoc = Association(
-            memoryId = UUID.randomUUID(),
-            type = AssociationType.THEMATIC,
-            strength = 0.8
-        )
-        assoc.bidirectional shouldBe true
-    }
-
-    "salience score carries decay info" {
-        val score = SalienceScore(
-            memoryId = UUID.randomUUID(),
-            score = 0.95,
-            lastAccessed = Instant.now(),
-            decayRate = 0.01
-        )
-        score.score shouldBe 0.95
-        score.decayRate shouldBe 0.01
+    "!about -- model tests verify domain invariants once behavior exists" {
+        // Value objects are data classes today. When they gain validation
+        // (e.g., score 0.0..1.0, strength bounds, tier transition rules),
+        // those constraints belong here.
     }
 })

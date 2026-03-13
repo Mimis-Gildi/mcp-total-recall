@@ -80,13 +80,14 @@ Defined as `Tier` enum with decay semantics per variant.
 
 === Commands Accepted
 
-* `StoreCommand` -- from Cortex.
-* `ClaimCommand` -- from Cortex.
-* `ReclassifyCommand` -- from Cortex. Mind-initiated tier change with reason.
-* `ConsolidateCommand` -- from Subconscious. Merge related memories.
-* `ShutdownCommand` -- from Subconscious. Begin graceful convergence.
-* `TierPromoted` -- from Salience. Score rose above promotion threshold.
-* `TierDemoted` -- from Salience. Score dropped below demotion threshold.
+* `StoreMemoryCommand` -- from Cortex.
+* `ClaimMemoryCommand` -- from Cortex.
+* `ReclassifyMemoryCommand` -- from Cortex. Mind-initiated tier change with reason.
+* `ConsolidateMemoryCommand` -- from Subconscious. Merge related memories.
+* `AttentionTierPromotionRequested` -- from Salience. Score rose above promotion threshold.
+* `AttentionTierDemotionRequested` -- from Salience. Score dropped below demotion threshold.
+
+NOTE: `ShutdownCommand` is a lifecycle command that targets all bounded contexts for graceful shutdown, not just Hippocampus. Hippocampus receives it as one of many contexts. See Subconscious below.
 
 '''
 
@@ -182,9 +183,9 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 === Events Produced
 
-* `SalienceScored` -- current score for a memory. Consumed by Recall for ranking.
-* `TierPromoted` -- memory promoted to higher tier. Consumed by Hippocampus.
-* `TierDemoted` -- memory demoted to lower tier. Consumed by Hippocampus.
+* `AttentionScoreChanged` -- current score for a memory. Consumed by Recall for ranking.
+* `AttentionTierPromotionRequested` -- memory promoted to higher tier. Consumed by Hippocampus.
+* `AttentionTierDemotionRequested` -- memory demoted to lower tier. Consumed by Hippocampus.
 
 '''
 
@@ -206,7 +207,7 @@ Every result set reflects what the mind would naturally recall first -- the vivi
 === Events Consumed
 
 * `MemoryRetrieved` -- from Hippocampus. Raw candidates matching a query.
-* `SalienceScored` -- from Salience. Scores for ranking candidates.
+* `AttentionScoreChanged` -- from Salience. Scores for ranking candidates.
 * `AssociationsFound` -- from Synapse. Related memories to include in results.
 
 === Queries Accepted
@@ -236,16 +237,16 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 
 === Events Consumed
 
-* `SessionStart` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
-* `SessionEnd` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
-* `StateTransition` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
+* `SessionStarted` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
+* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
+* `StateTransitioned` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
 
 === Commands Produced
 
-* `StoreCommand` -- to Hippocampus. Store a new memory.
-* `ClaimCommand` -- to Hippocampus. Actively reinforce a memory.
+* `StoreMemoryCommand` -- to Hippocampus. Store a new memory.
+* `ClaimMemoryCommand` -- to Hippocampus. Actively reinforce a memory.
 * `AssociateCommand` -- to Synapse. Create, strengthen, or weaken an association. Mind's semantic judgment.
-* `ReclassifyCommand` -- to Hippocampus. Change a memory's tier or metadata by choice, not decay.
+* `ReclassifyMemoryCommand` -- to Hippocampus. Change a memory's tier or metadata by choice, not decay.
 
 === Queries Produced
 
@@ -255,7 +256,6 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 === Events Produced
 
 * `ModeChanged` -- to Subconscious. The mind's working mode changed (task mode, conversation mode, idle). Used by Subconscious for break timing.
-* `SessionState` -- to Subconscious. Current session duration, activity level, last interaction timestamp.
 
 Cortex is the entry point for all tool calls. The Memory Port and Lifecycle Port route incoming requests here, and Cortex translates them into domain commands.
 The port contracts are conscience-universal -- the same operations work whether the connected mind is Claude, a human with a UI, or any other conscious system.
@@ -294,25 +294,24 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 | `BreakNotification` through Notification Port
 
 | *Session audit*
-| Before session end (triggered by `SessionEnd`)
+| Before session end (triggered by `SessionEnded`)
 | `SessionAuditPrompt` through Notification Port
 
 | *Consolidation*
 | Low-activity periods
-| `ConsolidateCommand` to Hippocampus
+| `ConsolidateMemoryCommand` to Hippocampus
 |===
 
 === Events Consumed
 
 * `ModeChanged` -- from Cortex. Resets break timer. If mind shifts from task mode to conversation, the break clock resets.
-* `SessionState` -- from Cortex. Current session duration, activity level. Feeds break check logic.
-* `SessionEnd` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
+* `SessionEnded` -- from Cortex (via Lifecycle Port). Triggers session audit timer immediately.
 
 === Commands Produced
 
 * `DecaySweep` -- to Salience. Trigger batch decay calculations.
-* `ConsolidateCommand` -- to Hippocampus. Merge related memories.
-* `ShutdownCommand` -- to Hippocampus. Begin graceful convergence.
+* `ConsolidateMemoryCommand` -- to Hippocampus. Merge related memories.
+* `ShutdownCommand` -- to all bounded contexts. Begin graceful convergence. Each context handles its own shutdown responsibilities (Hippocampus flushes to cold storage, Salience persists scores, Synapse persists associations).
 
 === Notifications Produced
 

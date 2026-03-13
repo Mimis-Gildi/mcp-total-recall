@@ -90,7 +90,7 @@ That call hits the *MemoryPort* -- our inbound counter.
 On the outside (the dining room), the MCP adapter speaks *tool language*: JSON arguments, tool names, session IDs. The adapter is the waitress.
 It takes the request, formats it into what the counter expects, and slides it across.
 
-On the inside (the kitchen), the domain speaks *memory language*: `StoreCommand`, `Tier.ACTIVE_CONTEXT`, salience scoring, association triggers. The domain is the cook.
+On the inside (the kitchen), the domain speaks *memory language*: `StoreMemoryCommand`, `Tier.ACTIVE_CONTEXT`, salience scoring, association triggers. The domain is the cook.
 It reads the command and starts working: persist the memory, calculate an initial salience score, check for related memories to associate.
 
 The MemoryPort defines the shape of what crosses -- the order slip:
@@ -116,7 +116,7 @@ A country's border booth is such a port, and it defines a contract on the "ID" s
 
 The outbound direction works the same way.
 
-Hippocampus (the domain) finishes processing a `StoreCommand`. The memory needs to be persisted.
+Hippocampus (the domain) finishes processing a `StoreMemoryCommand`. The memory needs to be persisted.
 The domain speaks *memory language*: a `Memory` object with tier, content, metadata, salience score.
 
 Hippocampus slides this across the *BackingServicePort* -- our outbound counter. It puts the `Memory` object on the counter and is done.

@@ -90,13 +90,13 @@ When a bounded context receives a message and produces a new one, the new messag
 | Cortex
 | B
 | A
-| Cortex translates the MCP call into StoreCommand.
+| Cortex translates the MCP call into StoreMemoryCommand.
 
 | 3
 | Hippocampus
 | C
 | B
-| Hippocampus processes StoreCommand, persists the memory, emits MemoryStoredEvent.
+| Hippocampus processes StoreMemoryCommand, persists the memory, emits MemoryStoredEvent.
 
 | 4
 | Salience
@@ -121,7 +121,7 @@ No step counters. No sequence numbers. No global coordination. Each context only
 
 === Cross-Request Linking
 
-Some chains spawn new chains. A search (requestId=X) may trigger Total Recall (requestId=Y). These are separate requests with separate trees. The link between them is a domain field -- `originRequestId` on TotalRecallAdvisory and TotalRecallNotification -- not a TransactionContext field. The envelope ties messages within a request. Domain fields tie requests to each other.
+Some chains spawn new chains. A search (requestId=X) may trigger Total Recall (requestId=Y). These are separate requests with separate trees. The link between them is a domain field -- `originRequestId` on TotalRecallAdvisoryRequested and TotalRecallNotification -- not a TransactionContext field. The envelope ties messages within a request. Domain fields tie requests to each other.
 
 == Touch Recording
 
@@ -139,7 +139,7 @@ The trace output is a cross-cut adapter. It sits alongside logging and metrics -
 
 **F-Audit-5 (transaction context absent).** Every message now carries TransactionContext. The structural spine exists.
 
-**F-Audit-6 (MemoryRetrieved / SalienceScored / AssociationsFound identity crisis).** These are response payloads in a transactional chain, not broadcast domain events. The requestId ties each response to its originating query. They should be reclassified or removed from the Event hierarchy -- they are not facts about the world. They are answers to questions within a conversation. The TransactionContext makes this distinction explicit: a domain event (MemoryStoredEvent) fans out to many consumers. A response payload (MemoryRetrieved) returns to the one who asked, within the same requestId.
+**F-Audit-6 (MemoryRetrieved / AttentionScoreChanged / AssociationsFound identity crisis).** These are response payloads in a transactional chain, not broadcast domain events. The requestId ties each response to its originating query. They should be reclassified or removed from the Event hierarchy -- they are not facts about the world. They are answers to questions within a conversation. The TransactionContext makes this distinction explicit: a domain event (MemoryStoredEvent) fans out to many consumers. A response payload (MemoryRetrieved) returns to the one who asked, within the same requestId.
 
 **D-Audit-1 (partial).** Port contracts carry the envelope. The port defines the shape of what crosses -- and TransactionContext is part of that shape.
 

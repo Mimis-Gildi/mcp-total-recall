@@ -39,7 +39,7 @@ These conventions apply to all sequence diagrams on this page.
 
 External arrows (Mind ↔ Cortex) use `snake_case`: `store_memory_command`, `store_memory_response`.
 
-Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreCommand`, `MemoryStoreResponse`.
+Internal arrows (Cortex ↔ bounded contexts) use `CamelCase`: `MemoryStoreMemoryCommand`, `MemoryStoreResponse`.
 
 Cortex translates at the boundary. The ACL is visible in every diagram.
 
@@ -154,7 +154,7 @@ This operation requires the same mind. A different mind classifying your memorie
 
 === Total Recall
 
-The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryRequestedEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
 
 The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model). The core provides the port. The adapter decides how.
 
@@ -171,10 +171,10 @@ This is what makes the memory system active instead of passive. The mind does no
 
 === Where Claiming Intelligence Lives
 
-The Claim Memory flow above shows the protocol -- `ClaimCommand` through Cortex to Hippocampus. But the protocol is the easy part.
+The Claim Memory flow above shows the protocol -- `ClaimMemoryCommand` through Cortex to Hippocampus. But the protocol is the easy part.
 The hard part is deciding *what* to claim, *when*, and *why*.
 
-That intelligence does not live in the core. The core provides `ClaimCommand` through its ports.
+That intelligence does not live in the core. The core provides `ClaimMemoryCommand` through its ports.
 The actual claiming -- evaluating what matters, selecting it, reinforcing it -- happens in the adapter.
 For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("what do you refuse to lose?") and by the mind's own judgment during reflection.
 
@@ -189,8 +189,8 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 
 Every message in the system. Named, typed, with producer and consumer.
 
-All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants), `Query` (2 sealed variants),
-`Event` (17 sealed variants), `Notification` (3 sealed variants). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants across 4 sub-hierarchies: MemoryCommand, AssociationCommand, AttentionCommand, LifecycleCommand), `Query` (1 sub-hierarchy, RecallQuery, with 2 sealed variants),
+`Event` (17 sealed variants), `Notification` (3 sealed sub-hierarchies -- WellnessNotification, AuditNotification, RecallNotification -- with 1 variant each). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
 
@@ -200,24 +200,24 @@ Commands are requests to change state. They carry intent. A command has exactly 
 |===
 | Command | Producer | Consumer | Payload
 
-| `StoreCommand`
+| `StoreMemoryCommand`
 | Cortex
 | Hippocampus
 | content, metadata, suggested tier
 
-| `ClaimCommand`
+| `ClaimMemoryCommand`
 | Cortex
 | Hippocampus
 | memory ID
 
-| `ConsolidateCommand`
+| `ConsolidateMemoryCommand`
 | Subconscious
 | Hippocampus
 | memory IDs to merge, merge strategy
 
 | `ShutdownCommand`
 | Subconscious
-| Hippocampus
+| All bounded contexts
 | cold storage target, flush timeout
 
 | `AssociateCommand`
@@ -225,7 +225,7 @@ Commands are requests to change state. They carry intent. A command has exactly 
 | Synapse
 | memory IDs, association type, strength, direction (create/strengthen/weaken)
 
-| `ReclassifyCommand`
+| `ReclassifyMemoryCommand`
 | Cortex
 | Hippocampus
 | memory ID, new tier, new metadata, reason
@@ -238,7 +238,7 @@ Commands are requests to change state. They carry intent. A command has exactly 
 
 === Queries
 
-Queries are requests to read state without changing it. A query has exactly one target and must be answered. Defined as `sealed interface Query`.
+Queries are requests to read state without changing it. A query has exactly one target and must be answered. Defined as `interface Query : Message` with one sealed sub-hierarchy, `RecallQuery`.
 
 [cols="1,1,1,2",options="header"]
 |===
@@ -265,17 +265,17 @@ Defined as part of `sealed interface Event`.
 |===
 | Event | Producer | Consumer(s) | Payload
 
-| `SessionStart`
+| `SessionStarted`
 | Lifecycle Port
 | Cortex
 | instance ID, mind type, resumption data
 
-| `SessionEnd`
+| `SessionEnded`
 | Lifecycle Port
 | Cortex, Subconscious
-| instance ID, reason (explicit, timeout, crash)
+| instance ID, cause (explicit, timeout, crash)
 
-| `StateTransition`
+| `StateTransitioned`
 | Lifecycle Port
 | Cortex
 | instance ID, old state, new state, context
@@ -284,22 +284,12 @@ Defined as part of `sealed interface Event`.
 | Cortex
 | Subconscious
 | instance ID, old mode, new mode (task, conversation, idle)
-
-| `SessionState`
-| Cortex
-| Subconscious
-| instance ID, duration, activity level, last interaction
-
-| `HeartbeatReceived`
-| Lifecycle Port
-| Cortex
-| instance ID, timestamp
 |===
 
 === Notifications
 
 Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal.
-The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `sealed interface Notification`.
+The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `interface Notification : Message` with three sealed sub-hierarchies: `WellnessNotification`, `AuditNotification`, `RecallNotification`.
 
 [cols="1,1,1,3",options="header"]
 |===
@@ -354,17 +344,17 @@ Events are facts about something that happened. An event can have multiple consu
 | (internal record)
 | memory ID, old tier, new tier, reason
 
-| `TierPromoted`
+| `AttentionTierPromotionRequested`
 | Salience
 | Hippocampus
 | memory ID, new tier, score
 
-| `TierDemoted`
+| `AttentionTierDemotionRequested`
 | Salience
 | Hippocampus
 | memory ID, new tier, score
 
-| `SalienceScored`
+| `AttentionScoreChanged`
 | Salience
 | Recall
 | memory ID, score, last access, decay rate
@@ -379,17 +369,27 @@ Events are facts about something that happened. An event can have multiple consu
 | Synapse
 | memory ID, old tier, new tier, reason (mind-initiated)
 
-| `TotalRecallAdvisory`
+| `TotalRecallAdvisoryRequested`
 | Cortex
 | Subconscious (via Memory Event Store)
 | source memory IDs, origin request ID, timestamp
+
+| `TotalRecallAdvisoryPublished`
+| Subconscious
+| Recall
+| source memory IDs, origin request ID, traversal parameters
+
+| `TotalRecallAdvisoryTerminated`
+| Subconscious
+| (internal record)
+| origin request ID, reason (throttled, session gate, shutdown gate, cancelled)
 |===
 
 === Message Payload Details
 
 Every message carries a `TransactionContext` as its first field. The envelope fields are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the six envelope fields.
 
-==== StoreCommand
+==== StoreMemoryCommand
 
 ....
 content:        String       -- the memory content
@@ -406,7 +406,6 @@ query:          String       -- search text or pattern
 filters:        Map          -- tier, time range, association type, tags
 max_results:    Int          -- cap on returned memories
 include_associations: Boolean -- whether to activate association graph
-session_id:     String       -- which instance is searching
 ....
 
 ==== MemoryStored
@@ -419,7 +418,7 @@ tier:           Tier         -- assigned tier (may differ from suggested)
 timestamp:      Instant      -- when storage completed
 ....
 
-==== SalienceScored
+==== AttentionScoreChanged
 
 ....
 memory_id:      UUID         -- which memory
@@ -457,12 +456,8 @@ associations:   List<Association>
 | When error handling is designed
 
 | Consolidation details
-| How `ConsolidateCommand` merge strategies work
+| How `ConsolidateMemoryCommand` merge strategies work
 | When Subconscious behavior is specified
-
-| Heartbeat details
-| Keep-alive semantics, timeout thresholds
-| When transport adapters are designed
 
 | Additional notification types
 | Context drift warnings, memory capacity alerts

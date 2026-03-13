@@ -19,7 +19,7 @@ sequenceDiagram
     SL->>SL: Identify memories below tier thresholds
 
     loop Each memory below threshold
-        SL-)ES: publish TierDemotedEvent
+        SL-)ES: publish AttentionTierDemotionRequestedEvent
         Note right of SL: memory_id, new_tier, score
     end
 
@@ -28,8 +28,8 @@ sequenceDiagram
     deactivate SL
 
     activate ES
-    loop Each TierDemotedEvent
-        ES--)HP: consume TierDemotedEvent
+    loop Each AttentionTierDemotionRequestedEvent
+        ES--)HP: consume AttentionTierDemotionRequestedEvent
     end
     deactivate ES
 

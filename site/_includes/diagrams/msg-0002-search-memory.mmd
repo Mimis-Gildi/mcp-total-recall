@@ -66,7 +66,7 @@ sequenceDiagram
     opt Total Recall is Advisable
         M->>CX: total_recall_advisory
         activate CX
-        CX-)MES: publish TotalRecallAdvisoryEvent
+        CX-)MES: publish TotalRecallAdvisoryRequestedEvent
         deactivate CX
         Note right of CX: See MSG-0007
     end

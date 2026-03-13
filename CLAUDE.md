@@ -38,17 +38,17 @@ This is Generation 3, Take 2 of synthetic memory. Previous generations taught ha
 
 See `README.md` for full lineage and architectural rationale.
 
-## Current State (1.0.0)
+## Current State (1.1.0)
 
-Architecture complete, implementation next. MCP server runs on stdio with 10 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
+Architecture complete, implementation next. MCP server runs on stdio with 9 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
 
 What exists:
 - Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
 - MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
-- 10 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, state_transition, heartbeat, associate_memories, reclassify_memory, reflect
-- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndReason, MergeStrategy, ActivityLevel, ReflectionScope
+- 9 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, state_transition, associate_memories, reclassify_memory, reflect
+- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndCause, MergeStrategy, ReflectionScope
 - Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants) -- 29 total
-- TransactionContext on every message (sessionId, requestId, messageId, causationId, timestamp, sourceContext)
+- TransactionContext on every message (instanceId, sessionId, requestId, sourceContext) -- message identity (messageId, causationId, timestamp) lives on Message
 - Inbound ports: MemoryPort, LifecyclePort
 - Outbound ports: BackingServicePort, NotificationPort, RelayPort
 - 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
@@ -123,6 +123,7 @@ You MUST verify these before proceeding:
 
 ## Hard Rules
 
+- **Never act without socializing.** State what you intend to do. Wait for acknowledgment. Then do it. This includes creating issues, filing gaps, proposing architecture, and any action that affects project direction. A 30-second conversation prevents wrong work. You break this constantly -- stop.
 - **Never close issues.** Comment "ready for review" and wait.
 - **Never push to remote.** Commit locally only. Vadim pushes.
 - **Never assume work is correct** without human verification.

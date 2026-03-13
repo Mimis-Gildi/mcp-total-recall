@@ -20,8 +20,8 @@ graph LR
         NP(["NotificationPort"])
     end
 
-    CX -- "SessionStart,<br/>SessionEnd" --> SB
-    MES -- "TotalRecallAdvisory" --> SB
+    CX -- "SessionStarted,<br/>SessionEnded" --> SB
+    MES -- "TotalRecallAdvisoryRequested" --> SB
 
     SB -- "DecaySweep" --> SL
     SB -- "Consolidate,<br/>Shutdown" --> HP

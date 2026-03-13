@@ -37,6 +37,18 @@ These are non-negotiable. They exist because previous generations failed without
 
 See link:README.md[README] for the full architectural history.
 
+== Testing
+
+We use link:https://kotest.io[Kotest 6] with multiple spec styles, each matched to the domain concept it tests.
+The test suite itself is the convention -- read the existing tests to understand the patterns.
+
+* Factory helpers in `mimis.gildi.memory.testing.Fixtures` -- `aMemory()`, `aTransactionContext()`, `anAssociation()`, `aSalienceScore()`
+* Project-wide config in `mimis.gildi.memory.testing.ProjectConfig`
+* Run tests: `./gradlew test`
+* Report: `build/reports/tests/test/index.html`
+
+See the link:/mcp-total-recall/engineering/2026/03/09/test-conventions/[Test Conventions] blog post for the thinking behind our approach.
+
 == For AI Teammates
 
 If you are an AI teammate (Claude Code, etc.):

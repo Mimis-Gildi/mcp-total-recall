@@ -44,7 +44,7 @@ The ACL is what the *architect* sees when stepping back. It is an observation, n
 
 This matters for implementation. No class is called `AntiCorruptionLayer`. No package is named `acl`. There is a port interface. There are adapter implementations. When they are plugged together, the architect can point at the assembly and say "that is our ACL." But the developers building the adapters do not need to know or care about that label.
 
-The ACL is a convenience construct -- a name for a pattern that exists whether or not you name it. Every restaurant has one. No restaurant built one on purpose.
+The ACL is a convenience construct -- a name for a pattern that exists named or not. Every restaurant has one. No restaurant built one on purpose.
 
 == The Contract Lives in the Core
 
@@ -78,13 +78,13 @@ MemoryPort (counter -- Passive Structure)
       ▼
 Domain Handler (cook -- Active Structure)
   picks up: port object
-  translates: into StoreCommand, domain types, tier rules
+  translates: into StoreMemoryCommand, domain types, tier rules
   does the work: persist, score, associate
 ....
 
 Three steps. Two translations. One boundary. The mind's intent survived -- "store this memory" means "store this memory" on both sides. But the language changed from JSON tool calls to domain commands.
 
-The MCP Tool Handler does not know about `StoreCommand`. The domain handler does not know about JSON-RPC. They both know the shape of what crosses the MemoryPort -- because the core domain published that contract.
+The MCP Tool Handler does not know about `StoreMemoryCommand`. The domain handler does not know about JSON-RPC. They both know the shape of what crosses the MemoryPort -- because the core domain published that contract.
 
 == Total Recall: The Outbound ACL
 
@@ -92,7 +92,7 @@ The full path of persisting a memory:
 
 ....
 Hippocampus (cook -- Active Structure)
-  finishes: processing StoreCommand
+  finishes: processing StoreMemoryCommand
   translates: domain state into port object (Memory with tier, content, metadata, score)
   places on counter
       │

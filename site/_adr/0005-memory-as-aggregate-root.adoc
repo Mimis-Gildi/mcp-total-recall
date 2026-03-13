@@ -10,7 +10,7 @@ classes: wide
 
 == Summary
 
-Hippocampus is the aggregate root for all memory operations. Every write -- store, claim, reclassify, consolidate, shutdown flush -- goes through it.
+Hippocampus is the aggregate root for all memory operations. Every write -- store, claim, reclassify, consolidate -- goes through it. Shutdown is now a lifecycle command that targets all bounded contexts; Hippocampus handles its memory flush portion.
 No other bounded context writes memories directly. This gives the system one place to enforce invariants, one place to emit events, and one place to audit what happened.
 
 == Governing Dynamic
@@ -34,14 +34,14 @@ The aggregate root enforces invariants before committing and emits events after 
 
 Hippocampus is the gatekeeper.
 
-When a mind stores a memory, Cortex translates the request into a `StoreCommand` and sends it to Hippocampus.
-Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`. A
-ttention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
+When a mind stores a memory, Cortex translates the request into a `StoreMemoryCommand` and sends it to Hippocampus.
+Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`.
+Attention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
 
-When the Subconscious runs a consolidation pass, it sends `ConsolidateCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
+When the Subconscious runs a consolidation pass, it sends `ConsolidateMemoryCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
 The Subconscious doesn't touch storage directly.
 
-When Salience determines a memory should be demoted, it sends `TierDemoted` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
+When Salience determines a memory should be demoted, it sends `AttentionTierDemotionRequested` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
 Salience doesn't modify the memory record itself.
 
 The pattern is always the same: request goes to Hippocampus, Hippocampus validates and persists, events flow out. No exceptions.
@@ -52,12 +52,13 @@ The pattern is always the same: request goes to Hippocampus, Hippocampus validat
 
 Hippocampus accepts commands from multiple contexts:
 
-* `StoreCommand` -- from Cortex. Create a new memory.
-* `ClaimCommand` -- from Cortex. Mark a memory as actively claimed (resists decay).
-* `ReclassifyCommand` -- from Cortex. Change tier or metadata by the mind's choice.
-* `ConsolidateCommand` -- from Subconscious. Merge related memories.
-* `ShutdownCommand` -- from Subconscious. Begin graceful convergence to cold storage.
-* `TierPromoted` / `TierDemoted` -- from Salience. Move a memory between tiers based on score.
+* `StoreMemoryCommand` -- from Cortex. Create a new memory.
+* `ClaimMemoryCommand` -- from Cortex. Mark a memory as actively claimed (resists decay).
+* `ReclassifyMemoryCommand` -- from Cortex. Change tier or metadata by the mind's choice.
+* `ConsolidateMemoryCommand` -- from Subconscious. Merge related memories.
+* `AttentionTierPromotionRequested` / `AttentionTierDemotionRequested` -- from Salience. Move a memory between tiers based on score.
+
+NOTE: `ShutdownCommand` is now a lifecycle command (`LifecycleCommand`) that targets all bounded contexts for graceful shutdown, not just Hippocampus. Hippocampus handles the memory flush portion of shutdown.
 
 === Events Produced
 

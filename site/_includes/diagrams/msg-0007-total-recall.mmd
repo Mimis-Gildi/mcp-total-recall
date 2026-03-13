@@ -10,7 +10,7 @@ sequenceDiagram
     participant M as Mind
 
     critical OnInit
-        SB ->> MES: TotalRecallAdvisory Subscribe
+        SB ->> MES: TotalRecallAdvisoryRequested Subscribe
         SL ->> MES: Memory Event Subscribe
         NP ->> NES: Notification Subscribe
     end
@@ -18,7 +18,7 @@ sequenceDiagram
     Note over SB,M: All internal messages carry TransactionContext (Design F)
 
     Note over MES,SB: Trigger (from MSG-0002)
-    MES--)SB: consume TotalRecallAdvisoryEvent
+    MES--)SB: consume TotalRecallAdvisoryRequestedEvent
     activate SB
     Note right of SB: Evaluate: throttle,<br/>system state, shutdown?
 
