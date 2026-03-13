@@ -44,7 +44,7 @@ The ACL is what the *architect* sees when stepping back. It is an observation, n
 
 This matters for implementation. No class is called `AntiCorruptionLayer`. No package is named `acl`. There is a port interface. There are adapter implementations. When they are plugged together, the architect can point at the assembly and say "that is our ACL." But the developers building the adapters do not need to know or care about that label.
 
-The ACL is a convenience construct -- a name for a pattern that exists whether or not you name it. Every restaurant has one. No restaurant built one on purpose.
+The ACL is a convenience construct -- a name for a pattern that exists named or not. Every restaurant has one. No restaurant built one on purpose.
 
 == The Contract Lives in the Core
 

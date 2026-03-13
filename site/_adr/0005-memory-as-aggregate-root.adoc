@@ -35,8 +35,8 @@ The aggregate root enforces invariants before committing and emits events after 
 Hippocampus is the gatekeeper.
 
 When a mind stores a memory, Cortex translates the request into a `StoreMemoryCommand` and sends it to Hippocampus.
-Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`. A
-ttention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
+Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`.
+Attention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
 
 When the Subconscious runs a consolidation pass, it sends `ConsolidateMemoryCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
 The Subconscious doesn't touch storage directly.
