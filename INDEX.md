@@ -21,9 +21,9 @@ Previous branch context: `23-221-test-fixture-kotest-structure-and-test-configur
 
 We are eventstorming before implementation. Dialectic -- Vadim drives, Claude learns.
 
-### Current State: Step 2 (SVO Expansion) -- IN PROGRESS
+### Current State: Step 2 (SVO Expansion) -- COMPLETE
 
-Step 1 (Big Picture events) COMPLETE. Step 2 partially done.
+Step 1 (Big Picture events) COMPLETE. Step 2 COMPLETE. Next: Step 3 (Cause and Effect).
 
 ### Full Traversal and ACL Discovery
 
@@ -44,27 +44,29 @@ The eventstorming revealed five layers in the full traversal. The ACL is the mid
 - **Port has directionality**: Two gates, not one. Out-gate and in-gate.
 - **Symmetry principle**: Outbound has 3 events between translation and persistence. Return path was missing one -- discovered "Received Result" event.
 - **DTO Discovery**: Data Memory read model belongs to neither domain nor SQL. It sits on the counter. It IS the port contract. "BAM! -- we found a boundary!"
-- **Failure path in "Noman land"**: Parked because we don't know which layers failure events traverse yet.
+- **Bilingual adapters**: Each adapter event has TWO read models -- input in one language, output in another. That's what makes them adapters.
+- **Failure path resolved**: Failed Persistence (Infrastructure), Received Error (Outer Adapter), Translated Error (Inner Adapter), Rejected Memory Save (Domain). Symmetry caught "Received Error" as a missing event. Noman land is empty.
 
-### Step 2 SVO Progress
+### Step 2 SVO -- All 11 Events Extracted
 
-Events with SVO extracted:
+Happy path:
 - Requested Saved: S=Hippocampus, V=Requested, O=Memory
-- Translated-Out: S=Memory-Data Adapter, V=Translated, O=Data Memory (DTO-Out)
-- Requested Persistence: S=Data-SQL Adapter, V=Requested, O=Data Memory (same DTO)
+- Translated-Out: S=Memory-Data Adapter, V=Translated, O=Memory (in) + Data Memory DTO-Out (out)
+- Requested Persistence: S=Data-SQL Adapter, V=Requested, O=Data Memory DTO (in) + SQL Statement (out)
 - Persisted: S=SQLite, V=Persisted, O=SQL Record
-- Received Result: NOT YET EXTRACTED
-- Translated-In: S=Data-SQL Adapter (In?), V=Translated, O=Saved Data Memory (DTO-In?)
+- Received Result: S=Data-SQL Adapter (Result?), V=Received, O=Query Result
+- Translated-In: S=Memory-Data Adapter (In?), V=Translated, O=Data Memory DTO-In (in)
+- Saved Memory: S=Hippocampus (In), V=Saved, O=Saved Memory (confirmed)
 
-Events NOT yet extracted:
-- Saved Memory
-- Failed Persistence
-- Translated Error
-- Rejected Memory Save
+Failure path:
+- Failed Persistence: S=SQLite (Err), V=Failed, O=SQL Error
+- Received Error: S=Data-SQL Adapter (Err?), V=Received, O=SQL Error (received)
+- Translated Error: S=Memory-Data Adapter (Err?), V=Translated, O=Error DTO
+- Rejected Memory Save: S=Hippocampus (Err), V=Rejected, O=Rejected Memory
 
 ### Boards
 
-- `es-0001-memory-stored.mmd` -- main working board (Step 2 in progress, 5 subgraphs)
+- `es-0001-memory-stored.mmd` -- main working board (Step 2 complete, 5 subgraphs)
 - `es-0001-step1-events.mmd` -- Step 1 snapshot (events only)
 
 ### Blog Post
