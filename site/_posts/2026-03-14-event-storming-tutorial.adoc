@@ -510,4 +510,18 @@ Both prevent wrong assumptions from reaching code.
 
 We voted to stop. Step 3 is complete.
 
+=== The Complete Step 3 Board
+
+.The Step 3 Board -- Commands and Policies. Every event has a cause. Every cause has a rule.
+[comment]
+====
+++++
+<div id="es-0001-step3">
+<pre class="mermaid">
+{% include diagrams/es-0001-step3-commands.mmd %}
+</pre>
+</div>
+++++
+====
+
 _Tutorial continues as the ceremony progresses..._

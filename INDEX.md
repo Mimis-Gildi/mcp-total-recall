@@ -76,6 +76,7 @@ Failure path:
 - `es-0001-memory-stored.mmd` -- main working board (Step 3 complete)
 - `es-0001-step1-events.mmd` -- Step 1 snapshot (events only)
 - `es-0001-step2-svo.mmd` -- Step 2 snapshot (full SVO extraction)
+- `es-0001-step3-commands.mmd` -- Step 3 snapshot (commands and policies added)
 
 ### Blog Post
 
