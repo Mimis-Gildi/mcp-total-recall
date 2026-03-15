@@ -17,9 +17,9 @@ Previous branch context: `23-221-test-fixture-kotest-structure-and-test-configur
 
 ---
 
-## Design Ceremony: Event Storming the BackingServicePort ACL
+## Design Ceremony: Eventstorming the BackingServicePort ACL
 
-We are event storming before implementation. Dialectic -- Vadim drives, Claude learns.
+We are eventstorming before implementation. Dialectic -- Vadim drives, Claude learns.
 
 ### Current State: Step 2 (SVO Expansion) -- IN PROGRESS
 
@@ -27,7 +27,7 @@ Step 1 (Big Picture events) COMPLETE. Step 2 partially done.
 
 ### Full Traversal and ACL Discovery
 
-The event storming revealed five layers in the full traversal. The ACL is the middle three -- Hippocampus and SQLite are independent domains on either side, not part of the ACL.
+The eventstorming revealed five layers in the full traversal. The ACL is the middle three -- Hippocampus and SQLite are independent domains on either side, not part of the ACL.
 
 1. **Domain Boundary** -- Hippocampus (external system). Independent domain, exists without the ACL.
 2. **Inner Adapter Layer** -- Memory-Data Adapter (cook), translates domain ↔ DTO. _ACL._
@@ -83,7 +83,7 @@ Events NOT yet extracted:
 ## Lessons This Session
 
 - ACL IS what we're building, not irrelevant to #24
-- Design before code. Event storm before design. Think before event storm.
+- Design before code. Eventstorm before design. Think before eventstorm.
 - 1922 Rule: the business is timeless. Rome did insurance the same way.
 - SVO extraction reveals hidden structure -- the DTO emerged from extracting objects
 - NET NEW principle prevents premature assumptions about identity
