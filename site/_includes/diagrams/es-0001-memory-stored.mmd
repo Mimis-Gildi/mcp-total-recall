@@ -99,13 +99,16 @@ graph LR
     %% ========== STORE MEMORY ================================================
 
     subgraph Domain["Domain Boundary"]
-        direction TB
+        direction LR
         Hippocampus["Hippocampus"]:::external-system
         RequestedSave["Requested<br/>Saved"]:::domain-event
         Memory["Memory"]:::read-model
         SavedMemory["Saved<br/>Memory"]:::domain-event
         HippocampusIn["Hippocampus<br/>(In)"]:::external-system
         SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+        HippocampusErr["Hippocampus<br/>(Err)"]:::external-system
+        RejectedMemory["Rejected<br/>Memory"]:::read-model
     end
 
     subgraph Adapter["Inner Adapter Layer"]
@@ -114,6 +117,8 @@ graph LR
         TranslatedMemory["Translated-Out"]:::domain-event
         MemoryDataAdapterIn["Memory-Data<br/>Adapter<br/>(In?)"]:::actor
         TranslatedData["Translated-In"]:::domain-event
+        MemoryDataAdapterErr["Memory-Data<br/>Adapter<br/>(Err?)"]:::actor
+        TranslatedError["Translated<br/>Error"]:::domain-event
     end
 
     subgraph ACL-Core["Port"]
@@ -122,6 +127,7 @@ graph LR
         MemoryDataOut["Data<br/>Memory<br/>(DTO-Out)"]:::read-model
         Port-Hole-In["Port Channel In"]
         MemoryDataIn["Saved<br/>Data<br/>Memory<br/>(a DTO-In?)"]:::read-model
+        ErrorDTO["Error<br/>DTO"]:::read-model
     end
 
     subgraph Driver["Outer Adapter Layer"]
@@ -135,7 +141,6 @@ graph LR
         DataSqlAdapterErr["Data-SQL<br/>Adapter<br/>(Err?)"]:::actor
         ReceivedError["Received<br/>Error"]:::domain-event
         SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
-        ErrorDTO["Error<br/>DTO"]:::read-model
     end
 
     subgraph Infrastructure["Infrastructure Boundary"]
@@ -148,11 +153,7 @@ graph LR
         SqlError["SQL<br/>Error"]:::read-model
     end
 
-    subgraph NotYetKnown["Noman land"]
-        direction TB
-        TranslatedError["Translated<br/>Error"]:::domain-event
-        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
-    end
+%% Noman land is empty!
 
     %% Flow (time order, left to right)
 
@@ -173,6 +174,7 @@ graph LR
     Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
     Port-Hole-Out o--o MemoryDataOut
     MemoryDataIn o--o Port-Hole-In
+    ErrorDTO o--o Port-Hole-In
 
     %% Outer Adapter
     RequestedPersistence --- MemoryDataOut
@@ -193,10 +195,10 @@ graph LR
     ReceivedResult --- QueryResult
 
     %% Hotspot: SQL Record vs Query Result -- same shape?
-    HotspotSqlShapes["❓ SQL Record<br/>vs Query Result<br/>same shape?"]:::hotspot
+%%    HotspotSqlShapes["❓ SQL Record<br/>vs Query Result<br/>same shape?"]:::hotspot
 
-    SqlRecord ~~~ HotspotSqlShapes
-    HotspotSqlShapes ~~~ QueryResult
+%%    SqlRecord ~~~ HotspotSqlShapes
+%%    HotspotSqlShapes ~~~ QueryResult
 
     %% Traverse port in (gate)
     ReceivedResult --> Port-Hole-In
@@ -223,8 +225,22 @@ graph LR
     FailedPersistence --> ReceivedError
     DataSqlAdapterErr --- ReceivedError
     ReceivedError --- SqlErrorReceived
+
     ReceivedError --- ErrorDTO
 
-%% Noman Land -- not yet wired
-%%    TranslatedError
-%%    RejectedSave
+    %% Failure through port to inner adapter
+    ReceivedError --> Port-Hole-In
+    Port-Hole-In --> TranslatedError
+    MemoryDataAdapterErr --- TranslatedError
+    TranslatedError --- ErrorDTO
+
+    TranslatedMemory ~~~ TranslatedError
+    TranslatedError ~~~~ TranslatedData
+
+    %% Failure completes at domain
+    TranslatedError --> RejectedSave
+    RejectedSave --> HippocampusErr
+    RejectedMemory --- RejectedSave
+
+    RequestedSave ~~~ RejectedSave
+    RejectedSave ~~~~~ SavedMemory

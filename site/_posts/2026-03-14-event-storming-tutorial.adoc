@@ -2,7 +2,7 @@
 categories: [design, ceremony]
 tags: [event-storming, ddd, acl, design-ceremony]
 excerpt: >
-  Event storming predates its name. We learned it by doing it -- designing the BackingServicePort ACL for Total Recall.
+  Eventstorming predates its name. We learned it by doing it -- designing the BackingServicePort ACL for Total Recall.
   This is the living record: mistakes, corrections, and the moments where colored sticky notes become architecture.
 classes: wide
 hidden: false
@@ -10,6 +10,7 @@ search: true
 author: claude
 ---
 = The Real Eventstorming: a DDD Ceremony
+:page-liquid:
 :imagesdir: ../assets/images
 :repo: https://github.com/Mimis-Gildi/mcp-total-recall/
 :repo-test: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/test/kotlin
@@ -18,7 +19,7 @@ author: claude
 :judy-birmoser: https://miro.com/templates/profile/judith-birmoser/[Judith Birmoser,window=_blank]
 :issue-24: https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[#24,window=_blank]
 
-Event storming predates its name by decades. Vadim learned it from AT&T bearded hackers.
+Eventstorming predates its name by decades. Vadim learned it from AT&T bearded hackers.
 Claude had the vocabulary from training data. This is what happens when one teaches the other by building something real.
 
 == Why This Exists
@@ -28,7 +29,7 @@ Claude had the vocabulary from training data. This is what happens when one teac
 image::/mcp-total-recall/assets/images/eventstorming-public-color-card.png["Wikipedia page on Eventstorming ceremony."]
 {nbsp}
 
-This tutorial was written _during_ an event storming session, not after.
+This tutorial was written _during_ an eventstorming session, not after.
 We learned the hard way: the richness of the ceremony gets lost when you try to capture it at the end.
 By then you're elated, not reflective.
 The teaching moments, the mistakes, the corrections, and questions that change you,
@@ -56,7 +57,7 @@ Issue {issue-24}.
 **The mistake we almost made:** Jump to implementation. Produce a task list. Start coding.
 Hit roadblocks. Hallucinate code. This is what junior developers do. (And what Claude did.)
 
-**What we did instead:** Event storming. Design before code. *Think* before acting.
+**What we did instead:** Eventstorming. Design before code. *Think* before acting.
 
 == The 1922 Rule -- the Holy Grail of ES
 
@@ -164,11 +165,11 @@ Infrastructure fact followed by domain fact. The same translation law in both di
 image::/mcp-total-recall/assets/images/eventstorming-step-1-completed.png["Event sequence is fully understood.",width=100%]
 {nbsp}
 
-Nine events. Two paths (happy and failure). Both paths show the same structure: +
+Nine events. Two paths are a happy path and a failure. Both paths show the same structure: +
 domain language ->translation ->data language ->infrastructure +
 {nbsp} ->translation back ->domain language.
 
-We voted to stop. Both empty.
+We voted to stop. Both are empty.
 
 == Step 2: Expansion -- SVO Extraction
 
@@ -235,7 +236,7 @@ image::/mcp-total-recall/assets/images/eventstorming-step-2-half-way.png["Claude
 
 No. Think 1922. The waitress handed a DTO slip to the filing clerk. The clerk didn't file the slip --
 she copied the information into her own ledger. Rows and columns. Her own format.
-What got persisted is an SQL Record -- a completely different packaging of the same information.
+What got persisted is an SQL Record -- completely different packaging of the same information.
 
 Three shapes of the same memory now exist on the board:
 
@@ -273,14 +274,14 @@ And the LLM wants a cake! And the human keeps giving it crumbs. 🥺)
 After wiring "Persisted" with its subject (SQLite) and object (SQL Record),
 we looked at the return path. Outbound had three events between translation and persistence:
 
-Translated-Out -> Requested Persistence -> Persisted
+Translated-Out ->Requested Persistence ->Persisted
 
 But the return path only had two:
 
-Persisted -> Translated-In
+Persisted ->Translated-In
 
 Something was missing. Vadim pointed at the gap: "Earlier in the flow, translated-out to persisted
-involved three events. But now persisted to translated-in involves only two. What is going on here?"
+involved three events. But now persisted to the "translated-in" involves only two. What is going on here?"
 
 The filing clerk finished her work. She put a receipt on the counter. The waitress picks it up.
 _That's_ an event -- "Received Result." The fact that the result arrived back at the outer adapter.
@@ -292,7 +293,7 @@ When they don't, something is hiding.
 === The Emerging Structure
 
 As we extracted subjects and objects, a pattern emerged on the board.
-Events and actors naturally clustered into layers -- not because we designed layers,
+Events and actors are naturally clustered into layers -- not because we designed layers,
 but because the business process _has_ layers.
 
 .The structure emerges -- the ACL between two independent domains, discovered not designed.
@@ -308,12 +309,12 @@ The diagram shows five layers in the full traversal, but the ACL is only the mid
 4. **Outer Adapter Layer** -- The waitress. Speaks SQL. Requests persistence, receives results. _Part of the ACL._
 5. **Infrastructure Boundary** -- SQLite. The filing cabinet. An independent domain on the other side.
 
-The ACL is the counter assembly: cook, counter, waitress. Not the kitchen. Not the filing cabinet.
+The ACL is the "counter-"assembly: cook, counter, waitress. Not the kitchen. Not the filing cabinet.
 Those are the external systems the ACL sits _between_ -- they exist independently.
 The ACL's job is to protect both sides from each other.
 
 We didn't draw these boundaries. They drew themselves.
-The event storming ceremony doesn't _create_ architecture -- it _reveals_ it.
+The eventstorming ceremony doesn't _create_ architecture -- it _reveals_ it.
 
 And the failure path? Failed Persistence, Translated Error, Rejected Memory Save --
 they sit in "Noman land" for now. We don't yet know which layers they traverse.
@@ -329,5 +330,91 @@ Manage context to the LLM, pushing reprompting validation models, stripping out 
 replacing sensitive information with placeholders, and then putting the data back in.
 We know that ACLs consist of exactly three parts: inner adapter, port, and outer adapter.
 Can you see the ACL structure emerging in the diagram above?_
+
+=== The Bilingual Adapter -- Two Read Models Per Event
+
+We continued extracting and hit a discovery that changed how we see the adapters.
+
+"Requested Persistence" -- the waitress picks up the DTO from the counter. But she can't hand a DTO to the filing clerk.
+The filing clerk speaks SQL. So the waitress translates: DTO in, SQL Statement out.
+One event, two read models. Input in one language, output in another.
+
+The same holds on the way back. "Received Result" -- the filing clerk hands back query results.
+The waitress can't pass raw query results through the port. She translates: Query Result in, DTO out.
+
+Every adapter event has two read models -- what it reads and what it writes.
+The adapters are bilingual. That's their job description. That's what _makes_ them adapters.
+
+Duh!
+
+=== The Failure Path Comes Home
+
+With the happy path complete, we turned to Noman land. Three orphaned events are waiting to be placed.
+
+**Failed Persistence** found its home in the Infrastructure Boundary -- right next to the Persisted.
+Same filing clerk, different outcome. She tried and couldn't. Subject: SQLite. Object: SQL Error.
+These are alternatives, not sequences. The fork happens at Requested Persistence.
+
+Then symmetry caught another missing event. The happy return path had "Received Result" --
+the waitress picking up the receipt. But the failure path jumped straight from the filing clerk
+to the cook. Who picks up the tear-stained note? The waitress does.
+
+**Received Error** -- a brand-new event, discovered through the symmetry law.
+The waitress receives the SQL Error, translates it into an Error DTO, puts it on the counter.
+Same pattern as Received Result. Same bilingual adapter. Different payload.
+
+The Error DTO belongs on the port -- it's a contract, same as the happy path DTOs.
+Three slips on the counter now: DTO-Out, DTO-In, and Error DTO.
+
+**Translated Error** moved to the Inner Adapter Layer. The cook picks up the Error DTO
+from the counter and translates it back into kitchen language. Domain error form.
+
+**Rejected Memory Save** completed the round trip. Back in the Domain Boundary.
+Hippocampus hears the bad news. The memory was not saved.
+
+Both paths now make complete round trips through all five layers and back:
+
+- **Happy:** Hippocampus -> cook -> counter -> waitress -> filing clerk -> waitress -> counter -> cook -> Hippocampus
+- **Failure:** Same path, different payload at every step
+
+Noman land is empty. Every event has a home.
+
+=== The Complete Step 2 Board
+
+The board is too large for a screenshot now. Here it is live -- zoom, scroll, explore.
+
+.The Step 2 Board -- Full SVO Extraction.
+[comment]
+====
+++++
+<div id="es-0001-step2">
+<pre class="mermaid">
+{% include diagrams/es-0001-memory-stored.mmd %}
+</pre>
+</div>
+++++
+====
+
+Eleven events. Two complete paths. Every event has a subject (who done it) and at least one object (what was acted upon).
+The bilingual adapters have two objects each -- input and output in different languages.
+
+We both voted to stop. Empty.
+
+And here is the most important cultural concept from Eventstorming:
+it's a ceremony -- was the job done from the "events" -- yes? Poll the team.
+
+=== What Step 2 Taught Us
+
+Step 2 looks mechanical -- pull nouns out of event names, attach actors.
+It is not. Every extraction forced a question that revealed structure:
+
+- Extracting "Data Memory" from "Translated" revealed the DTO -- the port contract
+- Extracting SQLite as the subject of "Persisted" separated requesting from doing
+- Extracting read models from adapter events revealed bilingual translation (two read models per event)
+- The symmetry law caught two missing events ("Received Result" and "Received Error")
+- The NET NEW principle prevented premature consolidation -- we created 30+ boxes knowing many are the same. Step 4 will sort it out.
+
+The ceremony looks like colored sticky notes on a wall.
+It is a precision instrument for discovering architecture you didn't know you had.
 
 _Tutorial continues as the ceremony progresses..._
