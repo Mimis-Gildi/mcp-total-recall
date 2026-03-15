@@ -1,0 +1,145 @@
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR
+
+    %% ========== STEP 2 SNAPSHOT: Full SVO Extraction ==========================
+    %% Captured at the end of Step 2 (SVO Expansion)
+    %% All 11 events have subjects (actors, yellow) and objects (read models, green).
+    %% Bilingual adapters have two read models each (input + output language).
+    %% Noman land is empty. Failure path fully wired.
+    %% Five subgraphs: Domain, Inner Adapter, Port, Outer Adapter, Infrastructure.
+
+    classDef domain-event fill: orange, stroke: magenta, color: black
+    classDef read-model fill: green, stroke: white, color: white
+    classDef actor-policy fill: pink, stroke: green, color: black
+    classDef actor-command fill: blue, stroke: white, color: yellow
+    classDef actor-query fill: turquoise, stroke: red, color: black
+    classDef actor fill: yellow, stroke: black, color: black
+    classDef aggregate fill: yellow, stroke: red, color: black
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+    classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
+
+    subgraph Domain["Domain Boundary"]
+        direction LR
+        Hippocampus["Hippocampus"]:::external-system
+        RequestedSave["Requested<br/>Saved"]:::domain-event
+        Memory["Memory"]:::read-model
+        SavedMemory["Saved<br/>Memory"]:::domain-event
+        HippocampusIn["Hippocampus<br/>(In)"]:::external-system
+        SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+        HippocampusErr["Hippocampus<br/>(Err)"]:::external-system
+        RejectedMemory["Rejected<br/>Memory"]:::read-model
+    end
+
+    subgraph Adapter["Inner Adapter Layer"]
+        direction LR
+        MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
+        TranslatedMemory["Translated-Out"]:::domain-event
+        MemoryDataAdapterIn["Memory-Data<br/>Adapter<br/>(In?)"]:::actor
+        TranslatedData["Translated-In"]:::domain-event
+        MemoryDataAdapterErr["Memory-Data<br/>Adapter<br/>(Err?)"]:::actor
+        TranslatedError["Translated<br/>Error"]:::domain-event
+    end
+
+    subgraph ACL-Core["Port"]
+        direction TB
+        Port-Hole-Out["Port Channel Out"]
+        MemoryDataOut["Data<br/>Memory<br/>(DTO-Out)"]:::read-model
+        Port-Hole-In["Port Channel In"]
+        MemoryDataIn["Saved<br/>Data<br/>Memory<br/>(a DTO-In?)"]:::read-model
+        ErrorDTO["Error<br/>DTO"]:::read-model
+    end
+
+    subgraph Driver["Outer Adapter Layer"]
+        direction LR
+        DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
+        DataSqlAdapterResult["Data-SQL<br/>Adapter<br/>(Result?)"]:::actor
+        RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+        SqlStatement["SQL<br/>Statement"]:::read-model
+        ReceivedResult["Received<br/>Result"]:::domain-event
+        QueryResult["Query<br/>Result"]:::read-model
+        DataSqlAdapterErr["Data-SQL<br/>Adapter<br/>(Err?)"]:::actor
+        ReceivedError["Received<br/>Error"]:::domain-event
+        SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+    end
+
+    subgraph Infrastructure["Infrastructure Boundary"]
+        direction LR
+        SQLite["SQLite"]:::external-system
+        SQLiteErr["SQLite<br/>(Err)"]:::external-system
+        PersistedData["Persisted"]:::domain-event
+        FailedPersistence["Failed<br/>Persistence"]:::domain-event
+        SqlRecord["SQL<br/>Record"]:::read-model
+        SqlError["SQL<br/>Error"]:::read-model
+    end
+
+    %% Happy path flow
+
+    Hippocampus --> RequestedSave
+    RequestedSave --- Memory
+
+    RequestedSave --> TranslatedMemory
+    MemoryDataAdapter --- TranslatedMemory
+    TranslatedMemory --- MemoryDataOut
+
+    TranslatedMemory --> Port-Hole-Out
+    Port-Hole-Out --> RequestedPersistence
+
+    Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
+    Port-Hole-Out o--o MemoryDataOut
+    MemoryDataIn o--o Port-Hole-In
+    ErrorDTO o--o Port-Hole-In
+
+    RequestedPersistence --- MemoryDataOut
+    DataSqlAdapter --- RequestedPersistence
+    RequestedPersistence --- SqlStatement
+
+    RequestedPersistence --> PersistedData
+    SQLite --- PersistedData
+    PersistedData --- SqlRecord
+
+    PersistedData --> ReceivedResult
+    DataSqlAdapterResult --- ReceivedResult
+    ReceivedResult --- QueryResult
+
+    ReceivedResult --> Port-Hole-In
+    Port-Hole-In --> TranslatedData
+
+    ReceivedResult --- MemoryDataIn
+    MemoryDataAdapterIn --- TranslatedData
+    TranslatedData --- MemoryDataIn
+    TranslatedData --> SavedMemory
+
+    SavedMemory --> HippocampusIn
+    SavedMemoryObj --- SavedMemory
+
+    RequestedPersistence ~~~~~~ ReceivedResult
+    ReceivedResult ~~~~~~ ReceivedError
+
+    %% Failure path
+
+    RequestedPersistence --> FailedPersistence
+    SQLiteErr --- FailedPersistence
+    FailedPersistence --- SqlError
+
+    PersistedData ~~~~~~ FailedPersistence
+    FailedPersistence --> ReceivedError
+    DataSqlAdapterErr --- ReceivedError
+    ReceivedError --- SqlErrorReceived
+
+    ReceivedError --- ErrorDTO
+
+    ReceivedError --> Port-Hole-In
+    Port-Hole-In --> TranslatedError
+    MemoryDataAdapterErr --- TranslatedError
+    TranslatedError --- ErrorDTO
+
+    TranslatedMemory ~~~ TranslatedError
+    TranslatedError ~~~~ TranslatedData
+
+    TranslatedError --> RejectedSave
+    RejectedSave --> HippocampusErr
+    RejectedMemory --- RejectedSave
+
+    RequestedSave ~~~ RejectedSave
+    RejectedSave ~~~~~ SavedMemory

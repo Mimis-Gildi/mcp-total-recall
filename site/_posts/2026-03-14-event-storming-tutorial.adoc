@@ -389,7 +389,7 @@ The board is too large for a screenshot now. Here it is live -- zoom, scroll, ex
 ++++
 <div id="es-0001-step2">
 <pre class="mermaid">
-{% include diagrams/es-0001-memory-stored.mmd %}
+{% include diagrams/es-0001-step2-svo.mmd %}
 </pre>
 </div>
 ++++
@@ -416,5 +416,98 @@ It is not. Every extraction forced a question that revealed structure:
 
 The ceremony looks like colored sticky notes on a wall.
 It is a precision instrument for discovering architecture you didn't know you had.
+
+== Step 3: Cause and Effect -- the Two Fundamental Theorems
+
+Steps 1 and 2 were about facts. What happened. Who did it. What was acted upon.
+
+Step 3 asks: **why did it happen?**
+
+Two operations, two theorems:
+
+1. **Causality theorem:** For each event, move left. What command caused it? Command (blue) → Event (orange).
+2. **Inevitability theorem:** For each command, test it. Does this command ALWAYS or IMMEDIATELY produce this event? If yes, attach a policy (pink). Policy → Command.
+
+Commands tell you WHAT happens. Policies tell you HOW and WHEN.
+The design lives in the policies, not the commands.
+
+=== "Store Memory" -- the first command, the first policy
+
+"Requested Saved" -- what caused it? The mind wanted a memory stored. Command: "Save THIS Memory For me."
+
+The command was obvious. Nobody would argue.
+
+Then we tested the policy: "Whenever Memory Arises, Always and Immediately Command it Saved."
+
+Always? Yes. Immediately? Yes. The mind stands at the counter and WAITS.
+
+=== The Blocking Discovery
+
+.Two policies -- one says "Always," the other says "Always and Immediately." Which is it?
+[#img-policy-conflict,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-3-always-or-immediately-or-both.png["Policy testing reveals blocking behavior.",width=100%]
+{nbsp}
+
+We wrote the first policy as "Always and Immediately" -- the Hippocampus expects an immediate response.
+Then we wrote the inner adapter policy as just "Always" -- the cook translates, but does she need to do it right now?
+
+That difference forced a question: **is the customer standing at the counter, or sitting at a table?**
+
+Standing. Blocking. The Hippocampus fires a store command and waits for the outcome.
+It needs to know: was my memory saved, or not? Before it does anything else.
+
+And if the customer is standing at the counter, so is the cook. And the waitress. And the filing clerk.
+The entire ACL is a synchronous pipeline. "Always and Immediately" all the way down.
+
+We didn't design "synchronous." The policy test revealed it.
+The command was obvious. The policy was where the architecture hid.
+
+=== The Mirror -- Failure Path Commands
+
+With the happy path done, we turned to the failure events.
+"Failed Persistence" -- what command caused it?
+
+The SAME command. "Execute this SQL Statement." The filing clerk received the same instruction.
+She tried. She failed. The failure isn't caused by a different command -- it's a different outcome.
+
+So "Failed Persistence" gets a verbatim copy of the command and policy from "Persisted."
+Same words. Same blue sticky. Same pink sticky. Different result.
+
+And the pattern held for every failure event:
+
+- **Failed Persistence** -- mirror of Persisted. Same "Execute SQL" command and policy.
+- **Received Error** -- mirror of Received Result. Same "Return this Result" command and policy.
+- **Translated Error** -- mirror of Translated-In. Same "Translate DTO to Domain" command and policy.
+- **Rejected Memory Save** -- mirror of Saved Memory. Same "Confirm Save" command and policy.
+
+The failure path is not a special case. It is the same pipeline with different data flowing through it.
+Same commands, same policies, same structure. Only the payload changes.
+
+Step 4 will consolidate these duplicates. The verbatim copies are a signal:
+these are the same job, done by the same actor, producing different outcomes.
+
+=== What Step 3 Taught Us -- a Trivial Case
+
+Every policy on the board says the same thing: "Always and Immediately."
+Every command has exactly one event (or one of two alternative outcomes sharing the same command).
+The entire ACL is a uniform synchronous pipeline.
+
+This is a **trivial case.** Not all domains look like this.
+
+In a more complex domain, you might find:
+
+- **"Always but not Immediately"** -- the cook accepts the order and works on it later. Asynchronous. The customer sits down.
+- **Commands that produce multiple events** -- one command triggers a cascade of facts.
+- **Conditional policies** -- "Always, UNLESS the kitchen is closed." Business rules with exceptions.
+- **Competing policies** -- two rules that contradict each other. Hotspot. Call the manager.
+
+Our ACL is simple because its job is simple: translate and persist, blocking, one memory at a time.
+The ceremony revealed that simplicity. It didn't assume it.
+
+The value of the ceremony isn't proportional to the domain's complexity.
+A trivial case confirmed quickly is as valuable as a complex case discovered slowly.
+Both prevent wrong assumptions from reaching code.
+
+We voted to stop. Step 3 is complete.
 
 _Tutorial continues as the ceremony progresses..._

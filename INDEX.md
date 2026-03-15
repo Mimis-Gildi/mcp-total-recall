@@ -21,9 +21,16 @@ Previous branch context: `23-221-test-fixture-kotest-structure-and-test-configur
 
 We are eventstorming before implementation. Dialectic -- Vadim drives, Claude learns.
 
-### Current State: Step 2 (SVO Expansion) -- COMPLETE
+### Current State: Step 3 (Cause and Effect) -- COMPLETE
 
-Step 1 (Big Picture events) COMPLETE. Step 2 COMPLETE. Next: Step 3 (Cause and Effect).
+Step 1 COMPLETE. Step 2 COMPLETE. Step 3 COMPLETE. Next: Step 4 (Aggregation).
+
+### Step 3 Discoveries
+
+- **Blocking pipeline:** Every policy is "Always and Immediately." The entire ACL is synchronous. The customer stands at the counter. Discovered by testing the policy, not by design choice.
+- **Failure path mirrors happy path:** Same commands, same policies, different payloads. Verbatim copies on every failure event. Step 4 will consolidate.
+- **Trivial case:** Uniform blocking, single-event commands, no conditional policies. More complex domains would show async, cascading events, competing rules.
+- **Commands are obvious. Policies are where the architecture hides.**
 
 ### Full Traversal and ACL Discovery
 
@@ -66,8 +73,9 @@ Failure path:
 
 ### Boards
 
-- `es-0001-memory-stored.mmd` -- main working board (Step 2 complete, 5 subgraphs)
+- `es-0001-memory-stored.mmd` -- main working board (Step 3 complete)
 - `es-0001-step1-events.mmd` -- Step 1 snapshot (events only)
+- `es-0001-step2-svo.mmd` -- Step 2 snapshot (full SVO extraction)
 
 ### Blog Post
 
