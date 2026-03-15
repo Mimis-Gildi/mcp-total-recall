@@ -1,0 +1,34 @@
+graph LR
+
+    %% ========== STEP 1 SNAPSHOT: Events Only =================================
+    %% Captured at the end of Step 1 (Big Picture Event Storming)
+    %% No read models, no actors, no commands, no policies.
+    %% Just facts in chronological order with one fork for failure.
+
+    classDef domain-event fill: orange, stroke: magenta, color: black
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+
+    %% External Systems
+    Hippocampus["Hippocampus"]:::external-system
+
+    %% Events (time order, left to right)
+    RequestedSave["Requested<br/>Memory<br/>Save"]:::domain-event
+    TranslatedMemory["Translated<br/>Memory"]:::domain-event
+    RequestedPersistence["Requested<br/>Data<br/>Persistence"]:::domain-event
+    PersistedData["Persisted<br/>Data"]:::domain-event
+    FailedPersistence["Failed<br/>Persistence"]:::domain-event
+    TranslatedData["Translated<br/>Data"]:::domain-event
+    TranslatedError["Translated<br/>Error"]:::domain-event
+    SavedMemory["Saved<br/>Memory"]:::domain-event
+    RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+
+    %% Flow
+    Hippocampus --> RequestedSave
+    RequestedSave --> TranslatedMemory
+    TranslatedMemory --> RequestedPersistence
+    RequestedPersistence --> PersistedData
+    RequestedPersistence --> FailedPersistence
+    PersistedData --> TranslatedData
+    TranslatedData --> SavedMemory
+    FailedPersistence --> TranslatedError
+    TranslatedError --> RejectedSave

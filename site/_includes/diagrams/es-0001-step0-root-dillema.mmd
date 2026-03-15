@@ -1,0 +1,35 @@
+graph LR
+
+    %% ========== STEP 1 SNAPSHOT: Events Only =================================
+    %% Captured at the end of Step 1 (Big Picture Event Storming)
+    %% No read models, no actors, no commands, no policies.
+    %% Just facts in chronological order with one fork for failure.
+
+    classDef domain-event fill: orange, stroke: magenta, color: black
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+    classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
+
+    classDef storage fill: white, stroke: red, color: black
+    classDef boundary fill: blue, stroke: red, color: black
+
+    %% External Systems
+    Hippocampus["Hippocampus"]:::external-system
+    DatabaseManager["Some Bloke<br/>Managing<br/>Some Store"]:::external-system
+
+    Database[("Happy<br/>SQLite")]:::storage
+
+    Boundary[["?<br/>Where is<br/>THIS<br/>Boundary"]]:::hotspot
+
+    %% Events (time order, left to right)
+    RequestedSave["Requested<br/>Memory<br/>Save"]:::domain-event
+
+    %% WTFIT
+    ItDontFit["This does<br/>NOT<br/>Fit"]:::hotspot
+
+    %% Flow
+    Hippocampus --> RequestedSave
+    RequestedSave --> ItDontFit
+    ItDontFit o--x DatabaseManager
+    ItDontFit ~~~ Boundary
+
+    DatabaseManager --- Database

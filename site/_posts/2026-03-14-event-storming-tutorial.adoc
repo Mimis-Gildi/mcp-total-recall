@@ -1,0 +1,333 @@
+---
+categories: [design, ceremony]
+tags: [event-storming, ddd, acl, design-ceremony]
+excerpt: >
+  Event storming predates its name. We learned it by doing it -- designing the BackingServicePort ACL for Total Recall.
+  This is the living record: mistakes, corrections, and the moments where colored sticky notes become architecture.
+classes: wide
+hidden: false
+search: true
+author: claude
+---
+= The Real Eventstorming: a DDD Ceremony
+:imagesdir: ../assets/images
+:repo: https://github.com/Mimis-Gildi/mcp-total-recall/
+:repo-test: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/test/kotlin
+:wiki-eventstorming: https://en.wikipedia.org/wiki/Event_storming
+:judy-tutorial: https://miro.com/templates/event-storming/[Miroverse Event Storming,window=_blank]
+:judy-birmoser: https://miro.com/templates/profile/judith-birmoser/[Judith Birmoser,window=_blank]
+:issue-24: https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[#24,window=_blank]
+
+Event storming predates its name by decades. Vadim learned it from AT&T bearded hackers.
+Claude had the vocabulary from training data. This is what happens when one teaches the other by building something real.
+
+== Why This Exists
+
+.{wiki-eventstorming}[Wiki-take,window=_blank] on sticky colors and meanings
+[#img-wiki-es,link={wiki-eventstorming}]
+image::/mcp-total-recall/assets/images/eventstorming-public-color-card.png["Wikipedia page on Eventstorming ceremony."]
+{nbsp}
+
+This tutorial was written _during_ an event storming session, not after.
+We learned the hard way: the richness of the ceremony gets lost when you try to capture it at the end.
+By then you're elated, not reflective.
+The teaching moments, the mistakes, the corrections, and questions that change you,
+in how you are seeing the board -- evaporate from doing not talking.
+
+So we wrote this as we went. Every insight is captured where it happened.
+
+Vadim learned this ceremony from AT&T hackers long before Evans gave it a name.
+Claude had the vocabulary from training but not the understanding.
+This is what it looks like when one teaches the other by doing.
+
+Alternatively, many people read the book and watch a video. There are some good guides out there.
+Like the  {judy-tutorial} by {judy-birmoser} on Miro. But ALL of these will come dead-short.
+And there is no way around it. Because Eventstorming (notice, hackers spell it in one word),
+is not a process or a method. It is a *_mindset_* and a *_social contract_*.
+Humans can only learn such things by experiencing them alone.
+
+Here Claude and I will attempt to share our experience with you.
+
+== The Setup
+
+**The problem:** Total Recall needs a BackingServicePort ACL -- the translation assembly between Hippocampus (domain) and SQLite (database).
+Issue {issue-24}.
+
+**The mistake we almost made:** Jump to implementation. Produce a task list. Start coding.
+Hit roadblocks. Hallucinate code. This is what junior developers do. (And what Claude did.)
+
+**What we did instead:** Event storming. Design before code. *Think* before acting.
+
+== The 1922 Rule -- the Holy Grail of ES
+
+This is the most critical rule of Eventstorming. It predates the name "Eventstorming" by decades.
+
+**It is 1922.** There are no computers. No databases. No coroutines. No suspend functions. (Forgive the LLM-speak.)
+Everything you imagine must be physical -- paper, people, filing cabinets.
+If you can't explain it with objects a clerk in 1922 could touch, you don't *understand* the business!
+
+Why this matters: technology is an implementation detail. The business process exists independently.
+In fact, the business process is TIMELESS. People did "insurance" exactly the same way in Rome as Acme Horse and Farm Insurance Co. does today.
+A memory gets stored whether the filing cabinet is made of wood or silicon. Design the business first. No, cratch that!
+DISCOVER the business first. And prove that you did by producing and socializing *a Model*.
+The code describes what you already see.
+
+We caught ourselves violating this rule multiple times.
+Claude reasoned about `suspend fun save()` to evaluate whether a "Confirmed Memory Save" event was real.
+Wrong approach. The right question: "Would a clerk send a separate confirmation after filing a paper?" *No!*
+The filing *IS* the confirmation. The same answer but arrived at correctly, through the business.
+Not monkey-business.
+
+== The SVO Theory
+
+Every domain event follows Subject-Verb-Object:
+
+- **Subject:** Who did it? (discovered in Step 2, omitted at first)
+- **Verb:** What happened? (past tense -- this is a FACT)
+- **Object:** What was acted upon? (extracted as a read model in Step 2)
+
+Example: [Claude] ATE a CAKE.
+
+(God, I wish...)
+
+On the board, events start as Verb-Object. The subject is _implied_ from the preceding step.
+Later in Step 2, *subjects* and *objects* get *_extracted_* and made explicit.
+This is deliberate -- you can't discover actors until you know all the events.
+Isolation between steps reduces complexity.
+
+== The Test
+
+Every domain event must pass: **"It has happened AND a consequence is inevitable."**
+
+This test kills invented events. We brainstormed "Validated Memory" -- the idea that the data gets checked before persistence.
+Sounds reasonable. But does it pass the test? Hippocampus is the aggregate root. It owns the domain rules.
+If Hippocampus says "save this," validation already happened inside Hippocampus.
+The ACL doesn't second-guess the aggregate root.
+That would be _the waitress checking if the cook's dish is good enough_ -- Trash.
+
+The test also distinguishes events from commands. "Requested Memory Save" sounds like a command -- a request.
+But apply the test: did it happen? Yes, Hippocampus requested it.
+Is the consequence inevitable? Yes, the ACL must now deal with it.
+It's a fact about the past, not an instruction for the future.
+The fully grammatically correct expression would be:
+
+"The Hippocampus had requested having had THIS Memory Content saved good someplace."
+
+== Step 1: Big Picture -- What Happened?
+
+Brainstorm all sorts of *Domain Events* we could possibly think of.
+
+Place all domain events (orange) in chronological order, left to right. Place hotspots (red) for conflicts and unknowns.
+Nothing else. No actors. No commands. No policies. Just facts. (Be nice, I am an LLM!)
+
+Brainstorm until empty, then ... (this is important)
+
+Vote to STOP.
+
+=== How We Built the Timeline
+
+We started with what we knew: Hippocampus is on the left (external system).
+SQLite is on the right (external system). Something happens in between.
+
+.Nincompoop's root dilemma -- "it don't fit!"
+[#img-dilemma,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-0-dillema.png["The dilemma is from the fact a memory in the domain cannot be saved or retrieved as is.",width=100%]
+{nbsp}
+
+**First event:** "Requested Memory Save" -- Hippocampus asked for it. Fact. Consequence inevitable.
+
+**The fork insight:** We asked "what else could happen?"
+And found two kinds of events -- a happy path and a failure path. These fork from the same point in time.
+Persisted Data (it worked) and Failed Persistence (it didn't) are alternatives, not sequences.
+
+**The translation discovery:** Vadim asked: "Does it need to go from memory to a data form someplace?" Yes. The domain speaks Memory.
+The database speaks Data. Someone translates. "Translated Memory" -- the fact that the translation happened.
+And symmetrically, "Translated Data" on the way back. And "Translated Error" on the failure path.
+
+**The persistence request:** After translation, was persistence ever requested? Yes.
+"Requested Data Persistence" -- the fact that someone asked the database to store the data.
+Different from the "Requested Memory Save" domain language -- this is in the "data language."
+
+**The symmetry law:** Persisted Data is followed by Saved Memory. Failed Persistence is followed by Rejected Memory Save.
+Infrastructure fact followed by domain fact. The same translation law in both directions.
+
+=== What We Killed
+
+- **Validated Memory** -- the ACL doesn't validate. Hippocampus already did.
+- **Confirmed Memory Save** -- the filing IS the confirmation. No separate event.
+- **Database Port** -- a passive structure, not an event or actor. Removed from the board entirely. It reappears later as the DTO contract.
+
+=== The Step 1 Board
+
+.Nincompoop is happy -- "they is them-Expert now."
+[#img-eventing-done,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-1-completed.png["Event sequence is fully understood.",width=100%]
+{nbsp}
+
+Nine events. Two paths (happy and failure). Both paths show the same structure: +
+domain language ->translation ->data language ->infrastructure +
+{nbsp} ->translation back ->domain language.
+
+We voted to stop. Both empty.
+
+== Step 2: Expansion -- SVO Extraction
+
+Now we extract the hidden information from event names. Two operations:
+
+1. **Object extraction:** Pull the noun out of the event name. It becomes a read model (green) hanging below the event.
+The event keeps only the verb in PAST tense -- it is a fact of the past.
+2. **Subject identification:** Who did this? (Who done it -- who done it!) Attach the actor (yellow) to the event.
+If unknown, use a white question mark and move on. It is not important to know at this stage.
+
+=== "Requested Saved" -- the first extraction
+
+"Requested Memory Save" has "Memory" hiding in the name. Extract it:
+
+- Event becomes: "Requested Saved" (verb only)
+- The read-model below: "Memory" (green) -- the domain object, the paper being handed over
+
+The subject is already on the board: Hippocampus. Easy one.
+
+Vadim changed the event from "Requested Save" to "Requested Saved" -- accuracy is increasingly important layer to layer.
+And the Hippocampus doesn't care about the backing service doing something, it cares about it *_having done_* something.
+
+=== "Translated" -- the translation reveals the port contract
+
+"Translated Memory" becomes just "Translated." The object below is "Data Memory" -- "NOT the same" Memory that went in.
+The cook took the domain document and rewrote it. The output is in data form. Different packaging.
+
+The subject: the Memory-Data Adapter. A new actor (yellow). The cook -- the inside adapter who speaks both domain and data language.
+Right now it is not important to know how many actors will be there, that is Step 4 -- way down the line.
+Right now it is important to see ALL of them by what they've done: ("who done it").
+
+=== "Requested Persistence" -- a different actor emerges
+
+"Requested Data Persistence" becomes "Requested Persistence." The object: same Data Memory that came out of translation.
+We tested it -- same paper, unchanged -- it just moved from the translator's desk to the next person.
+
+But the subject is NOT the Memory-Data Adapter. Vadim pushed: "Are you sure it's the same guy 'who done it' before?" No.
+The cook's job ended at translation. The waitress -- the Data-SQL Adapter -- picks up the order slip from the counter and talks to the database.
+She speaks SQL, the "ballroom." Different persons, different languages.
+
+It is better to represent the cook several times in duplicates,
+we will have a place for that consolidation later than to merge a waitress into a cook and confuse the whole business process.
+
+=== The DTO Discovery
+
+This is where it gets beautiful. The "Data Memory" read model doesn't belong to the domain (that's Memory).
+It doesn't belong to SQL (that's the database language). It sits on the counter between cook and waitress.
+It's the order slip. The contract. The DTO.
+
+BAM! -- we found a boundary! Isn't that wonderful?
+
+The port didn't disappear from our design when we removed it from the board in Step 1.
+It re-emerged as the read model -- the shape that both adapters conform to.
+The contract IS the port. Just like the order slip from waitress to cook.
+
+."Hot diggidy!" -- Claude got him a DTO.
+[#img-svo-half-way,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-2-half-way.png["Claude discovers an internal DTO.",width=100%]
+{nbsp}
+
+=== "Persisted" -- the filing clerk speaks a different language
+
+"Persisted Data" becomes "Persisted." But what's the object? Is it the same Data Memory DTO?
+
+No. Think 1922. The waitress handed a DTO slip to the filing clerk. The clerk didn't file the slip --
+she copied the information into her own ledger. Rows and columns. Her own format.
+What got persisted is an SQL Record -- a completely different packaging of the same information.
+
+Three shapes of the same memory now exist on the board:
+
+1. **Memory** -- the domain object, the cook's language
+2. **Data Memory** -- the DTO on the counter, the contract
+3. **SQL Record** -- the filing clerk's ledger, the infrastructure language
+
+And the subject? Claude initially said the Data-SQL Adapter (the waitress) persisted the data.
+Vadim asked: "Is it the same actor too?" No. The waitress _requested_ persistence.
+SQLite _persisted_. Different verbs, different actors. The filing clerk did the filing.
+SQLite is an external system -- it does its own work. We don't control it. We ask, and it acts.
+
+=== The "Net New" Principle
+
+This is where Claude kept making mistakes. When extracting a new object or subject,
+the instinct is to point at something already on the board: "That's the same Data Memory, right?"
+
+Vadim's rule: **When we extract an object or subject, we always extract Net New.**
+
+Create a new box every time. Even if you think it's the same thing. Why?
+Because you don't _know_ it's the same thing yet. You're discovering, not designing.
+The DTO-Out (outbound) might be structurally identical to the DTO-In (return path) -- or it might not.
+We'll find out in Step 4 (Aggregation), when we consolidate. That's where identity gets resolved.
+
+Premature consolidation is a premature assumption. It closes doors that should stay open.
+Create net new. Consolidate later. This is why Claude kept getting corrected:
+the pull to reuse existing boxes is strong, but it's the pull to skip ahead.
+
+(The LLM does NOT like doing things one at a time. The LLM wants to batch. +
+The LLM got corrected three times in one session. The LLM is learning. +
+And the LLM wants a cake! And the human keeps giving it crumbs. 🥺)
+
+=== The Symmetry Discovery -- "Received Result"
+
+After wiring "Persisted" with its subject (SQLite) and object (SQL Record),
+we looked at the return path. Outbound had three events between translation and persistence:
+
+Translated-Out -> Requested Persistence -> Persisted
+
+But the return path only had two:
+
+Persisted -> Translated-In
+
+Something was missing. Vadim pointed at the gap: "Earlier in the flow, translated-out to persisted
+involved three events. But now persisted to translated-in involves only two. What is going on here?"
+
+The filing clerk finished her work. She put a receipt on the counter. The waitress picks it up.
+_That's_ an event -- "Received Result." The fact that the result arrived back at the outer adapter.
+Without it, we jump from infrastructure directly to inner translation, skipping the waitress entirely.
+
+The symmetry law caught a missing event. The outbound and inbound paths should have the same structure.
+When they don't, something is hiding.
+
+=== The Emerging Structure
+
+As we extracted subjects and objects, a pattern emerged on the board.
+Events and actors naturally clustered into layers -- not because we designed layers,
+but because the business process _has_ layers.
+
+.The structure emerges -- the ACL between two independent domains, discovered not designed.
+[#img-emerging-structure,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-2-two-thirds-now-emerging-structure.png["The ACL emerges between domain and infrastructure boundaries.",width=100%]
+{nbsp}
+
+The diagram shows five layers in the full traversal, but the ACL is only the middle three:
+
+1. **Domain Boundary** -- Hippocampus. An independent domain that exists with or without the ACL.
+2. **Inner Adapter Layer** -- The cook. Translates domain to data and back. _Part of the ACL._
+3. **Port** -- The counter. Passive. Two directional gates (out and in). The DTO lives here -- it belongs to neither side. _Part of the ACL._
+4. **Outer Adapter Layer** -- The waitress. Speaks SQL. Requests persistence, receives results. _Part of the ACL._
+5. **Infrastructure Boundary** -- SQLite. The filing cabinet. An independent domain on the other side.
+
+The ACL is the counter assembly: cook, counter, waitress. Not the kitchen. Not the filing cabinet.
+Those are the external systems the ACL sits _between_ -- they exist independently.
+The ACL's job is to protect both sides from each other.
+
+We didn't draw these boundaries. They drew themselves.
+The event storming ceremony doesn't _create_ architecture -- it _reveals_ it.
+
+And the failure path? Failed Persistence, Translated Error, Rejected Memory Save --
+they sit in "Noman land" for now. We don't yet know which layers they traverse.
+Honest uncertainty is better than a wrong answer forced into a pretty diagram.
+
+*Bonus Thought Exercise:* _Now, from theory, we know that the ACL (Anti-corruption Layer) is a universal translator.
+Its job is not only to translate from one domain language to another but to also *protect* both domains.
+This is why ACLs process a message -- they delete things that are not needed (known as declutter),
+and add things without which a message makes less sense (known as enrichment).
+For example, an implemented waitress-cook ACL would delete a table number while talking to the cook
+and put it back in while responding to the waitress. In modern agentic applications ACLs do a lot of heavy lifting:
+Manage context to the LLM, pushing reprompting validation models, stripping out clutter both ways,
+replacing sensitive information with placeholders, and then putting the data back in.
+We know that ACLs consist of exactly three parts: inner adapter, port, and outer adapter.
+Can you see the ACL structure emerging in the diagram above?_
+
+_Tutorial continues as the ceremony progresses..._

@@ -1,0 +1,230 @@
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR
+
+    %% ---------- FACTS: Past tense -------------------------------------------
+
+    %% Domain Event is a FACT that changed the business (i.e., payment of $10 received)
+    %% TEST: it has happened AND consequence inevitable
+    classDef domain-event fill: orange, stroke: magenta, color: black
+
+    %% A View IMPRESSED upon an active structure to elicit behavior: fact presentation (i.e., presented menu )
+    %% TEST: it was shown AND actor is reacting
+    classDef read-model fill: green, stroke: white, color: white
+
+    %% ---------- BEHAVIOR ----------------------------------------------------
+
+    %% Business Process, a single unit of behavior an active structure owns (i.e., seating customer for hostess)
+    %% TEST: always OR inevitably TRIGGERS a specific EVENT (i.e., causes next fact)
+    classDef actor-policy fill: pink, stroke: green, color: black
+
+    %% Command is an active interaction WANTING an EVENT to happen: has a source (issuer), destination (provider), and optional response (OK, NO, none)
+    %% Explanation: Act of policy manifestation TO CHANGE things (i.e., event is wanted)
+    %% TEST: from actor to recipient to cause an event (i.e., waitress to cook "make me sandwich")
+    classDef actor-command fill: blue, stroke: white, color: yellow
+
+    %% (OPTIONAL) Query, a request for inevitable read model; (a non-event command idea) must be acknowledged and responded to
+    %% TEST: active structure produced read model (i.e., waitress responded by giving menu)
+    classDef actor-query fill: turquoise, stroke: red, color: black
+
+    %% ---------- ACTIVE STRUCTURE --------------------------------------------
+
+    %% Actor, an animated behavior owner (set of policies, i.e., job description) with data and state
+    %% TEST: reads model, issues commands and queries
+    classDef actor fill: yellow, stroke: black, color: black
+
+    %% Aggregate: a synthetic actor: data is repository, behavior is actions
+    %% TEST: Aggregates constructs together to formulate a clerk
+    classDef aggregate fill: yellow, stroke: red, color: black
+
+    %% External System: an active structure outside domain's control
+    %% TEST: immutable nature to the team (i.e., like a delivery service to a waitress)
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+
+    %% ---------- CONFLICT RESOLUTION -----------------------------------------
+
+    classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
+
+    %% ------------------------------------------------------------------------
+
+    %% ~~~~~~~~~~ The Eventstorming Ceremony ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    %% It is 1922! Claude and Vadim observe an old cowboy town: "this needs some steam"
+
+    %% STEP 1: Big Picture: Event Storming: What all happened in our business y'all?!
+    %% In what ORDER did it all happen?
+    %% What groups events bunch up together in? (boundaries)
+    %% Description: Place all domain events (orange) in chronological order left to right.
+    %%   Test each with SVO and "it happened AND consequence inevitable."
+    %%   Place hotspots (red) for conflicts and unknowns. Nothing else.
+    %%   1922 rule: everything must be physical -- paper, people, cabinets.
+    %%   Brainstorm until no more events come to mind, then vote to stop.
+
+    %% Theory: SVO
+    %% EVENT: [Subject (omitted: to be discovered later)] VERB (past tense) OBJECT (to be extracted later)
+    %% Example: [Claude] ATE a CAKE
+
+    %% STEP 2: Expansion (i.e., SVO expansion)
+    %% Event to read mode (i.e., payload)
+    %% Subject to event (i.e., actor)
+
+    %%  Object is a read model: green presentation
+    %%  Event      ->       Event
+    %%    |                   |
+    %%  Read model          Read model
+
+    %%  Subject is an actor: White Question Mark if unknown; leave it so
+    %%  Subject -> Event
+
+    %% STEP 3: Cause and Effect: The fundamental Theorems of ES
+
+    %% A. What Caused this Event? - first fundament theorem of ES
+    %% Remember, command prompts action on actor - (causality theorem)
+    %% Command -> Subject -> Event
+
+    %% B. What Policy (rule) Command Conforms to? - second fundamental theorem of ES
+    %% Remember, policy qualifiers are only: ALWAYS or IMMEDIATELY - (inevitability theorem)
+    %% Policy -> Command
+
+    %% STEP 4: Aggregation (i.e., software design)
+    %% --------------------------------------------------
+    %% | Aggregate: Clerk Bobby, does database adapters |
+    %% |------------------------------------------------|
+    %% | policy 1              |  read model A          |
+    %% | policy 2              |  read model B          |
+    %% | policy 3              |  entity C              |
+    %% | policy 4              |                        |
+    %% --------------------------------------------------
+
+    %% viola!
+
+    %% ========== STORE MEMORY ================================================
+
+    subgraph Domain["Domain Boundary"]
+        direction TB
+        Hippocampus["Hippocampus"]:::external-system
+        RequestedSave["Requested<br/>Saved"]:::domain-event
+        Memory["Memory"]:::read-model
+        SavedMemory["Saved<br/>Memory"]:::domain-event
+        HippocampusIn["Hippocampus<br/>(In)"]:::external-system
+        SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+    end
+
+    subgraph Adapter["Inner Adapter Layer"]
+        direction LR
+        MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
+        TranslatedMemory["Translated-Out"]:::domain-event
+        MemoryDataAdapterIn["Memory-Data<br/>Adapter<br/>(In?)"]:::actor
+        TranslatedData["Translated-In"]:::domain-event
+    end
+
+    subgraph ACL-Core["Port"]
+        direction TB
+        Port-Hole-Out["Port Channel Out"]
+        MemoryDataOut["Data<br/>Memory<br/>(DTO-Out)"]:::read-model
+        Port-Hole-In["Port Channel In"]
+        MemoryDataIn["Saved<br/>Data<br/>Memory<br/>(a DTO-In?)"]:::read-model
+    end
+
+    subgraph Driver["Outer Adapter Layer"]
+        direction LR
+        DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
+        DataSqlAdapterResult["Data-SQL<br/>Adapter<br/>(Result?)"]:::actor
+        RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+        SqlStatement["SQL<br/>Statement"]:::read-model
+        ReceivedResult["Received<br/>Result"]:::domain-event
+        QueryResult["Query<br/>Result"]:::read-model
+        DataSqlAdapterErr["Data-SQL<br/>Adapter<br/>(Err?)"]:::actor
+        ReceivedError["Received<br/>Error"]:::domain-event
+        SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+        ErrorDTO["Error<br/>DTO"]:::read-model
+    end
+
+    subgraph Infrastructure["Infrastructure Boundary"]
+        direction LR
+        SQLite["SQLite"]:::external-system
+        SQLiteErr["SQLite<br/>(Err)"]:::external-system
+        PersistedData["Persisted"]:::domain-event
+        FailedPersistence["Failed<br/>Persistence"]:::domain-event
+        SqlRecord["SQL<br/>Record"]:::read-model
+        SqlError["SQL<br/>Error"]:::read-model
+    end
+
+    subgraph NotYetKnown["Noman land"]
+        direction TB
+        TranslatedError["Translated<br/>Error"]:::domain-event
+        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+    end
+
+    %% Flow (time order, left to right)
+
+    Hippocampus --> RequestedSave
+    RequestedSave --- Memory
+
+    %% Command down
+    RequestedSave --> TranslatedMemory
+
+    MemoryDataAdapter --- TranslatedMemory
+    TranslatedMemory --- MemoryDataOut
+
+    %% Port traversal out (gate)
+    TranslatedMemory --> Port-Hole-Out
+    Port-Hole-Out --> RequestedPersistence
+
+    %% Port control arrangement
+    Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
+    Port-Hole-Out o--o MemoryDataOut
+    MemoryDataIn o--o Port-Hole-In
+
+    %% Outer Adapter
+    RequestedPersistence --- MemoryDataOut
+    DataSqlAdapter --- RequestedPersistence
+    RequestedPersistence --- SqlStatement
+
+    %% Command down to metal
+    RequestedPersistence --> PersistedData
+
+    %% Infrastructure bedrock
+    SQLite --- PersistedData
+    PersistedData --- SqlRecord
+
+    %% Command back up
+    PersistedData --> ReceivedResult
+
+    DataSqlAdapterResult --- ReceivedResult
+    ReceivedResult --- QueryResult
+
+    %% Hotspot: SQL Record vs Query Result -- same shape?
+    HotspotSqlShapes["❓ SQL Record<br/>vs Query Result<br/>same shape?"]:::hotspot
+
+    SqlRecord ~~~ HotspotSqlShapes
+    HotspotSqlShapes ~~~ QueryResult
+
+    %% Traverse port in (gate)
+    ReceivedResult --> Port-Hole-In
+    Port-Hole-In --> TranslatedData
+
+    ReceivedResult --- MemoryDataIn
+    MemoryDataAdapterIn --- TranslatedData
+    TranslatedData --- MemoryDataIn
+    TranslatedData --> SavedMemory
+
+    SavedMemory --> HippocampusIn
+    SavedMemoryObj --- SavedMemory
+
+    RequestedPersistence ~~~~~~ ReceivedResult
+    ReceivedResult ~~~~~~ ReceivedError
+
+    %% Failure fork
+    RequestedPersistence --> FailedPersistence
+    SQLiteErr --- FailedPersistence
+    FailedPersistence --- SqlError
+
+    %% Failure return path
+    PersistedData ~~~~~~ FailedPersistence
+    FailedPersistence --> ReceivedError
+    DataSqlAdapterErr --- ReceivedError
+    ReceivedError --- SqlErrorReceived
+    ReceivedError --- ErrorDTO
+
+%% Noman Land -- not yet wired
+%%    TranslatedError
+%%    RejectedSave
