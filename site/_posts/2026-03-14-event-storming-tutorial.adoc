@@ -55,7 +55,7 @@ Claude had the vocabulary from training but not the understanding.
 This is what it looks like when one teaches the other by doing.
 
 Alternatively, many people read the book and watch a video. There are some good guides out there.
-Like the  {judy-tutorial} by {judy-birmoser} on Miro. But ALL of these will come dead-short.
+Like the  {judy-tutorial} by {judy-birmoser} on Miro. But ALL of these will fall depth short.
 And there is no way around it. Because Eventstorming (notice, hackers spell it in one word),
 is not a process or a method. It is a *_mindset_* and a *_social contract_*.
 Humans can only learn such things by experiencing them alone.
@@ -788,7 +788,7 @@ With this, all four aggregation areas are complete:
 ++++
 <div id="es-0001-step4">
 <pre class="mermaid">
-{% include diagrams/es-0001-memory-stored.mmd %}
+{% include diagrams/es-0001-step4-aggregation.mmd %}
 </pre>
 </div>
 ++++
@@ -806,4 +806,131 @@ Now we have everything we need for the most beautiful part.
 
 == Step 5: Testing -- the Ceremony Produces Its Own Tests
 
-_Tutorial continues as the ceremony progresses..._
+Steps 1 through 4 built the board. Events, actors, commands, policies, aggregates.
+The board is rich, correct, and -- honestly -- a mess. Wiring everywhere.
+Events connected to actors connected to commands connected through ports.
+A correct mess, but a mess.
+
+Step 5 cleans it up. And in doing so, produces something nobody expected the first time they see it.
+
+=== The Pattern
+
+Take every aggregate. Look at its policies, its commands, and the events those commands produce.
+Rearrange them into chains:
+
+**Policy -> Command -> (Model) -> Event -> (Model)**
+
+Read it aloud:
+
+- **Given** this Model (the precondition, the input)
+- **When** this Policy fires this Command (the rule and its action)
+- **Then** this Event produces this Model (the outcome and its payload)
+
+That's Given-When-Then. The ceremony just wrote your tests.
+
+Not test templates. Not abstract test strategies. Actual behavioral specifications
+that the business reads in their language and the engineers execute as code.
+Same artifact. Two audiences. Zero translation.
+
+=== SQLite -- the Simplest Aggregate
+
+SQLite has one policy, one command, and two possible outcomes. The simplest GWT on the board.
+
+**Policy:** "Whenever SQL Statement Arrives, Always and Immediately Execute it." +
+**Command:** "Execute this SQL Statement." +
+**Input Model:** SQL Statement. +
+**Outcome (happy):** Persisted -> SQL Record. +
+**Outcome (failure):** Failed Persistence -> SQL Error.
+
+Two GWT chains:
+
+1. **Given** a SQL Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Persisted with a SQL Record.
+2. **Given** a SQL Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Failed Persistence with a SQL Error.
+
+Same Given. Same When. Two Thens. One test specification with a fork.
+
+=== What Happens to the Aggregate
+
+Here is where it gets architectural.
+
+Once the GWT chains are extracted, everything inside the aggregate becomes **internal behavior.**
+The policy, the command, the events, the models -- they go inside a GWT box.
+The aggregate itself becomes the **interface.** Nothing outside reaches into the box.
+External connections go through the aggregate, not through individual events or commands.
+
+.What happens to aggregates in Step 5 -- internal behavior encapsulated, aggregate becomes the interface.
+[#img-step5-aggregates,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-what-happens-to-aggregates.png["The GWT box encapsulates internal behavior. External connections go through the aggregate.",width=100%]
+{nbsp}
+
+Before Step 5: the outer adapter connected directly to ExecuteSqlCmd (reaching into SQLite's internals).
+PersistedData connected directly to ReceivedResult (leaking out of SQLite's internals).
+Wiring everywhere. Correct, but coupled.
+
+After Step 5: the outer adapter connects to **SQLite.** SQLite connects to ReceivedResult and ReceivedError.
+The GWT box is private. The aggregate is the interface. Clean boundaries.
+
+This is an https://pubs.opengroup.org/architecture/archimate32-doc/[Archimate,window=_blank] Application Internal Behavior diagram.
+Each aggregate becomes a component with encapsulated behavior and defined interfaces.
+The eventstorming ceremony just produced a component architecture -- not by designing one,
+but by extracting test specifications from the business process.
+
+The scattered process flow of Step 4 becomes the component architecture of Step 5.
+Same information. Different organization. The tests ARE the architecture.
+
+=== The Declutter
+
+Look at what disappeared:
+
+- `RequestedPersistence -> PersistedData` -- redundant. The GWT chain expresses the causality.
+- `RequestedPersistence -> FailedPersistence` -- same. Absorbed into the chain.
+- `SQLite --- PersistedData` -- the actor-event association is now structural (the box), not wiring.
+- `SQLite --- FailedPersistence` -- same.
+
+Four connections removed from SQLite alone. Multiply that across all aggregates
+and the board shrinks dramatically. The mess becomes a diagram.
+
+=== The Reenactment -- Running the Test Live
+
+In a real ceremony, before moving to the next aggregate, you **act it out.**
+
+Someone plays the filing clerk. The group watches her work.
+She stands at her station. Something arrives.
+"Whenever SQL Statement Arrives, Always and Immediately Execute it" -- that's her policy.
+She reads it. She executes. She produces a SQL Record and puts it on the counter.
+
+The group watches. And asks questions.
+
+"What did you just receive?" -- "A form. Standardized. Template with blanks filled in." +
+"A free-form note?" -- "No. A standardized form. Known structure. Blanks filled in with data."
+
+Stop. That's not "SQL Statement." That's a **Prepared Statement.** Template and parameters.
+The filing clerk doesn't accept arbitrary text -- she accepts a contract.
+We wrote "SQL Statement" in the GWT chain because that's what Step 4 gave us.
+The reenactment just refined it. The Given has a sharper precondition now.
+
+"What if the filing cabinet is locked?" -- She tries. She fails. She produces an SQL Error instead.
+Same policy, same command, different outcome. The failure path validates itself.
+
+.The reenactment moment -- the filing clerk looks at the prepared statement and asks: "Can I DO this?"
+[#img-step5-reenactment,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-can-i-actually-do-this.png["The filing clerk reenacts her policy. Can she execute this prepared statement? Sometimes yes, sometimes no.",width=100%]
+{nbsp}
+
+The refined GWT chains:
+
+1. **Given** a Prepared Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Persisted with a SQL Record.
+2. **Given** a Prepared Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Failed Persistence with a SQL Error.
+
+This is the ceremony at its most powerful. The GWT specification isn't written at a whiteboard
+by architects staring at boxes. It's discovered by watching a human being reenact the policy
+and having the group catch what's missing. The poor soul pretending to be the filing clerk
+reveals more about the business process in five minutes than a week of document review.
+
+The reenactment IS the test. Step 5 just writes it down.
+
+
+
+
+
+_Tutorial continues as we apply Step 5 to the remaining aggregates..._

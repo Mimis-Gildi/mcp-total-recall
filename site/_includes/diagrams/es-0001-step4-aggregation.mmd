@@ -1,102 +1,25 @@
 %%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
 graph LR
 
-    %% ---------- FACTS: Past tense -------------------------------------------
+    %% ========== STEP 4 SNAPSHOT: Aggregation ==================================
+    %% Captured at the end of Step 4 (Aggregation -- software design)
+    %% Policies consolidated into Job Description boxes per aggregate.
+    %% Local commands boxed. Integration commands loose.
+    %% Duplicate actors merged (HippocampusIn/Err -> Hippocampus, etc.)
+    %% Duplicate commands consolidated (ReturnErrorCmd -> ReturnResultCmd, etc.)
+    %% TransactionId removed (will be re-added with architectural trick).
+    %% Gap filled: Data-SQL Adapter gained local commands (TranslateDtoToSqlCmd, TranslateSqlToDtoCmd).
+    %% Confirmation commands moved from Domain to Inner Adapter (she issues them).
 
-    %% Domain Event is a FACT that changed the business (i.e., payment of $10 received)
-    %% TEST: it has happened AND consequence inevitable
     classDef domain-event fill: orange, stroke: magenta, color: black
-
-    %% A View IMPRESSED upon an active structure to elicit behavior: fact presentation (i.e., presented menu )
-    %% TEST: it was shown AND actor is reacting
     classDef read-model fill: green, stroke: white, color: white
-
-    %% ---------- BEHAVIOR ----------------------------------------------------
-
-    %% Business Process, a single unit of behavior an active structure owns (i.e., seating customer for hostess)
-    %% TEST: always OR inevitably TRIGGERS a specific EVENT (i.e., causes next fact)
     classDef actor-policy fill: pink, stroke: green, color: black
-
-    %% Command is an active interaction WANTING an EVENT to happen: has a source (issuer),
-    %% destination (provider), and optional response (OK, NO, none)
-    %% Explanation: Act of policy manifestation TO CHANGE things (i.e., event is wanted)
-    %% TEST: from actor to recipient to cause an event (i.e., waitress to cook "make me sandwich")
     classDef actor-command fill: blue, stroke: white, color: yellow
-
-    %% (OPTIONAL) Query, a request for inevitable read model;
-    %% (a non-event command idea) must be acknowledged and responded to
-    %% TEST: active structure produced read model (i.e., waitress responded by giving menu)
     classDef actor-query fill: turquoise, stroke: red, color: black
-
-    %% ---------- ACTIVE STRUCTURE --------------------------------------------
-
-    %% Actor, an animated behavior owner (set of policies, i.e., job description) with data and state
-    %% TEST: reads model, issues commands and queries
     classDef actor fill: yellow, stroke: black, color: black
-
-    %% Aggregate: a synthetic actor: data is repository, behavior is actions
-    %% TEST: Aggregates constructs together to formulate a clerk
     classDef aggregate fill: yellow, stroke: red, color: black
-
-    %% External System: an active structure outside domain's control
-    %% TEST: immutable nature to the team (i.e., like a delivery service to a waitress)
     classDef external-system fill: blueviolet, stroke: blue, color: white
-
-    %% ---------- CONFLICT RESOLUTION -----------------------------------------
-
     classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
-
-    %% ------------------------------------------------------------------------
-
-    %% ~~~~~~~~~~ The Eventstorming Ceremony ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    %% It is 1922! Claude and Vadim observe an old cowboy town: "this needs some steam"
-
-    %% STEP 1: Big Picture: Eventstorming: What all happened in our business y'all?!
-    %% In what ORDER did it all happen?
-    %% What groups events bunch up together in? (boundaries)
-    %% Description: Place all domain events (orange) in chronological order left to right.
-    %%   Test each with SVO and "it happened AND consequence inevitable."
-    %%   Place hotspots (red) for conflicts and unknowns. Nothing else.
-    %%   1922 rule: everything must be physical -- paper, people, cabinets.
-    %%   Brainstorm until no more events come to mind, then vote to stop.
-
-    %% Theory: SVO
-    %% EVENT: [Subject (omitted: to be discovered later)] VERB (past tense) OBJECT (to be extracted later)
-    %% Example: [Claude] ATE a CAKE
-
-    %% STEP 2: Expansion (i.e., SVO expansion)
-    %% Event to read mode (i.e., payload)
-    %% Subject to event (i.e., actor)
-
-    %%  Object is a read model: green presentation
-    %%  Event      ->       Event
-    %%    |                   |
-    %%  Read model          Read model
-
-    %%  Subject is an actor: White Question Mark if unknown; leave it so
-    %%  Subject -> Event
-
-    %% STEP 3: Cause and Effect: The fundamental Theorems of ES
-
-    %% A. What Caused this Event? - first fundament theorem of ES
-    %% Remember, command prompts action on actor - (causality theorem)
-    %% Command -> Subject -> Event
-
-    %% B. What Policy (rule) Command Conforms to? - second fundamental theorem of ES
-    %% Remember, policy qualifiers are only: ALWAYS or IMMEDIATELY - (inevitability theorem)
-    %% Policy -> Command
-
-    %% STEP 4: Aggregation (i.e., software design)
-    %% --------------------------------------------------
-    %% | Aggregate: Clerk Bobby, does database adapters |
-    %% |------------------------------------------------|
-    %% | policy 1              |  read model A          |
-    %% | policy 2              |  read model B          |
-    %% | policy 3              |  entity C              |
-    %% | policy 4              |                        |
-    %% --------------------------------------------------
-
-    %% viola!
 
     %% ========== STORE MEMORY ================================================
 
@@ -152,7 +75,7 @@ graph LR
         ReturnResultCmd["Return this<br/>Result"]:::actor-command
         DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
         RequestedPersistence["Requested<br/>Persistence"]:::domain-event
-        SqlStatement["Prepared<br/>Statement"]:::read-model
+        SqlStatement["SQL<br/>Statement"]:::read-model
         ReceivedResult["Received<br/>Result"]:::domain-event
         QueryResult["Query<br/>Result"]:::read-model
         ReceivedError["Received<br/>Error"]:::domain-event
@@ -160,21 +83,13 @@ graph LR
     end
 
     subgraph Infrastructure["Infrastructure Boundary"]
+        AlwaysExecutePolicy["Whenever SQL Statement Arrives<br/>Always and Immediately<br/>Execute it"]:::actor-policy
+        ExecuteSqlCmd["Execute this<br/>SQL Statement"]:::actor-command
         SQLite["SQLite"]:::external-system
-        subgraph SQLiteGWT["SQLite — Given-When-Then"]
-            %% Given: Prepared Statement (input model)
-            PreparedStatement["Prepared<br/>Statement"]:::read-model
-            %% When: Policy → Command
-            AlwaysExecutePolicy["Whenever SQL Statement Arrives<br/>Always and Immediately<br/>Execute it"]:::actor-policy
-            ExecuteSqlCmd["Execute this<br/>SQL Statement"]:::actor-command
-            %% Then (happy): Event → Model
-            PersistedData["Persisted"]:::domain-event
-            SqlRecord["SQL<br/>Record"]:::read-model
-            %% Then (failure): Event → Model
-            FailedPersistence["Failed<br/>Persistence"]:::domain-event
-            SqlError["SQL<br/>Error"]:::read-model
-        end
-        SQLiteGWT --- SQLite
+        PersistedData["Persisted"]:::domain-event
+        FailedPersistence["Failed<br/>Persistence"]:::domain-event
+        SqlRecord["SQL<br/>Record"]:::read-model
+        SqlError["SQL<br/>Error"]:::read-model
     end
 
 %% Noman land is empty!
@@ -217,22 +132,21 @@ graph LR
     RequestedPersistence --- MemoryDataOut
     RequestedPersistence --- SqlStatement
 
-    %% Integration command: outer adapter --> infrastructure (through aggregate)
-    DataSqlAdapter --> SQLite
-
-    %% SQLite GWT: Policy → Command → (Model) → Event → (Model)
+    %% Integration command: outer adapter --> infrastructure
+    DataSqlAdapter --> ExecuteSqlCmd
     AlwaysExecutePolicy --> ExecuteSqlCmd
-    ExecuteSqlCmd --- PreparedStatement
-    PreparedStatement --> PersistedData
+    ExecuteSqlCmd --> PersistedData
+    RequestedPersistence --> PersistedData
+
+    %% Infrastructure bedrock
+    SQLite --- PersistedData
     PersistedData --- SqlRecord
-    PreparedStatement --> FailedPersistence
-    FailedPersistence --- SqlError
 
     %% Return path (aggregated)
     AlwaysReceiveResultPolicy --> DataSqlAdapter
     DataSqlAdapter --> TranslateSqlToDtoCmd
     TranslateSqlToDtoCmd --> DataSqlAdapter
-    SQLite --> ReceivedResult
+    PersistedData --> ReceivedResult
 
     DataSqlAdapter --- ReceivedResult
     ReceivedResult --- QueryResult
@@ -257,13 +171,16 @@ graph LR
     SavedMemory --> Hippocampus
     SavedMemoryObj --- SavedMemory
 
-    %% Failure fork -- absorbed into SQLite GWT chain above
+    %% Failure fork (same actor, different outcome)
+    RequestedPersistence --> FailedPersistence
+    SQLite --- FailedPersistence
+    FailedPersistence --- SqlError
 
     %% Failure return path (aggregated)
     AlwaysReceiveErrorPolicy --> DataSqlAdapter
     DataSqlAdapter --> TranslateSqlToDtoCmd
     TranslateSqlToDtoCmd --> DataSqlAdapter
-    SQLite --> ReceivedError
+    FailedPersistence --> ReceivedError
     DataSqlAdapter --- ReceivedError
     ReceivedError --- SqlErrorReceived
 
