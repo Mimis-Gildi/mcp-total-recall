@@ -101,12 +101,21 @@ graph LR
     %% ========== STORE MEMORY ================================================
 
     subgraph Domain["Domain Boundary"]
-        StoreMemoryCmd["Save THIS<br/>Memory<br/>For me"]:::actor-command
         Hippocampus["Hippocampus"]:::external-system
-        SavedMemory["Saved<br/>Memory"]:::domain-event
-        SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
-        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
-        RejectedMemory["Rejected<br/>Memory"]:::read-model
+        subgraph HippocampusGWT["Hippocampus — Given-When-Then"]
+            %% Policy
+            AlwaysSavePolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            %% Command
+            StoreMemoryCmd["Save THIS<br/>Memory<br/>For me"]:::actor-command
+            %% Read Models
+            MemoryToSave["Memory"]:::read-model
+            SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+            RejectedMemory["Rejected<br/>Memory"]:::read-model
+            %% Events
+            SavedMemory["Saved<br/>Memory"]:::domain-event
+            RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+        end
+        HippocampusGWT --- Hippocampus
     end
 
     subgraph Adapter["Inner Adapter Layer"]
@@ -208,8 +217,13 @@ graph LR
         SQLiteGWT --- SQLite
     end
 
-    %% Domain narrative anchor
-    Hippocampus --- StoreMemoryCmd
+    %% Hippocampus GWT: Policy → Command → Event → (Model)
+    AlwaysSavePolicy --- MemoryToSave
+    MemoryToSave --> StoreMemoryCmd
+    StoreMemoryCmd --> SavedMemory
+    SavedMemoryObj --- SavedMemory
+    StoreMemoryCmd --> RejectedSave
+    RejectedMemory --- RejectedSave
 
     %% Archimate: Cook serves Domain; Cook uses Port; Driver serves Port
     DoomsdayClock --> |"TRIGGERS"| MemDataAdapterGWT
@@ -276,6 +290,4 @@ graph LR
     DtoErr--> ReceivedError
     AlwaysReceivePolicy  --> TranslateSqlToDtoCmd
 
-    %% Domain events (domain boundary, not connected to adapter internals)
-    SavedMemoryObj --- SavedMemory
-    RejectedMemory --- RejectedSave
+    %% Domain events now wired inside Hippocampus GWT

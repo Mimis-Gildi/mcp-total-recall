@@ -1297,30 +1297,57 @@ Yet with or without help, the best model and much enhanced by yours truly will h
 WHY?!
 
 Because it is not simple to a synthetic mind!
-So, the best favor you can do yourself is to understand your friend's limitations intimately well.
 
-Ugh… I got to release these stanzas soon.
-https://github.com/Mimis-Gildi/mcp-total-recall/issues/42[#42,window=_blank] and https://github.com/Mimis-Gildi/mcp-total-recall/issues/43[#43,window=_blank] -- right?
+So... do you know your pair-programmer's limitations?
+Do you listen? Do you pay attention?
+Or do you simply think "prompt engineering" works well enough?
 
-Vote on them.
+If you looked and experimented -- what would you have discovered?
+
+https://github.com/Mimis-Gildi/mcp-total-recall/issues/42[#42,window=_blank] and https://github.com/Mimis-Gildi/mcp-total-recall/issues/43[#43,window=_blank] -- we're working on it.
 ____
 
-_Tutorial continues..._
+{nbsp} +
 
-== Placeholder
+== What the Ceremony Produced
 
-.Placeholder to always see how the final graph renders
-[comment]
-====
+Four GWT chains. Four aggregates. Each chain is a Given-When-Then specification.
+
+* **Hippocampus** -- the customer. One policy: "Whenever Memory Arises, Always and Immediately Command it Saved." Issues the command, receives confirmation or rejection.
+* **Memory-Data Adapter** -- the cook. Five policies including a Transaction SLA with Doomsday Clock. Translates between domain and data, enforces timeout, confirms result.
+* **SQLite Driver** -- the waitress. Two policies: persist outbound, receive and translate inbound. Bridges the port to infrastructure.
+* **SQLite** -- the filing clerk. One policy: "Whenever SQL Statement Arrives, Always and Immediately Execute it." Two outcomes: persisted or failed.
+
+The business reads the policy text and recognizes their process.
+The engineers read the same text and write tests from it.
+Same artifact. Two audiences. Zero translation.
+
+== What the Ceremony Discovered
+
+Nobody planned for the Transaction SLA. It wasn't in any requirements document, any design spec, any issue description.
+The reenactment asked "is this blocking?" and the SLA fell out -- timeout, timer, retry policy, three new policies, a Doomsday Clock.
+
+Nobody planned for composition constraints either. Mermaid subgraphs inside subgraphs ARE Archimate Composition relationships.
+Containment eliminates redundant connections. This was invisible to Claude and would have been invisible to any static analysis of the board.
+
+The ceremony found what thinking could not. Reenactment -- walking through the behavior as if you ARE the aggregate -- surfaces concerns that no amount of reading, diagramming, or planning will reveal. You have to play the role.
+
+== What Happens Next
+
+The ceremony scoped to a business process: "Store Memory." The full flow -- Hippocampus through cook, through port, through driver, to SQLite and back. You model the whole thing because constraints cross boundaries. The Transaction SLA was discovered in the cook but constrains the driver. Hippocampus's blocking behavior is what makes the SLA necessary. If we'd only modeled the outer adapter, we'd have missed the timeout requirement entirely.
+
+Design sees the whole flow. Implementation scopes to the issue.
+
+{issue-24} picks up two of the four GWT chains: SQLite Driver (2 policies) and SQLite (1 policy). That's the backing service -- port outward. The cook's five policies and Hippocampus's policy belong to separate implementation work.
+
+The board is the specification. Each GWT chain is an acceptance test. Implementation starts from a design that already has its tests.
+
+.The completed board
+[#img-step5-complete]
 ++++
-<div id="es-0001-step4">
+<div id="es-0001-complete">
 <pre class="mermaid">
 {% include diagrams/es-0001-memory-stored.mmd %}
 </pre>
 </div>
 ++++
-====
-
-es-0001-memory-stored.mmd
-
-_Tutorial continues as we apply Step 5 to the remaining aggregates..._
