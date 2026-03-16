@@ -994,6 +994,26 @@ Three chains, not four. Policy 1 has one outcome (she always produces a Prepared
 Same declutter as SQLite. The direct connections between DataSqlAdapter and individual events disappear.
 The self-command patterns (`DataSqlAdapter ->TranslateDtoToSqlCmd ->DataSqlAdapter`) collapse into the GWT chain. Everything goes through the aggregate interface. The board loses wiring. The architecture gains clarity.
 
+=== The Reenactment -- the Waitress IS the Driver
+
+Someone plays the waitress. She stands at her station. A DTO arrives from the counter.
+
+"What do you do with it?" -- "I translate it. Into a Prepared Statement." +
+"How?" -- "I know the table schema. The column names. The parameter bindings. I pull out a blank form and fill it in." +
+"Where did you learn the filing clerk's language?" -- "I have to know it. That's my whole job on this side."
+
+Stop. She knows the filing clerk's filing system. She knows SQLite's table schema, column names, error codes. That knowledge doesn't live in the port. Doesn't live in the cook. It lives in HER.
+
+She's not "an adapter that speaks SQL." She IS the SQLite driver. The exact, specific, backing-service driver for SQLite.
+
+This is a massive discovery. The outer adapter isn't a generic translator -- it's the **database driver** for a specific backing service. If we swap SQLite for PostgreSQL, we don't touch the port (the counter stays the same shape). We don't touch the cook (she still translates domain to DTO and back). We replace the waitress. We hire a PostgreSQL driver who knows PostgreSQL's filing system.
+
+The hexagonal architecture promise -- "swap any backing service without changing domain logic" -- just became concrete through a five-minute reenactment. The port is the contract. The inner adapter is the domain translator. The outer adapter is the driver. Not metaphorically. Literally.
+
+**Rename:** Data-SQL Adapter -> **SQLite Driver.**
+
+The name was always too generic. "Data-SQL" could be any SQL database. But she doesn't speak generic SQL. She speaks SQLite. She knows SQLite's type affinity, SQLite's error codes, SQLite's prepared statement semantics. A PostgreSQL driver would know different things. The name should say what she is.
+
 '''
 
 == Placeholder

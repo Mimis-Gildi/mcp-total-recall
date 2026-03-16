@@ -140,23 +140,27 @@ graph LR
     end
 
     subgraph Driver["Outer Adapter Layer"]
-        DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
+        SQLiteDriver["SQLite<br/>Driver"]:::actor
         ReturnResultCmd["Return this<br/>Result"]:::actor-command
-        subgraph DataSqlGWT["Data-SQL Adapter — Given-When-Then"]
+        subgraph SQLiteDriverGWT["SQLite Driver — Given-When-Then"]
             %% Policy 1: Persist (outbound)
             AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
             TranslateDtoToSqlCmd["Translate DTO<br/>to Prepared Statement"]:::actor-command
+            DtoIn["DTO<br/>(in)"]:::read-model
+            DtoOut["DTO<br/>Persisted<br/>(out)"]:::read-model
+            DtoErr["DTO<br/>ERROR<br/>(out)"]:::read-model
             RequestedPersistence["Requested<br/>Persistence"]:::domain-event
             SqlStatement["Prepared<br/>Statement"]:::read-model
-            %% Policy 2: Receive (inbound) -- consolidated, chain wired next
+            %% Transaction ID: domain construct, links input DTO to output Query Result
+            TransactionId["Transaction<br/>ID"]:::read-model
+            %% Policy 2: Receive (inbound) -- consolidated, one output model
             AlwaysReceivePolicy["Whenever SQLite Responds<br/>Always and Immediately<br/>Receive and Translate"]:::actor-policy
             TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
             ReceivedResult["Received<br/>Result"]:::domain-event
-            QueryResult["Query<br/>Result"]:::read-model
             ReceivedError["Received<br/>Error"]:::domain-event
-            SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+            QueryResult["Query<br/>Result"]:::read-model
         end
-        DataSqlGWT --- DataSqlAdapter
+        SQLiteDriverGWT --- SQLiteDriver
     end
 
     subgraph Infrastructure["Infrastructure Boundary"]
@@ -201,7 +205,7 @@ graph LR
     %% Integration command: inner adapter --> port --> outer adapter
     MemoryDataAdapter --> PersistDataCmd
     PersistDataCmd --> Port-Hole-Out
-    Port-Hole-Out --> DataSqlAdapter
+    Port-Hole-Out --> SQLiteDriver
 
     %% Port control arrangement
 %%    Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
@@ -209,13 +213,19 @@ graph LR
     MemoryDataIn o--o Port-Hole-In
     ErrorDTO o--o Port-Hole-In
 
-    %% Data-SQL Adapter GWT Policy 1: Policy → Command → Event → (Model)
-    AlwaysPersistPolicy --> TranslateDtoToSqlCmd
-    TranslateDtoToSqlCmd --> RequestedPersistence
-    RequestedPersistence --- SqlStatement
+    %% SQLite Driver GWT Policy 1: Policy → Command → (Model) → Event → (Model)
+    AlwaysPersistPolicy --- DtoIn
+    DtoIn--> TranslateDtoToSqlCmd
+    TranslateDtoToSqlCmd  --- SqlStatement
+    SqlStatement --> RequestedPersistence
+
+    %% Transaction ID links domain-facing models across the two policies
+    DtoIn --- TransactionId
+    TransactionId --- DtoOut
+    TransactionId --- DtoErr
 
     %% Integration command: outer adapter --> infrastructure (through aggregate)
-    DataSqlAdapter --> SQLite
+    SQLiteDriver --> SQLite
 
     %% SQLite GWT: Policy → Command → (Model) → Event → (Model)
     AlwaysExecutePolicy --> ExecuteSqlCmd
@@ -225,18 +235,20 @@ graph LR
     PreparedStatement --> FailedPersistence
     FailedPersistence --- SqlError
 
-    %% Data-SQL Adapter GWT Policy 2: Policy → Command → Event → (Model)
-    AlwaysReceivePolicy --> TranslateSqlToDtoCmd
-    TranslateSqlToDtoCmd --> ReceivedResult
-    ReceivedResult --- QueryResult
-    TranslateSqlToDtoCmd --> ReceivedError
-    ReceivedError --- SqlErrorReceived
+    %% SQLite Driver GWT Policy 2: Policy → Command → Event → (Model)
+    TranslateSqlToDtoCmd --- DtoOut
+    DtoOut --> ReceivedResult
+    TranslateSqlToDtoCmd --- DtoErr
+    DtoErr--> ReceivedError
+    AlwaysReceivePolicy --- QueryResult
+    QueryResult --> TranslateSqlToDtoCmd
+%%    ReceivedError --- QueryResult
 
     %% Integration: SQLite responds through aggregate interface
-    SQLite --> DataSqlAdapter
+    SQLite --> SQLiteDriver
 
     %% Integration command: outer adapter --> port (return)
-    DataSqlAdapter --> ReturnResultCmd
+    SQLiteDriver --> ReturnResultCmd
     ReturnResultCmd --> Port-Hole-In
     Port-Hole-In --> TranslatedData
 
@@ -257,7 +269,7 @@ graph LR
 
     %% Failure fork -- absorbed into SQLite GWT chain above
 
-    %% Failure return path -- absorbed into Data-SQL Adapter GWT Policy 2 above
+    %% Failure return path -- absorbed into SQLite Driver GWT Policy 2 above
 
     %% Failure through port to inner adapter (via same ReturnResultCmd integration command)
     AlwaysTranslateErrPolicy --> MemoryDataAdapter
