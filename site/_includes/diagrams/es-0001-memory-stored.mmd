@@ -112,25 +112,57 @@ graph LR
     subgraph Adapter["Inner Adapter Layer"]
         MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
         subgraph MemDataAdapterGWT["Memory-Data Adapter — Given-When-Then"]
-            %% Policy 1: Accept and Translate (outbound)
-            AlwaysAcceptAndTranslatePolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            %% Policies
+            AlwaysAcceptAndTranslatePolicy["Whenever Memory Arises<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            AlwaysTranslateAndConfirmPolicy["Whenever DTO Returns<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Translate Back and Confirm"]:::actor-policy
+            AlwaysCancelTransactionClock["Whenever DTO Returns<br/>Always and Immediately<br/>Cancel Transaction Clock"]:::actor-policy
+
+
+            %% Commands
             TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
-            MemoryIn["Memory"]:::read-model
-            TranslatedMemory["Translated-Out"]:::domain-event
-            DtoForPort["DTO<br/>(for port)"]:::read-model
-            %% Transaction ID: links domain-facing models across the two policies
-            CookTransactionId["Transaction<br/>ID"]:::read-model
-            %% Policy 2: Translate Back and Confirm (inbound)
-            AlwaysTranslateAndConfirmPolicy["Whenever DTO Returns<br/>Always and Immediately<br/>Translate Back and Confirm"]:::actor-policy
             TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
+
+            CancelClockCommand["STOP<br/>Transaction Clock"]:::actor-command
+
+
+            %% Read Model
+            MemoryIn["Memory"]:::read-model
+            DtoForPort["DTO<br/>(for port)"]:::read-model
             DtoFromPort["DTO<br/>(from port)"]:::read-model
-            TranslatedData["Translated-In"]:::domain-event
             ConfirmedMemory["Confirmed<br/>Memory"]:::read-model
-            TranslatedError["Translated<br/>Error"]:::domain-event
             RejectedMemoryOut["Rejected<br/>Memory"]:::read-model
+
+            TransactionIdCancelClock["Transaction<br/>ID"]:::read-model
+
+            %% Events
+            TranslatedMemory["Translated-Out"]:::domain-event
+            TranslatedData["Translated-In"]:::domain-event
+            TranslatedError["Translated<br/>Error"]:::domain-event
+
+            TransactionClockCanceledEvent["Transaction Clock<br/>STOPPED<br/>(Cancelled)"]:::domain-event
+
+            subgraph Transaction["Transaction SLA"]
+                %% Policy
+                AlwaysStartTheClock["Whenever Memory Arises<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Start Transaction Clock"]:::actor-policy
+                AlwaysExpireTransaction["Whenever Transaction Clock Expires<br/>Always and Immediately<br/>Error Out the Save Command"]:::actor-policy
+
+                %% Read Model
+                TransactionIdRoot["Transaction<br/>ID"]:::read-model
+                TransactionIdCancel["Transaction<br/>ID"]:::read-model
+
+                %% Command
+                StartClockCommand["START<br/>Transaction Clock"]:::actor-command
+                CancelTransactionCommand["CANCEL<br/>Transaction"]:::actor-command
+
+                %% Event
+                ClockStartedEvent["Transaction Clock<br/>STARTED"]:::domain-event
+                TransactionCancelledEvent["Transaction<br/>CANCELLED"]:::domain-event
+            end
+
         end
         MemDataAdapterGWT --- MemoryDataAdapter
     end
+    DoomsdayClock(("Doomsday Clock")):::external-system
 
     subgraph ACL-Core["Port"]
         DataPort["Data<br/>Port"]
@@ -176,14 +208,11 @@ graph LR
         SQLiteGWT --- SQLite
     end
 
-%% Noman land is empty!
-
-    %% Flow
-
     %% Domain narrative anchor
     Hippocampus --- StoreMemoryCmd
 
     %% Archimate: Cook serves Domain; Cook uses Port; Driver serves Port
+    DoomsdayClock --> |"TRIGGERS"| MemDataAdapterGWT
     MemoryDataAdapter --> |"Serves(Memory Persistence)"| Hippocampus
     DataPort --> |"Serves(Abstract Data Persistence)"| MemoryDataAdapter
     SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
@@ -195,9 +224,20 @@ graph LR
     DtoForPort --> TranslatedMemory
 
     %% Transaction ID links domain-facing models across the two policies
-    MemoryIn --- CookTransactionId
-    CookTransactionId --- ConfirmedMemory
-    CookTransactionId --- RejectedMemoryOut
+    AlwaysTranslateAndConfirmPolicy --- AlwaysCancelTransactionClock
+
+    AlwaysCancelTransactionClock --- TransactionIdCancelClock
+    TransactionIdCancelClock --> CancelClockCommand
+    CancelClockCommand --> TransactionClockCanceledEvent
+
+    AlwaysStartTheClock --- TransactionIdRoot
+    TransactionIdRoot --> StartClockCommand
+    StartClockCommand --> ClockStartedEvent
+
+    AlwaysExpireTransaction --- TransactionIdCancel
+    TransactionIdCancel --> CancelTransactionCommand
+    CancelTransactionCommand --> TransactionCancelledEvent
+
 
     %% Memory-Data Adapter GWT Policy 2: Translate Back and Confirm (inbound)
     AlwaysTranslateAndConfirmPolicy --- DtoFromPort

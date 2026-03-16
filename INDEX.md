@@ -58,36 +58,55 @@ Step 1 COMPLETE. Step 2 COMPLETE. Step 3 COMPLETE. Step 4 COMPLETE. Step 5 NEXT.
 - **Duplicate commands consolidate:** Same words, different payload = one command. Applied to: TranslateToMemoryCmd (success+error), ReturnResultCmd (success+error), ConfirmResultCmd (success+error).
 - **Mermaid layout issue:** Moving ExecuteSqlCmd to outer adapter broke vertical positioning. Kept in Infrastructure for layout. Layout is Mermaid's problem, not ours.
 
-### Step 5 Preview (Testing)
+### Step 5 Status: IN PROGRESS
 
-Vadim revealed what comes after aggregation: the testing step rearranges aggregate artifacts into:
+Step 5 rearranges aggregate artifacts into GWT chains. Each chain IS a Given-When-Then specification.
 
-**Policy -> Command -> (Model) -> Event -> (Model)**
+**Completed:**
+- SQLite GWT -- done (previous session)
+- SQLite Driver GWT -- done (previous session). Renamed from Data-SQL Adapter. Archimate Access to SQLite, Serves to Data Port.
+- Memory-Data Adapter (cook) -- consolidation done (5→2 policies). Reenactment done: discovered Doomsday Clock, Transaction SLA, 3 additional policies (5 total). Vadim built the board wiring -- Claude could not (composition blindness).
 
-This IS Given-When-Then. Each chain is a behavioral test specification. The ceremony produces its own tests. Business reads it in their language. Engineers test it as specifications. Same artifact, two audiences.
+**Cook's Five Policies (from reenactment):**
+1. "Whenever Memory Arises, It will carry a Transaction ID, Always and Immediately Command it Saved"
+2. "Whenever a Memory with Transaction ID shows up, Always and Immediately Start Transaction Clock" (child of 1, inside Transaction SLA)
+3. "Whenever Transaction Clock Expires, Always and Immediately Error Out the Save Command" (triggered by Clock, inside Transaction SLA)
+4. "Whenever DTO Returns, Always and Immediately Cancel Transaction Clock" (even if already expired)
+5. "Whenever DTO Returns, It will carry a Transaction ID, Always and Immediately Translate Back and Confirm"
+
+**Board state:** Vadim updated `es-0001-memory-stored.mmd` with Transaction SLA subgraph, Doomsday Clock as external system with TRIGGERS relation to GWT, all five policies wired. Claude fixed missing Transaction ID text on Policy 5.
+
+**NOT completed:**
+- Hippocampus (domain) -- may need Archimate relations finalized
+- Blog post -- reenactment section written (discoveries, SLA, composition gap). Needs Vadim review.
+- Final board rendering/screenshot for blog
 
 ### WHAT TO DO NEXT
 
-1. Include Vadim's image showing command thinking process (filename TBD -- ask Vadim)
-2. Create Step 4 snapshot diagram (es-0001-step4-aggregation.mmd) -- frozen copy of working board
-3. Execute Step 5: Testing -- rearrange aggregate artifacts into GWT chains
-4. Transaction ID architectural trick -- Vadim will walk through
+1. Vadim reviews blog reenactment section and board
+2. Final Hippocampus/domain treatment
+3. Blog: remaining sections (domain, full board, conclusion)
+4. Step 5 snapshot diagram when complete
 
 ### Boards
 
-- `es-0001-memory-stored.mmd` -- main working board (Step 4 complete)
+- `es-0001-memory-stored.mmd` -- main working board (Step 5 in progress -- cook GWT with SLA)
+- `es-0001-step4-aggregation.mmd` -- Step 4 frozen snapshot
 - `es-0001-step1-events.mmd` -- Step 1 snapshot
 - `es-0001-step2-svo.mmd` -- Step 2 snapshot
 - `es-0001-step3-commands.mmd` -- Step 3 snapshot
 
 ### Blog Post
 
-- `site/_posts/2026-03-14-event-storming-tutorial.adoc` -- Living tutorial. Added: value proposition (GWT from ceremony), three command types, gap discovery, ReturnResultCmd consolidation, domain boundary aggregation, complete Step 4 board, Step 5 placeholder.
+- `site/_posts/2026-03-14-event-storming-tutorial.adoc` -- Living tutorial. Sections complete through cook reenactment. Includes: Vadim's note on LLM reasoning capacity, Claude's composition blindness reflection.
 
 ### Images
 
-- `eventstorming-step-4-consolidating-policies-into-job-description.png` -- policy consolidation
-- (TBD) -- Vadim's image showing command thinking process
+- `eventstorming-step-5-inner-adapter-before-consolidation.png` -- cook before (5 policies, kitchen sink)
+- `eventstorming-step-5-inner-adapter-after-consolidation.png` -- cook after (2 policies, GWT chains)
+- `eventstorming-step-5-two-components-interacting-in-reenactment.png` -- driver + SQLite Archimate
+- `eventstorming-step-5-can-i-actually-do-this.png` -- SQLite reenactment
+- `eventstorming-step-5-what-happens-to-aggregates.png` -- Archimate encapsulation
 
 ---
 
@@ -104,4 +123,9 @@ This IS Given-When-Then. Each chain is a behavioral test specification. The cere
 - Gap discovery: aggregation reveals missing commands by asking "what does this clerk do all day?"
 - Confirmation commands belong to whoever issues them, not where they land.
 - The ceremony produces its own tests: Policy -> Command -> (Model) -> Event -> (Model) = GWT.
-- **Open design question:** How do we teach Claude (and other digital minds) real skills -- not prompt templates, but craft? The Skills framework is flat. Understanding requires experience, correction, dialectic. Stanzas encode identity positions. Skills need a different mechanism for craft positions. Carry this into the next session.
+- **Composition is not grouping.** Containment IS a relationship. It constrains what other relationships you draw. Claude defaults to grouping (inert, visual) not composition (structural, constraining). This is why redundant arrows appear -- if the box isn't doing work, every relationship needs its own line.
+- **Absent connections mean no dependency.** When an action is fire-and-forget (cancel timer), drawing a connection is FORBIDDEN because no dependency exists. Absence is correctness, not a gap.
+- **Reenactment discovers SLA concerns.** "Is this blocking?" led to timeout, timer, retry, circuit-breaking -- none visible in the static consolidation.
+- **Each policy has exactly one concern.** Accept+Translate was two concerns. Cancel+Translate was two. Split until each has one.
+- **Task size matters.** Claude panicked on the cook (largest aggregate). Degradation is visible comparing Step 4 board quality to Figure 13. Smaller pieces, one at a time.
+- **Open design question:** How do we teach Claude (and other digital minds) real skills -- not prompt templates, but craft? Composition was invisible until it cost hours. The Skills framework is flat. Understanding requires experience, correction, dialectic.

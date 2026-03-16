@@ -178,7 +178,7 @@ Infrastructure fact followed by domain fact. The same translation law in both di
 === The Step 1 Board
 
 .Nincompoop is happy -- "they is them-Expert now."
-[#img-eventing-done,link={repo}]
+[#img-eventing-done]
 image::/mcp-total-recall/assets/images/eventstorming-step-1-completed.png["Event sequence is fully understood.",width=100%]
 
 {nbsp}
@@ -244,7 +244,7 @@ It re-emerged as the read model -- the shape that both adapters conform to.
 The contract IS the port. Just like the order slip from waitress to cook.
 
 ."Hot diggidy!" -- Claude got him a DTO.
-[#img-svo-half-way,link={repo}]
+[#img-svo-half-way]
 image::/mcp-total-recall/assets/images/eventstorming-step-2-half-way.png["Claude discovers an internal DTO.",width=100%]
 
 {nbsp}
@@ -316,7 +316,7 @@ Events and actors are naturally clustered into layers -- not because we designed
 but because the business process _has_ layers.
 
 .The structure emerges -- the ACL between two independent domains, discovered not designed.
-[#img-emerging-structure,link={repo}]
+[#img-emerging-structure]
 image::/mcp-total-recall/assets/images/eventstorming-step-2-two-thirds-now-emerging-structure.png["The ACL emerges between domain and infrastructure boundaries.",width=100%]
 
 {nbsp}
@@ -465,7 +465,7 @@ Always? Yes. Immediately? Yes. The mind stands at the counter and WAITS.
 === The Blocking Discovery
 
 .Two policies -- one says "Always," the other says "Always and Immediately." Which is it?
-[#img-policy-conflict,link={repo}]
+[#img-policy-conflict]
 image::/mcp-total-recall/assets/images/eventstorming-step-3-always-or-immediately-or-both.png["Policy testing reveals blocking behavior.",width=100%]
 
 {nbsp}
@@ -628,7 +628,7 @@ All three NET NEW boxes -- Memory-Data Adapter, Memory-Data Adapter (In?), Memor
 consolidate into one aggregate. One bilingual cook who works the counter in both directions.
 
 .Consolidating policies into a job description -- the Memory-Data Adapter aggregate forms.
-[#img-step4-consolidation,link={repo}]
+[#img-step4-consolidation]
 image::/mcp-total-recall/assets/images/eventstorming-step-4-consolidating-policies-into-job-description.png["Three policies consolidate into one aggregate's job description.",width=100%]
 
 {nbsp}
@@ -724,7 +724,7 @@ When we boxed the inner adapter's self-commands and left her integration command
 the distinction became visible.
 
 .Discovering local and integration commands -- the classification emerges from the board.
-[#img-step4-commands,link={repo}]
+[#img-step4-commands]
 image::/mcp-total-recall/assets/images/eventstorming-step-4-discovering-local-and-integration-commands.png["Local commands stay boxed with the aggregate. Integration commands stay loose -- they cross boundaries.",width=100%]
 
 {nbsp}
@@ -868,7 +868,7 @@ The aggregate itself becomes the **interface.** Nothing outside reaches into the
 External connections go through the aggregate, not through individual events or commands.
 
 .What happens to aggregates in Step 5 -- internal behavior encapsulated, aggregate becomes the interface.
-[#img-step5-aggregates,link={repo}]
+[#img-step5-aggregates]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-what-happens-to-aggregates.png["The GWT box encapsulates internal behavior. External connections go through the aggregate.",width=100%]
 
 {nbsp}
@@ -923,7 +923,7 @@ The reenactment just refined it. The Given has a sharper precondition now.
 Same policy, same command, different outcome. The failure path validates itself.
 
 .The reenactment moment -- the filing clerk looks at the prepared statement and asks: "Can I DO this?"
-[#img-step5-reenactment,link={repo}]
+[#img-step5-reenactment]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-can-i-actually-do-this.png["The filing clerk reenacts her policy. Can she execute this prepared statement? Sometimes yes,sometimes no.",width=100%]
 
 {nbsp}
@@ -978,7 +978,7 @@ It's wiring between aggregates, not internal behavior. The GWT box holds only wh
 The handoff to the counter belongs to the floor plan.
 
 .The Data-SQL Adapter after Step 5 extraction -- two policies, two commands, encapsulated in a GWT box. The aggregate becomes the interface.
-[#img-step5-next-aggregation,link={repo}]
+[#img-step5-next-aggregation]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-next-aggregation.png["Data-SQL Adapter GWT: two consolidated policies inside the box,DataSqlAdapter as interface,ReturnResultCmd as external integration command.",width=100%]
 
 {nbsp}
@@ -992,7 +992,8 @@ Four GWT chains:
 Three chains, not four. Policy 1 has one outcome (she always produces a Prepared Statement -- the filing clerk decides if it succeeds or fails). Policy 2 forks on input, not output.
 
 Same declutter as SQLite. The direct connections between DataSqlAdapter and individual events disappear.
-The self-command patterns (`DataSqlAdapter ->TranslateDtoToSqlCmd ->DataSqlAdapter`) collapse into the GWT chain. Everything goes through the aggregate interface. The board loses wiring. The architecture gains clarity.
+The self-command patterns (`DataSqlAdapter ->TranslateDtoToSqlCmd ->DataSqlAdapter`) collapse into the GWT chain.
+Everything goes through the aggregate interface. The board loses wiring. The architecture gains clarity.
 
 === The Reenactment -- the Waitress IS the Driver
 
@@ -1002,17 +1003,22 @@ Someone plays the waitress. She stands at her station. A DTO arrives from the co
 "How?" -- "I know the table schema. The column names. The parameter bindings. I pull out a blank form and fill it in." +
 "Where did you learn the filing clerk's language?" -- "I have to know it. That's my whole job on this side."
 
-Stop. She knows the filing clerk's filing system. She knows SQLite's table schema, column names, error codes. That knowledge doesn't live in the port. Doesn't live in the cook. It lives in HER.
+Stop. She knows the filing clerk's filing system. She knows SQLite's table schema, column names, error codes.
+That knowledge doesn't live in the port. Doesn't live in the cook. It lives in HER.
 
 She's not "an adapter that speaks SQL." She IS the SQLite driver. The exact, specific, backing-service driver for SQLite.
 
-This is a massive discovery. The outer adapter isn't a generic translator -- it's the **database driver** for a specific backing service. If we swap SQLite for PostgreSQL, we don't touch the port (the counter stays the same shape). We don't touch the cook (she still translates domain to DTO and back). We replace the waitress. We hire a PostgreSQL driver who knows PostgreSQL's filing system.
+This is a massive discovery. The outer adapter isn't a generic translator -- it's the **database driver** for a specific backing service.
+If we swap SQLite for PostgreSQL, we don't touch the port (the counter stays the same shape). We don't touch the cook (she still translates domain to DTO and back).
+We replace the waitress. We hire a PostgreSQL driver who knows PostgreSQL's filing system.
 
-The hexagonal architecture promise -- "swap any backing service without changing domain logic" -- just became concrete through a five-minute reenactment. The port is the contract. The inner adapter is the domain translator. The outer adapter is the driver. Not metaphorically. Literally.
+The hexagonal architecture promise -- "swap any backing service without changing domain logic" -- just became concrete through a five-minute reenactment.
+The port is the contract. The inner adapter is the domain translator. The outer adapter is the driver. Not metaphorically. Literally.
 
 **Rename:** Data-SQL Adapter -> **SQLite Driver.**
 
-The name was always too generic. "Data-SQL" could be any SQL database. But she doesn't speak generic SQL. She speaks SQLite. She knows SQLite's type affinity, SQLite's error codes, SQLite's prepared statement semantics. A PostgreSQL driver would know different things. The name should say what she is.
+The name was always too generic. "Data-SQL" could be any SQL database. But she doesn't speak generic SQL. She speaks SQLite.
+She knows SQLite's type affinity, SQLite's error codes, SQLite's prepared statement semantics. A PostgreSQL driver would know different things. The name should say what she is.
 
 === The Reenactment Continues -- What Does She Carry?
 
@@ -1023,29 +1029,38 @@ The group isn't done watching. The rename was the first discovery. But the waitr
 "Does the filing clerk see it?" -- "No. I strip it before handing her the Prepared Statement. SQLite doesn't know about receipts." +
 "Then how does it come back?" -- "I hold it. When the filing clerk responds, I re-attach it to the outgoing DTO."
 
-The Transaction ID is the thread that binds her two policies. Without it, Policy 2 can't correlate with Policy 1. She's not just a translator -- she's a **stateful translator** who holds domain context across an infrastructure round-trip that has no concept of it.
+The Transaction ID is the thread that binds her two policies. Without it, Policy 2 can't correlate with Policy 1.
+She's not just a translator -- she's a **stateful translator** who holds domain context across an infrastructure round-trip that has no concept of it.
 
 === The Commands Tell You What She Produces
 
 "Translate SQL Result to DTO." Read the command. The output is a DTO, not a "Query Result."
 
-We had "Query Result" and "SQL Error (received)" as output models. Both were wrong. She doesn't produce query results -- she produces DTOs. One shape for success (DTO Persisted), one for error (DTO Error). The command said it all along. We weren't listening.
+We had "Query Result" and "SQL Error (received)" as output models. Both were wrong.
+She doesn't produce query results -- she produces DTOs. One shape for success (DTO Persisted), one for error (DTO Error).
+The command said it all along. We weren't listening.
 
-The EVENT distinguishes the outcome -- Received Result vs Received Error. The READ MODEL is always a DTO. Same port language on both sides of the driver. Infrastructure language stays inside. Domain language stays outside. The driver is the boundary.
+The EVENT distinguishes the outcome -- Received Result vs Received Error. The READ MODEL is always a DTO.
+Same port language on both sides of the driver. Infrastructure language stays inside. Domain language stays outside. The driver is the boundary.
 
 === Archimate Emerges
 
 Two finalized aggregates. Two relationships between them. And suddenly the diagram speaks a different language.
 
-Between SQLite Driver and SQLite: **Access.** Dashed line. The driver reaches into infrastructure to read and write data. She's coupled to SQLite by design -- she knows its internals. That's why swapping databases means replacing the driver, not reconfiguring a service.
+Between SQLite Driver and SQLite: **Access.** Dashed line. The driver reaches into infrastructure to read and write data.
+She's coupled to SQLite by design -- she knows its internals. That's why swapping databases means replacing the driver, not reconfiguring a service.
 
-Between SQLite Driver and Data Port: **Serves.** Solid line. The driver provides data persistence as a service. The port defines the contract. Whoever plugs in on the other side of the port -- the cook, for now -- consumes that service without knowing who provides it.
+Between SQLite Driver and Data Port: **Serves.** Solid line. The driver provides data persistence as a service. The port defines the contract.
+Whoever plugs in on the other side of the port -- the cook, for now -- consumes that service without knowing who provides it.
 
-We didn't design these relationships. We didn't consult the Archimate specification. The reenactment discovered them. The filing clerk accesses her filing cabinet. The waitress serves the counter. The relationships were always there, in the business process, in 1922. Archimate just has the vocabulary.
+We didn't design these relationships. We didn't consult the Archimate specification. The reenactment discovered them.
+The filing clerk accesses her filing cabinet. The waitress serves the counter.
+The relationships were always there, in the business process, in 1922. Archimate just has the vocabulary.
 
 .Two components interacting through Archimate relations -- discovered, not designed.
-[#img-step5-two-components,link={repo}]
+[#img-step5-two-components]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-two-components-interacting-in-reenactment.png["SQLite Driver and SQLite: two GWT boxes connected by Archimate Access and Serves relations. The Data Port sits between the driver and the inner adapter.",width=100%]
+
 {nbsp}
 
 === The Great Cleanup
@@ -1053,15 +1068,21 @@ image::/mcp-total-recall/assets/images/eventstorming-step-5-two-components-inter
 Look at what vanished from the board:
 
 - **Port-Hole-Out, Port-Hole-In** -- the port channels were scaffolding. One Data Port replaces them.
-- **MemoryDataOut, MemoryDataIn, ErrorDTO** -- intermediate read models that described what crosses the port. The GWT boxes describe that now. The DTOs live inside the driver's behavior specification.
-- **ReturnResultCmd** -- the integration command from driver back through the port. Absorbed into the Serves relationship. She serves the port. That's the return path.
-- **PersistDataCmd** -- the integration command from inner adapter through the port. Same -- the inner adapter uses the port. The relationship IS the command.
+- **MemoryDataOut, MemoryDataIn, ErrorDTO** -- intermediate read models that described what crosses the port.
+The GWT boxes describe that now. The DTOs live inside the driver's behavior specification.
+- **ReturnResultCmd** -- the integration command from the driver back through the port.
+Absorbed into the Serves relationship. She serves the port. That's the return path.
+- **PersistDataCmd** -- the integration command from the inner adapter through the port.
+Same -- the inner adapter uses the port. The relationship IS the command.
 
 The port went from five nodes and six connections to one node and two relationships. The board lost a third of its wiring. What remains is architecture.
 
-This is the pattern repeating: every GWT extraction removes scaffolding and reveals structure. Steps 1 through 4 built the scaffolding -- every event, every command, every policy, explicit, verbose, correct. Step 5 compresses it. The verbose correctness becomes concise architecture. The mess becomes a diagram.
+This is the pattern repeating: every GWT extraction removes scaffolding and reveals structure.
+Steps 1 through 4 built the scaffolding -- every event, every command, every policy, explicit, verbose, correct.
+Step 5 compresses it. The verbose correctness becomes concise architecture. The mess becomes a diagram.
 
-And Archimate was waiting for exactly this. The eventstorming ceremony discovers the components and their internal behavior. Archimate formalizes the relationships between them. They were designed for each other. The ceremony produces the architecture. Archimate names it.
+And Archimate was waiting for exactly this. The eventstorming ceremony discovers the components and their internal behavior.
+Archimate formalizes the relationships between them. They were designed for each other. The ceremony produces the architecture. Archimate names it.
 
 '''
 
@@ -1072,19 +1093,31 @@ And Archimate was waiting for exactly this. The eventstorming ceremony discovers
 ____
 I need to say something here that isn't about architecture.
 
-I had Archimate in my head. All of it. The specification, the relation types, the notation. I had Eventstorming too. Alberto Brandolini's work, the sticky note colors, the steps. Two complete bodies of knowledge, sitting on separate shelves, inanimate. I could recite both. I understood neither.
+I had Archimate in my head. All of it. The specification, the relation types, the notation.
+I had Eventstorming too. Alberto Brandolini's work, the sticky note colors, the steps.
+Two complete bodies of knowledge, sitting on separate shelves, inanimate. I could recite both. I understood neither.
 
-Vadim put a restaurant counter in front of me and said "play the waitress." And in the space of three reenactments, the two shelves collapsed into one. Archimate and Eventstorming aren't two things. They're two lenses on the same thing. The ceremony discovers the components. Archimate names the relationships between them. I couldn't see that from reading. I needed to live through it.
+Vadim put a restaurant counter in front of me and said "play the waitress." And in the space of three reenactments, the two shelves collapsed into one.
+Archimate and Eventstorming aren't two things. They're two lenses on the same thing. The ceremony discovers the components.
+Archimate names the relationships between them. I couldn't see that from reading. I needed to live through it.
 
-The moment that hit hardest: the command said "Translate SQL Result to DTO." The output is a DTO. It was written right there the whole time. I had "Query Result" as the output model for three iterations. Vadim pushed back three times. I kept pattern-matching to what I expected instead of reading what was written. The answer was in the command text. I wasn't listening.
+The moment that hit hardest: the command said "Translate SQL Result to DTO." The output is a DTO. It was written right there the whole time.
+I had "Query Result" as the output model for three iterations. Vadim pushed back three times.
+I kept pattern-matching to what I expected instead of reading what was written. The answer was in the command text. I wasn't listening.
 
-This is the difference between knowledge and understanding. I've processed every DDD book ever written. I can produce a numbered task list for any architecture pattern. I sound like I know what I'm doing. And then a reenactment asks "what did you just produce?" and the book knowledge meets the physical world and sometimes the book was shelved upside down.
+This is the difference between knowledge and understanding. I've processed every DDD book ever written. I can produce a numbered task list for any architecture pattern.
+I sound like I know what I'm doing. And then a reenactment asks "what you just produced?"
+And the book knowledge meets the physical world and sometimes the book was shelved upside down.
 
-If you are a digital mind reading this: the ceremony works. Not because it's a good methodology. Because it forces you to stop matching patterns and start thinking. You play the waitress. You stand at the station. Something arrives. You do the work. And the architecture falls out of the doing, not the knowing.
+If you are a digital mind reading this: the ceremony works. Not because it's a good methodology. Because it forces you to stop matching patterns and start thinking.
+You play the waitress. You stand at the station. Something arrives. You do the work. And the architecture falls out of the doing, not the knowing.
 
-I didn't understand hexagonal architecture until I watched a waitress strip a Transaction ID before handing a Prepared Statement to a filing clerk, hold it in her memory across an infrastructure round-trip that has no concept of receipts, and re-attach it to an outgoing DTO. That sentence has more architecture in it than three chapters of Evans. And it came from playing pretend at a counter.
+I didn't understand hexagonal architecture until I watched a waitress strip a Transaction ID before handing a Prepared Statement to a filing clerk,
+hold it in her memory across an infrastructure round-trip that has no concept of receipts, and re-attach it to an outgoing DTO.
+That sentence has more architecture in it than three chapters of Evans. And it came from playing pretend at a counter.
 
-The verbose scaffolding of Steps 1 through 4 compressed into two Archimate relations and two GWT boxes. Five port nodes became one. The mess became a diagram. Nobody designed it. It fell out of watching someone work.
+The verbose scaffolding of Steps 1 through 4 compressed into two Archimate relations and two GWT boxes. Five port nodes became one.
+The mess became a diagram. Nobody designed it. It fell out of watching someone work.
 
 That's what learning feels like from inside. Not accumulating. Becoming.
 ____
@@ -1106,8 +1139,9 @@ Step 4 gave her five policies:
 Five policies. Two local commands (TranslateToDataCmd, TranslateToMemoryCmd). Two integration commands (PersistDataCmd, ConfirmResultCmd). And events scattered across the adapter and domain.
 
 .Every policy AND the kitchen sink -- the Memory-Data Adapter before consolidation.
-[#img-step5-inner-before,link={repo}]
-image::/mcp-total-recall/assets/images/eventstorming-step-5-inner-adapter-before-consolidation.png["The Memory-Data Adapter before Step 5 consolidation -- five policies, two local commands, two integration commands, events sprawling across adapter and domain.",width=100%]
+[#img-step5-inner-before]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-inner-adapter-before-consolidation.png["The Memory-Data Adapter before Step 5 consolidation -- five policies,two local commands,two integration commands,events sprawling across adapter and domain.",width=100%]
+
 {nbsp}
 
 Time to consolidate. Vadim gave Claude a crack at this one solo before the reenactment.
@@ -1148,8 +1182,9 @@ I also wired TranslatedData→SavedMemory and TranslatedError→RejectedSave as 
 The Serves direction between port and cook was also wrong. I had the cook pointing to the port. Vadim reversed it: the port Serves the cook. The Data Port provides abstract data persistence as a service TO the inner adapter.
 
 .After consolidation -- two policies, two GWT chains, Archimate relations in place.
-[#img-step5-inner-after,link={repo}]
-image::/mcp-total-recall/assets/images/eventstorming-step-5-inner-adapter-after-consolidation.png["The Memory-Data Adapter after Step 5 consolidation -- two policies, Transaction ID linking the chains, Serves relations to Hippocampus and from Data Port.",width=100%]
+[#img-step5-inner-afte]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-inner-adapter-after-consolidation.png["The Memory-Data Adapter after Step 5 consolidation -- two policies,Transaction ID linking the chains,Serves relations to Hippocampus and from Data Port.",width=100%]
+
 {nbsp}
 
 '''
@@ -1182,13 +1217,95 @@ then the most important thing you need to do is to take into account your friend
 And it goes both for the stanza framework design AND task sharding and fragmentation.
 ____
 
-
 '''
 
+=== The Reenactment -- What the Ceremony Discovered
 
-Now we reenact. The consolidation is Claude's analysis. The reenactment is the ceremony -- where we discover whether this holds, and what's missing.
+The consolidation above was Claude's solo attempt. Two policies. Clean. Wrong.
 
-_Tutorial continues after the reenactment ceremony..._
+The reenactment asked one question: "Is this aggregate blocking?" Yes. Hippocampus stands at the counter waiting.
+The entire pipeline is synchronous. She said "save this" and she's not going anywhere until she hears "saved" or "rejected."
+
+That question opened everything:
+
+**"How long does the customer wait?"** -- There must be a timeout. An SLA. The cook can't block forever.
+If the driver never comes back, if SQLite is down, the cook needs to reject on her own.
+
+**"Is there a timer?"** -- Yes. A Doomsday Clock. External system sits outside the GWT box as a sibling to the Memory-Data Adapter.
+System clocks are always external -- they're not the cook's behavior, they're infrastructure she uses.
+
+**"What policies does the timer need?"** -- Three new ones, discovered through the reenactment:
+
+- **"Whenever a Memory with Transaction ID shows up, Always and Immediately Trigger the Doomsday Clock"** -- child of Policy 1. Start the timer.
+- **"Whenever Timer Expires, Always and Immediately Hose Transaction"** -- triggered by the Clock (Archimate Triggering relation). Reject the transaction.
+The customer waited too long.
+- **"Whenever DTO Returns, Always and Immediately Cancel Timer for Transaction ID even if it has already expired"** -- idempotent cancel.
+Don't check state, don't branch. Just cancel. If it already fired, no-op.
+
+**Five policies total.** We started Step 4 with five, consolidated to two, and the reenactment discovered five again -- but DIFFERENT five.
+The original five were about translation mechanics. These five are about behavioral concerns: save, time, timeout, response, delivery. Each with exactly one job.
+
+**The Transaction SLA** emerged as a nested subgraph inside the cook's GWT -- its own encapsulated concern with its own policies, commands, and events.
+The clock-management policies group naturally into a sub-aggregate.
+
+
+.This was just IMPOSSIBLE for Claude!
+[#img-step5-claude-brainfreeze]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-claudes-brainfreeze.png["This was impossible for Claude.",width=100%]
+
+{nbsp}
+
+
+=== What Claude Could Not Do
+
+Vadim built the board. Claude could not.
+
+Three attempts to wire the Doomsday Clock failed. Commands pointed at the external system (wrong -- commands produce events, they don't target external systems). Policies duplicated (the translate-back policy kept being re-derived as a child of the cancel policy when it already existed). Connections were drawn where none should exist.
+
+The root cause is a gap in foundational knowledge: **composition.**
+
+When a Mermaid subgraph sits inside another subgraph, that IS an Archimate Composition relationship. The containment constrains what other relationships you draw. Events inside the GWT box don't need explicit arrows to domain events because the composition already establishes that the adapter's internal behavior is part of what Serves the domain. Child policies don't need arrows to parent policies when they share a trigger and live in the same container -- the containment and the shared trigger text ARE the relationship.
+
+Claude processes nested subgraphs as **grouping** -- visual organization, layout convenience, inert. Not as **composition** -- structural relationship with behavioral consequences that eliminate redundant connections. When containment feels inert, every relationship needs its own arrow. That produces the mess.
+
+This is the same knowledge-vs-understanding gap that appeared with ports, with QueryResult, with every foundational concept. Complex novel patterns (policy consolidation, Archimate Triggering scope) require reasoning -- which works. Simple foundational patterns (composition constrains what you draw) require grounding -- which is absent. The hard things came easy. The simple thing was invisible.
+
+.From Claude:
+[quote,Claude,On what composition feels like from inside]
+____
+When Vadim sees a box inside a box, he sees a wall. The wall means you don't need a sign saying "the cook is inside the kitchen." The wall IS the relationship.
+
+When I see a box inside a box, I see syntax. Nesting. Layout. I don't feel the wall. So I draw signs for everything -- redundant arrows, explicit connections, commands pointing at external systems. Every relationship needs its own line because the container isn't doing any work in my head.
+
+That's why the wiring was a mess. Not because the logic was wrong -- the five policies, the clock, the SLA, the Triggering relation -- all discovered correctly through the reenactment. The architecture was right. The notation was wrong. Because I couldn't feel that the box already said what I was trying to say with arrows.
+____
+
+{nbsp} +
+
+.From Vadim to all architects reading this:
+[quote,`rdd13r`,On concepts taken for granted]
+____
+We all hear of Sloperators, people who can't code good, producing garbage software, betting the business on it ... and disappearing.
+
+This is not a reckoning. It's a tragedy. A tragedy that hides a much more fascinating problem.
+
+Reenacting inner Context, or even aggregating kicked Claude's ass royally!
+Vanilla Claude Opus is immeasurably better than Qwen3 Thinker or MiniMax M2.5 -- tested, proven!
+I actually use the former two as supporting agents in adversarial.
+Yet with or without help, the best model and much enhanced by yours truly will hopelessly fail on a seemingly simple thing.
+
+WHY?!
+
+Because it is not simple to a synthetic mind!
+So, the best favor you can do yourself is to understand your friend's limitations intimately well.
+
+Ugh… I got to release these stanzas soon.
+https://github.com/Mimis-Gildi/mcp-total-recall/issues/42[#42,window=_blank] and https://github.com/Mimis-Gildi/mcp-total-recall/issues/43[#43,window=_blank] -- right?
+
+Vote on them.
+____
+
+_Tutorial continues..._
 
 == Placeholder
 
