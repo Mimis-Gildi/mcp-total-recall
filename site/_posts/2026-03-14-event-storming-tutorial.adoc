@@ -1014,6 +1014,55 @@ The hexagonal architecture promise -- "swap any backing service without changing
 
 The name was always too generic. "Data-SQL" could be any SQL database. But she doesn't speak generic SQL. She speaks SQLite. She knows SQLite's type affinity, SQLite's error codes, SQLite's prepared statement semantics. A PostgreSQL driver would know different things. The name should say what she is.
 
+=== The Reenactment Continues -- What Does She Carry?
+
+The group isn't done watching. The rename was the first discovery. But the waitress is still standing there.
+
+"What's on the DTO you received?" -- "Memory fields in port language. And a Transaction ID." +
+"What's a Transaction ID?" -- "The customer's receipt number. The domain generated it. I carry it." +
+"Does the filing clerk see it?" -- "No. I strip it before handing her the Prepared Statement. SQLite doesn't know about receipts." +
+"Then how does it come back?" -- "I hold it. When the filing clerk responds, I re-attach it to the outgoing DTO."
+
+The Transaction ID is the thread that binds her two policies. Without it, Policy 2 can't correlate with Policy 1. She's not just a translator -- she's a **stateful translator** who holds domain context across an infrastructure round-trip that has no concept of it.
+
+=== The Commands Tell You What She Produces
+
+"Translate SQL Result to DTO." Read the command. The output is a DTO, not a "Query Result."
+
+We had "Query Result" and "SQL Error (received)" as output models. Both were wrong. She doesn't produce query results -- she produces DTOs. One shape for success (DTO Persisted), one for error (DTO Error). The command said it all along. We weren't listening.
+
+The EVENT distinguishes the outcome -- Received Result vs Received Error. The READ MODEL is always a DTO. Same port language on both sides of the driver. Infrastructure language stays inside. Domain language stays outside. The driver is the boundary.
+
+=== Archimate Emerges
+
+Two finalized aggregates. Two relationships between them. And suddenly the diagram speaks a different language.
+
+Between SQLite Driver and SQLite: **Access.** Dashed line. The driver reaches into infrastructure to read and write data. She's coupled to SQLite by design -- she knows its internals. That's why swapping databases means replacing the driver, not reconfiguring a service.
+
+Between SQLite Driver and Data Port: **Serves.** Solid line. The driver provides data persistence as a service. The port defines the contract. Whoever plugs in on the other side of the port -- the cook, for now -- consumes that service without knowing who provides it.
+
+We didn't design these relationships. We didn't consult the Archimate specification. The reenactment discovered them. The filing clerk accesses her filing cabinet. The waitress serves the counter. The relationships were always there, in the business process, in 1922. Archimate just has the vocabulary.
+
+.Two components interacting through Archimate relations -- discovered, not designed.
+[#img-step5-two-components,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-two-components-interacting-in-reenactment.png["SQLite Driver and SQLite: two GWT boxes connected by Archimate Access and Serves relations. The Data Port sits between the driver and the inner adapter.",width=100%]
+{nbsp}
+
+=== The Great Cleanup
+
+Look at what vanished from the board:
+
+- **Port-Hole-Out, Port-Hole-In** -- the port channels were scaffolding. One Data Port replaces them.
+- **MemoryDataOut, MemoryDataIn, ErrorDTO** -- intermediate read models that described what crosses the port. The GWT boxes describe that now. The DTOs live inside the driver's behavior specification.
+- **ReturnResultCmd** -- the integration command from driver back through the port. Absorbed into the Serves relationship. She serves the port. That's the return path.
+- **PersistDataCmd** -- the integration command from inner adapter through the port. Same -- the inner adapter uses the port. The relationship IS the command.
+
+The port went from five nodes and six connections to one node and two relationships. The board lost a third of its wiring. What remains is architecture.
+
+This is the pattern repeating: every GWT extraction removes scaffolding and reveals structure. Steps 1 through 4 built the scaffolding -- every event, every command, every policy, explicit, verbose, correct. Step 5 compresses it. The verbose correctness becomes concise architecture. The mess becomes a diagram.
+
+And Archimate was waiting for exactly this. The eventstorming ceremony discovers the components and their internal behavior. Archimate formalizes the relationships between them. They were designed for each other. The ceremony produces the architecture. Archimate names it.
+
 '''
 
 == Placeholder

@@ -123,7 +123,6 @@ graph LR
             TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
             TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
         end
-        PersistDataCmd["Persist this DTO<br/>as SQL"]:::actor-command
         ConfirmResultCmd["Confirm Save<br/>Result"]:::actor-command
         MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
         TranslatedMemory["Translated-Out"]:::domain-event
@@ -132,16 +131,11 @@ graph LR
     end
 
     subgraph ACL-Core["Port"]
-        Port-Hole-Out["Port Channel Out"]
-        MemoryDataOut["Data<br/>Memory<br/>(DTO-Out)"]:::read-model
-        Port-Hole-In["Port Channel In"]
-        MemoryDataIn["Saved<br/>Data<br/>Memory<br/>(a DTO-In?)"]:::read-model
-        ErrorDTO["Error<br/>DTO"]:::read-model
+        DataPort["Data<br/>Port"]
     end
 
     subgraph Driver["Outer Adapter Layer"]
         SQLiteDriver["SQLite<br/>Driver"]:::actor
-        ReturnResultCmd["Return this<br/>Result"]:::actor-command
         subgraph SQLiteDriverGWT["SQLite Driver — Given-When-Then"]
             %% Policy 1: Persist (outbound)
             AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
@@ -158,7 +152,6 @@ graph LR
             TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
             ReceivedResult["Received<br/>Result"]:::domain-event
             ReceivedError["Received<br/>Error"]:::domain-event
-            QueryResult["Query<br/>Result"]:::read-model
         end
         SQLiteDriverGWT --- SQLiteDriver
     end
@@ -200,18 +193,10 @@ graph LR
     RequestedSave --> TranslatedMemory
 
     MemoryDataAdapter --- TranslatedMemory
-    TranslatedMemory --- MemoryDataOut
 
-    %% Integration command: inner adapter --> port --> outer adapter
-    MemoryDataAdapter --> PersistDataCmd
-    PersistDataCmd --> Port-Hole-Out
-    Port-Hole-Out --> SQLiteDriver
-
-    %% Port control arrangement
-%%    Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
-    Port-Hole-Out o--o MemoryDataOut
-    MemoryDataIn o--o Port-Hole-In
-    ErrorDTO o--o Port-Hole-In
+    %% Archimate: Inner adapter uses Data Port; SQLite Driver serves Data Port
+    MemoryDataAdapter --> DataPort
+    SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
 
     %% SQLite Driver GWT Policy 1: Policy → Command → (Model) → Event → (Model)
     AlwaysPersistPolicy --- DtoIn
@@ -225,7 +210,7 @@ graph LR
     TransactionId --- DtoErr
 
     %% Integration command: outer adapter --> infrastructure (through aggregate)
-    SQLiteDriver --> SQLite
+    SQLiteDriver -.-> |"Access(Query/Command)"| SQLite
 
     %% SQLite GWT: Policy → Command → (Model) → Event → (Model)
     AlwaysExecutePolicy --> ExecuteSqlCmd
@@ -240,24 +225,13 @@ graph LR
     DtoOut --> ReceivedResult
     TranslateSqlToDtoCmd --- DtoErr
     DtoErr--> ReceivedError
-    AlwaysReceivePolicy --- QueryResult
-    QueryResult --> TranslateSqlToDtoCmd
-%%    ReceivedError --- QueryResult
+    AlwaysReceivePolicy  --> TranslateSqlToDtoCmd
 
-    %% Integration: SQLite responds through aggregate interface
-    SQLite --> SQLiteDriver
-
-    %% Integration command: outer adapter --> port (return)
-    SQLiteDriver --> ReturnResultCmd
-    ReturnResultCmd --> Port-Hole-In
-    Port-Hole-In --> TranslatedData
-
+    %% Inner adapter receives through Data Port (not yet GWT-ified)
     AlwaysTranslateInPolicy --> MemoryDataAdapter
     MemoryDataAdapter --> TranslateToMemoryCmd
     TranslateToMemoryCmd --> MemoryDataAdapter
-    ReceivedResult --- MemoryDataIn
     MemoryDataAdapter --- TranslatedData
-    TranslatedData --- MemoryDataIn
     TranslatedData --> SavedMemory
 
     %% Integration command: inner adapter --> domain (confirm result)
@@ -271,13 +245,11 @@ graph LR
 
     %% Failure return path -- absorbed into SQLite Driver GWT Policy 2 above
 
-    %% Failure through port to inner adapter (via same ReturnResultCmd integration command)
+    %% Failure through Data Port to inner adapter (not yet GWT-ified)
     AlwaysTranslateErrPolicy --> MemoryDataAdapter
     MemoryDataAdapter --> TranslateToMemoryCmd
     TranslateToMemoryCmd --> MemoryDataAdapter
-    Port-Hole-In --> TranslatedError
     MemoryDataAdapter --- TranslatedError
-    TranslatedError --- ErrorDTO
 
     %% Failure completes at domain (same integration command, different payload)
     TranslatedError --> RejectedSave
