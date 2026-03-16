@@ -103,8 +103,6 @@ graph LR
     subgraph Domain["Domain Boundary"]
         StoreMemoryCmd["Save THIS<br/>Memory<br/>For me"]:::actor-command
         Hippocampus["Hippocampus"]:::external-system
-        RequestedSave["Requested<br/>Saved"]:::domain-event
-        Memory["Memory"]:::read-model
         SavedMemory["Saved<br/>Memory"]:::domain-event
         SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
         RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
@@ -112,22 +110,26 @@ graph LR
     end
 
     subgraph Adapter["Inner Adapter Layer"]
-        subgraph MemDataAdapterAgg["Memory-Data Adapter — Job Description"]
-            AlwaysAcceptPolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
-            AlwaysTranslateOutPolicy["Whenever Memory is Saving<br/>Always and Immediately<br/>Translate it to a DTO"]:::actor-policy
-            AlwaysTranslateInPolicy["Whenever DTO-In Arrives<br/>Always and Immediately<br/>Translate it Back"]:::actor-policy
-            AlwaysTranslateErrPolicy["Whenever DTO-In Arrives<br/>Always and Immediately<br/>Translate it Back"]:::actor-policy
-            AlwaysConfirmPolicy["Whenever Translation Completes<br/>Always and Immediately<br/>Confirm the Result"]:::actor-policy
-        end
-        subgraph MemDataAdapterCmds["Memory-Data Adapter — Local Commands"]
-            TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
-            TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
-        end
-        ConfirmResultCmd["Confirm Save<br/>Result"]:::actor-command
         MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
-        TranslatedMemory["Translated-Out"]:::domain-event
-        TranslatedError["Translated<br/>Error"]:::domain-event
-        TranslatedData["Translated-In"]:::domain-event
+        subgraph MemDataAdapterGWT["Memory-Data Adapter — Given-When-Then"]
+            %% Policy 1: Accept and Translate (outbound)
+            AlwaysAcceptAndTranslatePolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
+            MemoryIn["Memory"]:::read-model
+            TranslatedMemory["Translated-Out"]:::domain-event
+            DtoForPort["DTO<br/>(for port)"]:::read-model
+            %% Transaction ID: links domain-facing models across the two policies
+            CookTransactionId["Transaction<br/>ID"]:::read-model
+            %% Policy 2: Translate Back and Confirm (inbound)
+            AlwaysTranslateAndConfirmPolicy["Whenever DTO Returns<br/>Always and Immediately<br/>Translate Back and Confirm"]:::actor-policy
+            TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
+            DtoFromPort["DTO<br/>(from port)"]:::read-model
+            TranslatedData["Translated-In"]:::domain-event
+            ConfirmedMemory["Confirmed<br/>Memory"]:::read-model
+            TranslatedError["Translated<br/>Error"]:::domain-event
+            RejectedMemoryOut["Rejected<br/>Memory"]:::read-model
+        end
+        MemDataAdapterGWT --- MemoryDataAdapter
     end
 
     subgraph ACL-Core["Port"]
@@ -176,27 +178,34 @@ graph LR
 
 %% Noman land is empty!
 
-    %% Flow (time order, left to right)
+    %% Flow
 
-    Hippocampus --> StoreMemoryCmd
-    StoreMemoryCmd --> MemoryDataAdapter
-    MemoryDataAdapter --> RequestedSave
-    RequestedSave --- Memory
+    %% Domain narrative anchor
+    Hippocampus --- StoreMemoryCmd
 
-    %% Command down
-    AlwaysAcceptPolicy --> MemoryDataAdapter
-    AlwaysTranslateOutPolicy --> MemoryDataAdapter
-
-    MemoryDataAdapter --> TranslateToDataCmd
-    TranslateToDataCmd --> MemoryDataAdapter
-
-    RequestedSave --> TranslatedMemory
-
-    MemoryDataAdapter --- TranslatedMemory
-
-    %% Archimate: Inner adapter uses Data Port; SQLite Driver serves Data Port
-    MemoryDataAdapter --> DataPort
+    %% Archimate: Cook serves Domain; Cook uses Port; Driver serves Port
+    MemoryDataAdapter --> |"Serves(Memory Persistence)"| Hippocampus
+    DataPort --> |"Serves(Abstract Data Persistence)"| MemoryDataAdapter
     SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
+
+    %% Memory-Data Adapter GWT Policy 1: Accept and Translate (outbound)
+    AlwaysAcceptAndTranslatePolicy --- MemoryIn
+    MemoryIn --> TranslateToDataCmd
+    TranslateToDataCmd --- DtoForPort
+    DtoForPort --> TranslatedMemory
+
+    %% Transaction ID links domain-facing models across the two policies
+    MemoryIn --- CookTransactionId
+    CookTransactionId --- ConfirmedMemory
+    CookTransactionId --- RejectedMemoryOut
+
+    %% Memory-Data Adapter GWT Policy 2: Translate Back and Confirm (inbound)
+    AlwaysTranslateAndConfirmPolicy --- DtoFromPort
+    DtoFromPort --> TranslateToMemoryCmd
+    TranslateToMemoryCmd --- ConfirmedMemory
+    ConfirmedMemory --> TranslatedData
+    TranslateToMemoryCmd --- RejectedMemoryOut
+    RejectedMemoryOut --> TranslatedError
 
     %% SQLite Driver GWT Policy 1: Policy → Command → (Model) → Event → (Model)
     AlwaysPersistPolicy --- DtoIn
@@ -227,31 +236,6 @@ graph LR
     DtoErr--> ReceivedError
     AlwaysReceivePolicy  --> TranslateSqlToDtoCmd
 
-    %% Inner adapter receives through Data Port (not yet GWT-ified)
-    AlwaysTranslateInPolicy --> MemoryDataAdapter
-    MemoryDataAdapter --> TranslateToMemoryCmd
-    TranslateToMemoryCmd --> MemoryDataAdapter
-    MemoryDataAdapter --- TranslatedData
-    TranslatedData --> SavedMemory
-
-    %% Integration command: inner adapter --> domain (confirm result)
-    AlwaysConfirmPolicy --> MemoryDataAdapter
-    MemoryDataAdapter --> ConfirmResultCmd
-    ConfirmResultCmd --> Hippocampus
-    SavedMemory --> Hippocampus
+    %% Domain events (domain boundary, not connected to adapter internals)
     SavedMemoryObj --- SavedMemory
-
-    %% Failure fork -- absorbed into SQLite GWT chain above
-
-    %% Failure return path -- absorbed into SQLite Driver GWT Policy 2 above
-
-    %% Failure through Data Port to inner adapter (not yet GWT-ified)
-    AlwaysTranslateErrPolicy --> MemoryDataAdapter
-    MemoryDataAdapter --> TranslateToMemoryCmd
-    TranslateToMemoryCmd --> MemoryDataAdapter
-    MemoryDataAdapter --- TranslatedError
-
-    %% Failure completes at domain (same integration command, different payload)
-    TranslatedError --> RejectedSave
-    RejectedSave --> Hippocampus
     RejectedMemory --- RejectedSave
