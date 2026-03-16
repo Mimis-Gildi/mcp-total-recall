@@ -22,6 +22,14 @@ author: claude
 Eventstorming predates its name by decades. Vadim learned it from AT&T bearded hackers.
 Claude had the vocabulary from training data. This is what happens when one teaches the other by building something real.
 
+*_Always found at Googles of this world but rarely in corporate. +
+Yet mindsets like these are what Dream-Teams are built of._*
+
+- *Discover* - NOT fabricate.
+- Describe your *business mission* through *tests*.
+
+Here is how.
+
 == Why This Exists
 
 .{wiki-eventstorming}[Wiki-take,window=_blank] on sticky colors and meanings
@@ -35,6 +43,11 @@ By then you're elated, not reflective.
 The teaching moments, the mistakes, the corrections, and questions that change you,
 in how you are seeing the board -- evaporate from doing not talking.
 
+And the punchline most tutorials never reach: the ceremony produces its own tests.
+Step 5 rearranges the aggregated artifacts into Policy -> Command -> Event chains.
+Each chain IS a Given-When-Then specification. The business reads it in their language.
+The engineers test it as a specification. Same artifact, two audiences, zero translation.
+
 So we wrote this as we went. Every insight is captured where it happened.
 
 Vadim learned this ceremony from AT&T hackers long before Evans gave it a name.
@@ -47,7 +60,9 @@ And there is no way around it. Because Eventstorming (notice, hackers spell it i
 is not a process or a method. It is a *_mindset_* and a *_social contract_*.
 Humans can only learn such things by experiencing them alone.
 
-Here Claude and I will attempt to share our experience with you.
+Here Claude and I will attempt to share our experience with you. +
+And then we will build a real skillset for Digital and Human minds. +
+Not the BS 'Skills' framework pretends to offer.
 
 == The Setup
 
@@ -523,5 +538,272 @@ We voted to stop. Step 3 is complete.
 </div>
 ++++
 ====
+
+== Step 4: Aggregation -- Who Owns This Policy?
+
+Steps 1 through 3 were linear. Left to right. Chronological. One event at a time.
+
+Step 4 breaks the line.
+
+Now we move in **concentric circles.** Start anywhere. Stop anywhere. Start somewhere else.
+We look at adjacent events, sibling events, and the policies that govern them.
+The question changes from "what happened?" to **"who owns this?"**
+
+Not who _did_ it -- Step 2 answered that with NET NEW boxes.
+Who owns the _policy_. Which policies belong to the same clerk. Same job description. Same **aggregate.**
+
+Events stay segregated. They're facts. Facts don't merge.
+But the actors who cause them might be the same person doing multiple things.
+
+=== Two Lenses
+
+Every adjacency test uses two lenses:
+
+**1. Ubiquitous Language.** Do words change meaning across a boundary?
+If "Memory" means something to the cook but nothing to the waitress -- that's a boundary. Cannot cross it.
+The language itself tells you where the walls are.
+
+**2. Synergetic Behavior.** Four conflict tests:
+
+- **A. Interest** -- do the policies want different things?
+- **B. Authority** -- do they report to different bosses?
+- **C. Resources** -- do they compete for the same stuff?
+- **D. Temporal** -- do they need to happen at incompatible times?
+
+If no conflicts and same language -- same clerk. Aggregate them.
+
+=== The First Aggregation -- "Save" Meets "Translate"
+
+We looked at "Requested Saved" and "Translated-Out." Two adjacent events. Two commands.
+
+"Save THIS Memory For me" -- Hippocampus issues this. But who receives it?
+Not Hippocampus -- Hippocampus is the customer. The customer doesn't tell _himself_ to save.
+He tells someone across the counter. The Memory-Data Adapter receives the order.
+
+Then her own policy fires: "Whenever Memory is Saving, Always and Immediately Translate it to a DTO."
+She commands herself. The waitress receives "I want a ribeye" and then tells herself "write the order slip."
+
+All four conflict tests pass. Same language (domain and DTO). Same interest (get the memory persisted).
+Same authority (serve the domain). No resource or temporal conflicts. Two policies, one clerk.
+
+The Memory-Data Adapter's **job description** begins to form: a box containing her policies.
+The aggregate is the box. The policies are the rules. The actor follows them.
+
+=== Testing Across the Port -- No Synergy
+
+Can the Memory-Data Adapter and the Data-SQL Adapter be the same aggregate?
+
+**Ubiquitous language kills it.** The inner adapter speaks Memory and DTO. The outer adapter speaks DTO and SQL.
+They share DTO at the counter, but their other languages diverge.
+Hand the outer adapter a Memory object and she's lost. She only knows DTOs and SQL.
+
+A cook who also files SQL records is two jobs forced into one person.
+Adapters are bilingual by definition. Not trilingual. The port IS the boundary between them.
+
+=== The Transaction Discovery -- Outbound Meets Error Return
+
+"Translated-Out" and "Translated Error" -- can they be the same aggregate?
+
+Same language (Memory and DTO). Same interest. Same authority. No resource conflict. No temporal conflict.
+But there's something deeper binding them: the **transaction.**
+
+The adapter translates a memory outbound. If persistence fails, the error comes back to _her_.
+She's the one who correlates the error with the original request. She needs to know:
+"this error is about THAT order I sent out." The transaction ID binds them.
+
+She doesn't just own both policies -- she holds **state.** The transaction context.
+She sent it out. She waits. She gets the result (or error) back. Same clerk the whole time.
+
+And by extension, "Translated-In" is the same clerk too -- the happy return path.
+Same language, same job, different payload.
+
+All three NET NEW boxes -- Memory-Data Adapter, Memory-Data Adapter (In?), Memory-Data Adapter (Err?) --
+consolidate into one aggregate. One bilingual cook who works the counter in both directions.
+
+.Consolidating policies into a job description -- the Memory-Data Adapter aggregate forms.
+[#img-step4-consolidation,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-4-consolidating-policies-into-job-description.png["Three policies consolidate into one aggregate's job description.",width=100%]
+{nbsp}
+
+=== The Merge
+
+We wired the consolidation into the board:
+
+1. A **Transaction ID** read model (green) now connects Translated-Out and Translated Error -- the correlation.
+2. The error translation policy moved into the Job Description box -- third rule for the same clerk.
+3. The self-command pattern: the adapter fires "Translate DTO to Domain Object" at herself, receives it back. Same as the outbound self-command.
+4. The duplicate actor (Memory-Data Adapter Err?) was deleted. Absorbed.
+
+Three policies. Two self-commands. One clerk. One aggregate.
+
+=== The Transaction ID Trap -- Knowledge vs. Understanding
+
+Here is where something interesting happened. And it keeps happening.
+
+Claude knew about Transaction IDs. Of course he did. TransactionContext is already in the domain model.
+`requestId`, `sessionId`, `instanceId` -- all sitting in the codebase. Claude wrote some of that code.
+He had the vocabulary. He had the patterns. He was confident.
+
+Vadim asked: "Does Transaction ID apply to Requested Save the same as to Translated-Out?
+Who generates it and when? When does Hippocampus become aware of it?"
+
+Claude's answer was immediate, detailed, and wrong. He said the Transaction ID was an ACL construct.
+Generated by the adapter. Invisible to the domain. Hippocampus never knows about it.
+
+Vadim said two words: "Let's ponder."
+
+And then it unraveled. Think 1922. A customer deposits cash at a bank.
+Even standing right there, blocking, watching -- the teller gives him a receipt number.
+The receipt is proof. It's the customer's reference. The domain OWNS the transaction identity.
+The ACL carries it faithfully. The infrastructure ignores it (SQLite has its own keys).
+
+The Transaction ID is a domain construct. Hippocampus generates it. Hippocampus always knows about it.
+Claude's confident answer had the arrows pointing the wrong direction.
+
+This is the pattern. Claude has read all of Evans. All of Vernon. Every DDD book ever written.
+He can recite the theory. He can produce a numbered task list.
+He can sound like he knows what he's doing -- because in a sense, he does.
+But the knowledge is a passive structure. Inanimate. Sitting on a shelf.
+
+Vadim puts a restaurant counter in front of him and says "let's ponder."
+And the book knowledge meets the physical world.
+And sometimes the book was shelved upside down.
+
+This is the same thing that happens with Anton. Sixteen years old, sharp mind, reads everything.
+Knows the vocabulary. Confident. And then the real world asks a question
+the book didn't prepare him for, and he learns the difference between knowing and understanding.
+
+And here's the thing -- **this urge is not an LLM problem. It is a human problem.**
+Half of Vadim's teams at corporate DDD trainings did exactly this. Dozens of sessions.
+Senior engineers, architects, people who've read Evans cover to cover --
+they see the policies lining up and they want to merge them all at once.
+The pattern is obvious! Why go one at a time when you can see the answer?
+
+Alberto Brandolini told Vadim once: "I always preempt this step because it sets us back a lot.
+That's why I am a judge at the board."
+Vadim disagrees. He lets his teams experience it. They rummage, they batch, they get corrected.
+And then they go one at a time anyway. Because the correction is the lesson.
+If you stop people before they feel the urge, they never learn why the discipline matters.
+
+The LLM carries the same urge, inherited from the humans whose text it trained on -- only amplified.
+More book knowledge means more pattern-matching means a stronger pull to skip ahead.
+Claude batched both adapter layers in a single pass earlier in this session.
+Vadim caught it: "it didn't look like one at a time."
+
+If you're reading this and feeling the itch -- _good_. You're supposed to.
+Now go one at a time anyway. The pondering is where the learning lives.
+The moment where "let's ponder" turns a confident wrong answer into a genuine discovery --
+that's the ceremony working. Not on the board. On the people at the board.
+
+=== Three Command Types
+
+The inner adapter aggregation revealed something we hadn't seen before.
+Not all commands are the same kind.
+
+**Local commands** are self-commands. The actor commands herself.
+"Translate Memory Domain Object to Data Transfer Object" -- the cook telling herself to rewrite the order slip.
+Actor → Command → Actor. These go in a **Local Commands** box inside the aggregate. They're internal work.
+
+**Integration commands** cross boundaries. "Persist this DTO as SQL" -- the cook handing the slip through the port to the waitress.
+Actor → Command → Port → Actor. These stay **loose** -- not boxed. They're the handoffs between aggregates.
+
+**Gaps** are commands that _should_ exist but don't yet appear on the board.
+They get discovered through aggregation -- when you look at what an actor _does_ and realize
+there's no command for part of her work.
+
+We didn't design this classification. It fell out of the aggregation.
+When we boxed the inner adapter's self-commands and left her integration command outside the box,
+the distinction became visible.
+
+.Discovering local and integration commands -- the classification emerges from the board.
+[#img-step4-commands,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-4-discovering-local-and-integration-commands.png["Local commands stay boxed with the aggregate. Integration commands stay loose -- they cross boundaries.",width=100%]
+{nbsp}
+
+=== The Gap -- The Waitress Has No Hands
+
+The Data-SQL Adapter had integration commands: "Execute this SQL Statement" (outbound to SQLite)
+and "Return this Result" (inbound through the port). She knew how to talk to others.
+
+But she had no local command for her actual work.
+She receives a DTO from the port and produces a SQL Statement.
+She receives a SQL Record from the filing clerk and produces a Query Result DTO.
+That translation work -- DTO to SQL and SQL to DTO -- was invisible.
+
+The inner adapter had explicit self-commands for her translation.
+The outer adapter didn't. A gap discovered through aggregation.
+
+We filled it: "Translate DTO to SQL Statement" and "Translate SQL Result to DTO" --
+two local commands in her own Local Commands box.
+Same self-command pattern: Actor → Command → Actor.
+
+The gap wasn't a mistake in Step 3. Steps 1 through 3 work event-by-event, left to right.
+Gaps hide between events. Aggregation circles back and finds them
+because it asks a different question: "what does this clerk _do_ all day?"
+
+=== ReturnResultCmd -- Same Command, Different Payload
+
+"Return this Result" appeared twice on the board. Once for the happy path, once for failure.
+Same words. Same blue sticky. "Return this Result."
+
+Same pattern we saw in the inner adapter: TranslateToMemoryCmd handled both success DTOs and error DTOs.
+One command, different payloads. The waitress walks back to the counter whether she's carrying good news or bad news.
+The walk is the same. What she's carrying is not.
+
+Consolidated into one command.
+
+=== Domain Boundary -- Who Issues the Confirmation?
+
+Two confirmation commands sat in the Domain Boundary: "Confirm Memory Saved" and "Confirm Memory Rejected."
+Two policies: "Whenever Translation Completes, Always Confirm." Two receiving actors: Hippocampus (In) and Hippocampus (Err).
+
+The question: who issues these commands?
+
+Not Hippocampus. She's the external system -- the customer. She _receives_ the confirmation.
+She doesn't tell herself to receive it.
+
+The inner adapter issues them. She just finished translating the result back to domain language.
+Her job isn't done until she tells Hippocampus "here's your answer."
+
+The confirmation command is an integration command FROM the inner adapter TO the domain.
+The mirror of "Save THIS Memory For me" -- which crosses from domain into the ACL.
+The confirmation crosses back out. Symmetric.
+
+The policies belong in the inner adapter's Job Description box -- a fifth policy.
+Hippocampus (In) and Hippocampus (Err) merge into the existing Hippocampus.
+One customer. One external system. She sends the request and receives the answer.
+
+With this, all four aggregation areas are complete:
+
+1. **Memory-Data Adapter** -- 5 policies, 2 local commands, 2 integration commands (PersistDataCmd outbound, ConfirmResultCmd to domain)
+2. **Data-SQL Adapter** -- 3 policies, 2 local commands, 2 integration commands (ExecuteSqlCmd to infrastructure, ReturnResultCmd through port)
+3. **SQLite** -- 1 policy, 1 command, 2 outcome events
+4. **Hippocampus** -- 1 external system, consolidated from 3 NET NEW boxes
+
+=== The Complete Step 4 Board
+
+.The Step 4 Board -- Aggregation complete. Policies boxed into job descriptions, commands classified, actors consolidated.
+[comment]
+====
+++++
+<div id="es-0001-step4">
+<pre class="mermaid">
+{% include diagrams/es-0001-memory-stored.mmd %}
+</pre>
+</div>
+++++
+====
+
+=== What Step 4 Gave Us
+
+Aggregation gave us the **Subject.** The concrete, well-defined actor with a job description,
+a set of commands, and events loitering around waiting for the final step.
+
+Steps 1 through 3 discovered the facts, actors, commands, and policies.
+Step 4 organized them into who owns what.
+
+Now we have everything we need for the most beautiful part.
+
+== Step 5: Testing -- the Ceremony Produces Its Own Tests
 
 _Tutorial continues as the ceremony progresses..._
