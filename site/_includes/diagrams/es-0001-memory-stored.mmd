@@ -140,23 +140,23 @@ graph LR
     end
 
     subgraph Driver["Outer Adapter Layer"]
-        subgraph DataSqlAdapterAgg["Data-SQL Adapter — Job Description"]
-            AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
-            AlwaysReceiveResultPolicy["Whenever Result is Returned<br/>Always and Immediately<br/>Receive it"]:::actor-policy
-            AlwaysReceiveErrorPolicy["Whenever Result is Returned<br/>Always and Immediately<br/>Receive it"]:::actor-policy
-        end
-        subgraph DataSqlAdapterCmds["Data-SQL Adapter — Local Commands"]
-            TranslateDtoToSqlCmd["Translate DTO<br/>to SQL Statement"]:::actor-command
-            TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
-        end
-        ReturnResultCmd["Return this<br/>Result"]:::actor-command
         DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
-        RequestedPersistence["Requested<br/>Persistence"]:::domain-event
-        SqlStatement["Prepared<br/>Statement"]:::read-model
-        ReceivedResult["Received<br/>Result"]:::domain-event
-        QueryResult["Query<br/>Result"]:::read-model
-        ReceivedError["Received<br/>Error"]:::domain-event
-        SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+        ReturnResultCmd["Return this<br/>Result"]:::actor-command
+        subgraph DataSqlGWT["Data-SQL Adapter — Given-When-Then"]
+            %% Policy 1: Persist (outbound)
+            AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
+            TranslateDtoToSqlCmd["Translate DTO<br/>to Prepared Statement"]:::actor-command
+            RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+            SqlStatement["Prepared<br/>Statement"]:::read-model
+            %% Policy 2: Receive (inbound) -- consolidated, chain wired next
+            AlwaysReceivePolicy["Whenever SQLite Responds<br/>Always and Immediately<br/>Receive and Translate"]:::actor-policy
+            TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
+            ReceivedResult["Received<br/>Result"]:::domain-event
+            QueryResult["Query<br/>Result"]:::read-model
+            ReceivedError["Received<br/>Error"]:::domain-event
+            SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+        end
+        DataSqlGWT --- DataSqlAdapter
     end
 
     subgraph Infrastructure["Infrastructure Boundary"]
@@ -209,12 +209,9 @@ graph LR
     MemoryDataIn o--o Port-Hole-In
     ErrorDTO o--o Port-Hole-In
 
-    %% Outer Adapter (aggregated)
-    AlwaysPersistPolicy --> DataSqlAdapter
-    DataSqlAdapter --> TranslateDtoToSqlCmd
-    TranslateDtoToSqlCmd --> DataSqlAdapter
-    DataSqlAdapter --> RequestedPersistence
-    RequestedPersistence --- MemoryDataOut
+    %% Data-SQL Adapter GWT Policy 1: Policy → Command → Event → (Model)
+    AlwaysPersistPolicy --> TranslateDtoToSqlCmd
+    TranslateDtoToSqlCmd --> RequestedPersistence
     RequestedPersistence --- SqlStatement
 
     %% Integration command: outer adapter --> infrastructure (through aggregate)
@@ -228,14 +225,15 @@ graph LR
     PreparedStatement --> FailedPersistence
     FailedPersistence --- SqlError
 
-    %% Return path (aggregated)
-    AlwaysReceiveResultPolicy --> DataSqlAdapter
-    DataSqlAdapter --> TranslateSqlToDtoCmd
-    TranslateSqlToDtoCmd --> DataSqlAdapter
-    SQLite --> ReceivedResult
-
-    DataSqlAdapter --- ReceivedResult
+    %% Data-SQL Adapter GWT Policy 2: Policy → Command → Event → (Model)
+    AlwaysReceivePolicy --> TranslateSqlToDtoCmd
+    TranslateSqlToDtoCmd --> ReceivedResult
     ReceivedResult --- QueryResult
+    TranslateSqlToDtoCmd --> ReceivedError
+    ReceivedError --- SqlErrorReceived
+
+    %% Integration: SQLite responds through aggregate interface
+    SQLite --> DataSqlAdapter
 
     %% Integration command: outer adapter --> port (return)
     DataSqlAdapter --> ReturnResultCmd
@@ -259,15 +257,7 @@ graph LR
 
     %% Failure fork -- absorbed into SQLite GWT chain above
 
-    %% Failure return path (aggregated)
-    AlwaysReceiveErrorPolicy --> DataSqlAdapter
-    DataSqlAdapter --> TranslateSqlToDtoCmd
-    TranslateSqlToDtoCmd --> DataSqlAdapter
-    SQLite --> ReceivedError
-    DataSqlAdapter --- ReceivedError
-    ReceivedError --- SqlErrorReceived
-
-    ReceivedError --- ErrorDTO
+    %% Failure return path -- absorbed into Data-SQL Adapter GWT Policy 2 above
 
     %% Failure through port to inner adapter (via same ReturnResultCmd integration command)
     AlwaysTranslateErrPolicy --> MemoryDataAdapter

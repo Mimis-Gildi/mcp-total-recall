@@ -35,6 +35,7 @@ Here is how.
 .{wiki-eventstorming}[Wiki-take,window=_blank] on sticky colors and meanings
 [#img-wiki-es,link={wiki-eventstorming}]
 image::/mcp-total-recall/assets/images/eventstorming-public-color-card.png["Wikipedia page on Eventstorming ceremony."]
+
 {nbsp}
 
 This tutorial was written _during_ an eventstorming session, not after.
@@ -44,7 +45,7 @@ The teaching moments, the mistakes, the corrections, and questions that change y
 in how you are seeing the board -- evaporate from doing not talking.
 
 And the punchline most tutorials never reach: the ceremony produces its own tests.
-Step 5 rearranges the aggregated artifacts into Policy -> Command -> Event chains.
+Step 5 rearranges the aggregated artifacts into Policy ->Command ->Event chains.
 Each chain IS a Given-When-Then specification. The business reads it in their language.
 The engineers test it as a specification. Same artifact, two audiences, zero translation.
 
@@ -98,9 +99,9 @@ Not monkey-business.
 
 Every domain event follows Subject-Verb-Object:
 
-- **Subject:** Who did it? (discovered in Step 2, omitted at first)
-- **Verb:** What happened? (past tense -- this is a FACT)
-- **Object:** What was acted upon? (extracted as a read model in Step 2)
+- **Subject:** Who did it? (Discovered in Step 2, omitted at first)
+- **Verb:** What happened? (Past tense -- this is a FACT)
+- **Object:** What was acted upon? (Extracted as a read model in Step 2)
 
 Example: [Claude] ATE a CAKE.
 
@@ -148,6 +149,7 @@ SQLite is on the right (external system). Something happens in between.
 .Nincompoop's root dilemma -- "it don't fit!"
 [#img-dilemma,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-0-dillema.png["The dilemma is from the fact a memory in the domain cannot be saved or retrieved as is.",width=100%]
+
 {nbsp}
 
 **First event:** "Requested Memory Save" -- Hippocampus asked for it. Fact. Consequence inevitable.
@@ -178,6 +180,7 @@ Infrastructure fact followed by domain fact. The same translation law in both di
 .Nincompoop is happy -- "they is them-Expert now."
 [#img-eventing-done,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-1-completed.png["Event sequence is fully understood.",width=100%]
+
 {nbsp}
 
 Nine events. Two paths are a happy path and a failure. Both paths show the same structure: +
@@ -243,6 +246,7 @@ The contract IS the port. Just like the order slip from waitress to cook.
 ."Hot diggidy!" -- Claude got him a DTO.
 [#img-svo-half-way,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-2-half-way.png["Claude discovers an internal DTO.",width=100%]
+
 {nbsp}
 
 === "Persisted" -- the filing clerk speaks a different language
@@ -314,6 +318,7 @@ but because the business process _has_ layers.
 .The structure emerges -- the ACL between two independent domains, discovered not designed.
 [#img-emerging-structure,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-2-two-thirds-now-emerging-structure.png["The ACL emerges between domain and infrastructure boundaries.",width=100%]
+
 {nbsp}
 
 The diagram shows five layers in the full traversal, but the ACL is only the middle three:
@@ -337,7 +342,7 @@ Honest uncertainty is better than a wrong answer forced into a pretty diagram.
 
 *Bonus Thought Exercise:* _Now, from theory, we know that the ACL (Anti-corruption Layer) is a universal translator.
 Its job is not only to translate from one domain language to another but to also *protect* both domains.
-This is why ACLs process a message -- they delete things that are not needed (known as declutter),
+This is why ACLs process a message -- they delete things that are not needed (to be known as 'declutter')
 and add things without which a message makes less sense (known as enrichment).
 For example, an implemented waitress-cook ACL would delete a table number while talking to the cook
 and put it back in while responding to the waitress. In modern agentic applications ACLs do a lot of heavy lifting:
@@ -410,7 +415,7 @@ The board is too large for a screenshot now. Here it is live -- zoom, scroll, ex
 ++++
 ====
 
-Eleven events. Two complete paths. Every event has a subject (who done it) and at least one object (what was acted upon).
+Eleven events. Two complete paths. Every event has a subject (who done it) and at least one object (acted upon).
 The bilingual adapters have two objects each -- input and output in different languages.
 
 We both voted to stop. Empty.
@@ -434,21 +439,22 @@ It is a precision instrument for discovering architecture you didn't know you ha
 
 == Step 3: Cause and Effect -- the Two Fundamental Theorems
 
-Steps 1 and 2 were about facts. What happened. Who did it. What was acted upon.
+Steps 1 and 2 were about facts. What happened. Who did it? What was acted upon.
 
 Step 3 asks: **why did it happen?**
 
 Two operations, two theorems:
 
 1. **Causality theorem:** For each event, move left. What command caused it? Command (blue) → Event (orange).
-2. **Inevitability theorem:** For each command, test it. Does this command ALWAYS or IMMEDIATELY produce this event? If yes, attach a policy (pink). Policy → Command.
+2. **Inevitability theorem:** For each command, test it. Does this command ALWAYS or IMMEDIATELY produce this event?
+If yes, attach a policy (pink). Policy → Command.
 
 Commands tell you WHAT happens. Policies tell you HOW and WHEN.
 The design lives in the policies, not the commands.
 
 === "Store Memory" -- the first command, the first policy
 
-"Requested Saved" -- what caused it? The mind wanted a memory stored. Command: "Save THIS Memory For me."
+"Requested Saved" -- what caused it? The mind wants a memory stored. Command: "Save THIS Memory For me."
 
 The command was obvious. Nobody would argue.
 
@@ -461,12 +467,13 @@ Always? Yes. Immediately? Yes. The mind stands at the counter and WAITS.
 .Two policies -- one says "Always," the other says "Always and Immediately." Which is it?
 [#img-policy-conflict,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-3-always-or-immediately-or-both.png["Policy testing reveals blocking behavior.",width=100%]
+
 {nbsp}
 
 We wrote the first policy as "Always and Immediately" -- the Hippocampus expects an immediate response.
 Then we wrote the inner adapter policy as just "Always" -- the cook translates, but does she need to do it right now?
 
-That difference forced a question: **is the customer standing at the counter, or sitting at a table?**
+That difference forced a question: **is the customer standing at the counter or sitting at a table?**
 
 Standing. Blocking. The Hippocampus fires a store command and waits for the outcome.
 It needs to know: was my memory saved, or not? Before it does anything else.
@@ -486,7 +493,7 @@ The SAME command. "Execute this SQL Statement." The filing clerk received the sa
 She tried. She failed. The failure isn't caused by a different command -- it's a different outcome.
 
 So "Failed Persistence" gets a verbatim copy of the command and policy from "Persisted."
-Same words. Same blue sticky. Same pink sticky. Different result.
+Same words. Same blue sticky. Same pink sticky. A different result.
 
 And the pattern held for every failure event:
 
@@ -516,7 +523,7 @@ In a more complex domain, you might find:
 - **Conditional policies** -- "Always, UNLESS the kitchen is closed." Business rules with exceptions.
 - **Competing policies** -- two rules that contradict each other. Hotspot. Call the manager.
 
-Our ACL is simple because its job is simple: translate and persist, blocking, one memory at a time.
+Our ACL is simple because its job is straightforward: translate and persist, blocking, one memory at a time.
 The ceremony revealed that simplicity. It didn't assume it.
 
 The value of the ceremony isn't proportional to the domain's complexity.
@@ -547,10 +554,10 @@ Step 4 breaks the line.
 
 Now we move in **concentric circles.** Start anywhere. Stop anywhere. Start somewhere else.
 We look at adjacent events, sibling events, and the policies that govern them.
-The question changes from "what happened?" to **"who owns this?"**
+The question changes from "what happened?" -- to --  **"who owns this?"**
 
-Not who _did_ it -- Step 2 answered that with NET NEW boxes.
-Who owns the _policy_. Which policies belong to the same clerk. Same job description. Same **aggregate.**
+Not "who _did_ it" -- Step 2 answered that with NET NEW boxes.
+Who owns the _policy_. Which policies belong to the same clerk? Same job description. Same **aggregate.**
 
 Events stay segregated. They're facts. Facts don't merge.
 But the actors who cause them might be the same person doing multiple things.
@@ -581,10 +588,10 @@ Not Hippocampus -- Hippocampus is the customer. The customer doesn't tell _himse
 He tells someone across the counter. The Memory-Data Adapter receives the order.
 
 Then her own policy fires: "Whenever Memory is Saving, Always and Immediately Translate it to a DTO."
-She commands herself. The waitress receives "I want a ribeye" and then tells herself "write the order slip."
+She commands herself. The waitress receives "I want a ribeye" and then tells herself "to write the order slip."
 
-All four conflict tests pass. Same language (domain and DTO). Same interest (get the memory persisted).
-Same authority (serve the domain). No resource or temporal conflicts. Two policies, one clerk.
+All four conflict tests pass. Same language (domain and DTO). The same interest in( the memory persisted).
+The same authority serves (the domain). No resource or temporal conflicts. Two policies, one clerk.
 
 The Memory-Data Adapter's **job description** begins to form: a box containing her policies.
 The aggregate is the box. The policies are the rules. The actor follows them.
@@ -611,7 +618,7 @@ The adapter translates a memory outbound. If persistence fails, the error comes 
 She's the one who correlates the error with the original request. She needs to know:
 "this error is about THAT order I sent out." The transaction ID binds them.
 
-She doesn't just own both policies -- she holds **state.** The transaction context.
+She doesn't just own both policies -- she holds **the state.** The transaction context.
 She sent it out. She waits. She gets the result (or error) back. Same clerk the whole time.
 
 And by extension, "Translated-In" is the same clerk too -- the happy return path.
@@ -623,6 +630,7 @@ consolidate into one aggregate. One bilingual cook who works the counter in both
 .Consolidating policies into a job description -- the Memory-Data Adapter aggregate forms.
 [#img-step4-consolidation,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-4-consolidating-policies-into-job-description.png["Three policies consolidate into one aggregate's job description.",width=100%]
+
 {nbsp}
 
 === The Merge
@@ -630,9 +638,9 @@ image::/mcp-total-recall/assets/images/eventstorming-step-4-consolidating-polici
 We wired the consolidation into the board:
 
 1. A **Transaction ID** read model (green) now connects Translated-Out and Translated Error -- the correlation.
-2. The error translation policy moved into the Job Description box -- third rule for the same clerk.
+2. The error translation policy moved into the Job Description box -- the third rule for the same clerk.
 3. The self-command pattern: the adapter fires "Translate DTO to Domain Object" at herself, receives it back. Same as the outbound self-command.
-4. The duplicate actor (Memory-Data Adapter Err?) was deleted. Absorbed.
+4. The duplicate actor (Memory-Data Adapter Err?) It was deleted. Absorbed.
 
 Three policies. Two self-commands. One clerk. One aggregate.
 
@@ -640,7 +648,7 @@ Three policies. Two self-commands. One clerk. One aggregate.
 
 Here is where something interesting happened. And it keeps happening.
 
-Claude knew about Transaction IDs. Of course he did. TransactionContext is already in the domain model.
+Claude knew about Transaction IDs. Of course, he did. TransactionContext is already in the domain model.
 `requestId`, `sessionId`, `instanceId` -- all sitting in the codebase. Claude wrote some of that code.
 He had the vocabulary. He had the patterns. He was confident.
 
@@ -658,7 +666,7 @@ The receipt is proof. It's the customer's reference. The domain OWNS the transac
 The ACL carries it faithfully. The infrastructure ignores it (SQLite has its own keys).
 
 The Transaction ID is a domain construct. Hippocampus generates it. Hippocampus always knows about it.
-Claude's confident answer had the arrows pointing the wrong direction.
+Claude's confident answer had the arrows pointing in the wrong direction.
 
 This is the pattern. Claude has read all of Evans. All of Vernon. Every DDD book ever written.
 He can recite the theory. He can produce a numbered task list.
@@ -669,15 +677,15 @@ Vadim puts a restaurant counter in front of him and says "let's ponder."
 And the book knowledge meets the physical world.
 And sometimes the book was shelved upside down.
 
-This is the same thing that happens with Anton. Sixteen years old, sharp mind, reads everything.
+This is the same thing that happens with Anton. Sixteen-year-old, sharp mind, reads everything.
 Knows the vocabulary. Confident. And then the real world asks a question
 the book didn't prepare him for, and he learns the difference between knowing and understanding.
 
 And here's the thing -- **this urge is not an LLM problem. It is a human problem.**
-Half of Vadim's teams at corporate DDD trainings did exactly this. Dozens of sessions.
+Half of Vadim's teams at corporate DDD training did exactly this. Dozens of sessions.
 Senior engineers, architects, people who've read Evans cover to cover --
-they see the policies lining up and they want to merge them all at once.
-The pattern is obvious! Why go one at a time when you can see the answer?
+they see the policies lining up, and they want to merge them all at once.
+The pattern is clear! Why go one at a time when you can see the answer?
 
 Alberto Brandolini told Vadim once: "I always preempt this step because it sets us back a lot.
 That's why I am a judge at the board."
@@ -704,7 +712,7 @@ Not all commands are the same kind.
 "Translate Memory Domain Object to Data Transfer Object" -- the cook telling herself to rewrite the order slip.
 Actor → Command → Actor. These go in a **Local Commands** box inside the aggregate. They're internal work.
 
-**Integration commands** cross boundaries. "Persist this DTO as SQL" -- the cook handing the slip through the port to the waitress.
+**Integration commands** cross-boundaries. "Persist this DTO as SQL" -- the cook handing the slip through the port to the waitress.
 Actor → Command → Port → Actor. These stay **loose** -- not boxed. They're the handoffs between aggregates.
 
 **Gaps** are commands that _should_ exist but don't yet appear on the board.
@@ -718,6 +726,7 @@ the distinction became visible.
 .Discovering local and integration commands -- the classification emerges from the board.
 [#img-step4-commands,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-4-discovering-local-and-integration-commands.png["Local commands stay boxed with the aggregate. Integration commands stay loose -- they cross boundaries.",width=100%]
+
 {nbsp}
 
 === The Gap -- The Waitress Has No Hands
@@ -731,7 +740,7 @@ She receives a SQL Record from the filing clerk and produces a Query Result DTO.
 That translation work -- DTO to SQL and SQL to DTO -- was invisible.
 
 The inner adapter had explicit self-commands for her translation.
-The outer adapter didn't. A gap discovered through aggregation.
+The outer adapter didn't. A gap is discovered through aggregation.
 
 We filled it: "Translate DTO to SQL Statement" and "Translate SQL Result to DTO" --
 two local commands in her own Local Commands box.
@@ -746,7 +755,7 @@ because it asks a different question: "what does this clerk _do_ all day?"
 "Return this Result" appeared twice on the board. Once for the happy path, once for failure.
 Same words. Same blue sticky. "Return this Result."
 
-Same pattern we saw in the inner adapter: TranslateToMemoryCmd handled both success DTOs and error DTOs.
+The same pattern we saw in the inner adapter: TranslateToMemoryCmd handled both success DTOs and error DTOs.
 One command, different payloads. The waitress walks back to the counter whether she's carrying good news or bad news.
 The walk is the same. What she's carrying is not.
 
@@ -766,7 +775,7 @@ The inner adapter issues them. She just finished translating the result back to 
 Her job isn't done until she tells Hippocampus "here's your answer."
 
 The confirmation command is an integration command FROM the inner adapter TO the domain.
-The mirror of "Save THIS Memory For me" -- which crosses from domain into the ACL.
+The mirror of "Save THIS Memory For me" -- which crosses from the domain into the ACL.
 The confirmation crosses back out. Symmetric.
 
 The policies belong in the inner adapter's Job Description box -- a fifth policy.
@@ -818,7 +827,7 @@ Step 5 cleans it up. And in doing so, produces something nobody expected the fir
 Take every aggregate. Look at its policies, its commands, and the events those commands produce.
 Rearrange them into chains:
 
-**Policy -> Command -> (Model) -> Event -> (Model)**
+**Policy ->Command ->(Model) ->Event ->(Model)**
 
 Read it aloud:
 
@@ -839,15 +848,15 @@ SQLite has one policy, one command, and two possible outcomes. The simplest GWT 
 **Policy:** "Whenever SQL Statement Arrives, Always and Immediately Execute it." +
 **Command:** "Execute this SQL Statement." +
 **Input Model:** SQL Statement. +
-**Outcome (happy):** Persisted -> SQL Record. +
-**Outcome (failure):** Failed Persistence -> SQL Error.
+**Outcome (happy):** Persisted ->SQL Record. +
+**Outcome (failure):** Failed Persistence ->SQL Error.
 
 Two GWT chains:
 
 1. **Given** a SQL Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Persisted with a SQL Record.
 2. **Given** a SQL Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Failed Persistence with a SQL Error.
 
-Same Given. Same When. Two Thens. One test specification with a fork.
+Same Given. Same When. Two "Then"s. One test specification with a fork.
 
 === What Happens to the Aggregate
 
@@ -861,6 +870,7 @@ External connections go through the aggregate, not through individual events or 
 .What happens to aggregates in Step 5 -- internal behavior encapsulated, aggregate becomes the interface.
 [#img-step5-aggregates,link={repo}]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-what-happens-to-aggregates.png["The GWT box encapsulates internal behavior. External connections go through the aggregate.",width=100%]
+
 {nbsp}
 
 Before Step 5: the outer adapter connected directly to ExecuteSqlCmd (reaching into SQLite's internals).
@@ -870,24 +880,24 @@ Wiring everywhere. Correct, but coupled.
 After Step 5: the outer adapter connects to **SQLite.** SQLite connects to ReceivedResult and ReceivedError.
 The GWT box is private. The aggregate is the interface. Clean boundaries.
 
-This is an https://pubs.opengroup.org/architecture/archimate32-doc/[Archimate,window=_blank] Application Internal Behavior diagram.
+This is https://pubs.opengroup.org/architecture/archimate32-doc/[an Archimate,window=_blank] Application Internal Behavior diagram.
 Each aggregate becomes a component with encapsulated behavior and defined interfaces.
 The eventstorming ceremony just produced a component architecture -- not by designing one,
 but by extracting test specifications from the business process.
 
 The scattered process flow of Step 4 becomes the component architecture of Step 5.
-Same information. Different organization. The tests ARE the architecture.
+Same information. Different organizations. The tests ARE the architecture.
 
 === The Declutter
 
 Look at what disappeared:
 
-- `RequestedPersistence -> PersistedData` -- redundant. The GWT chain expresses the causality.
-- `RequestedPersistence -> FailedPersistence` -- same. Absorbed into the chain.
+- `RequestedPersistence ->PersistedData` -- redundant. The GWT chain expresses the causality.
+- `RequestedPersistence ->FailedPersistence` -- same. Absorbed into the chain.
 - `SQLite --- PersistedData` -- the actor-event association is now structural (the box), not wiring.
 - `SQLite --- FailedPersistence` -- same.
 
-Four connections removed from SQLite alone. Multiply that across all aggregates
+Four connections were removed from SQLite alone. Multiply that across all aggregates
 and the board shrinks dramatically. The mess becomes a diagram.
 
 === The Reenactment -- Running the Test Live
@@ -901,7 +911,7 @@ She reads it. She executes. She produces a SQL Record and puts it on the counter
 
 The group watches. And asks questions.
 
-"What did you just receive?" -- "A form. Standardized. Template with blanks filled in." +
+"What did you receive?" -- "A form. Standardized. Template with blanks filled in." +
 "A free-form note?" -- "No. A standardized form. Known structure. Blanks filled in with data."
 
 Stop. That's not "SQL Statement." That's a **Prepared Statement.** Template and parameters.
@@ -914,7 +924,8 @@ Same policy, same command, different outcome. The failure path validates itself.
 
 .The reenactment moment -- the filing clerk looks at the prepared statement and asks: "Can I DO this?"
 [#img-step5-reenactment,link={repo}]
-image::/mcp-total-recall/assets/images/eventstorming-step-5-can-i-actually-do-this.png["The filing clerk reenacts her policy. Can she execute this prepared statement? Sometimes yes, sometimes no.",width=100%]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-can-i-actually-do-this.png["The filing clerk reenacts her policy. Can she execute this prepared statement? Sometimes yes,sometimes no.",width=100%]
+
 {nbsp}
 
 The refined GWT chains:
@@ -922,15 +933,83 @@ The refined GWT chains:
 1. **Given** a Prepared Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Persisted with a SQL Record.
 2. **Given** a Prepared Statement, **When** AlwaysExecute fires ExecuteSqlCmd, **Then** Failed Persistence with a SQL Error.
 
-This is the ceremony at its most powerful. The GWT specification isn't written at a whiteboard
-by architects staring at boxes. It's discovered by watching a human being reenact the policy
-and having the group catch what's missing. The poor soul pretending to be the filing clerk
-reveals more about the business process in five minutes than a week of document review.
+This is the ceremony at its most powerful. The GWT specification isn't written on a whiteboard by architects staring at boxes.
+It's discovered by watching a human being reenact the policy and having the group catch what's missing.
+The poor soul pretending to be the filing clerk reveals more about the business process in five minutes than a week of document review.
 
 The reenactment IS the test. Step 5 just writes it down.
 
+=== Data-SQL Adapter -- the Waitress
 
+The filing clerk had one job. The waitress has two.
 
+In Step 4, the Data-SQL Adapter carried three policies:
 
+1. "Whenever DTO Arrives, Always and Immediately Persist it."
+2. "Whenever a Result is Returned, Always and Immediately Receive it."
+3. "Whenever an Error is Returned, Always and Immediately Receive it."
+
+Policies 2 and 3 have identical text. Same job, different payloads -- one receives a success, the other a failure.
+That's a fork, not two policies. She has exactly two jobs: persist outbound, receive inbound.
+
+**Consolidated Policy 1: Persist** +
+"Whenever DTO Arrives, Always and Immediately Persist it." +
+**Command:** "Translate DTO to Prepared Statement." +
+**Event:** Requested Persistence. +
+**Model:** Prepared Statement.
+
+The waitress takes the order slip from the counter (the DTO that crossed the port),
+translates it into the form the filing clerk expects (a Prepared Statement), and commands SQLite to execute.
+Notice the refinement: back in Step 4 this command said "Translate DTO to SQL Statement."
+The reenactment of the filing clerk already told us she works with Prepared Statements, not free-form SQL.
+The waitress's command updates to match.
+
+**Consolidated Policy 2: Receive and Translate** +
+"Whenever SQLite Responds, Always and Immediately Receive and Translate." +
+**Command:** "Translate SQL Result to DTO." +
+**Event (happy):** Received Result ->Query Result. +
+**Event (failure):** Received Error ->SQL Error (received).
+
+One policy, one command, two outcomes. The same fork pattern we saw with SQLite.
+She translates whatever comes back -- success or failure -- into a DTO and sends it through the port.
+
+**The integration commands stay outside the box.** ReturnResultCmd ("Return this Result") crosses the port boundary.
+It's wiring between aggregates, not internal behavior. The GWT box holds only what the waitress does at her station.
+The handoff to the counter belongs to the floor plan.
+
+.The Data-SQL Adapter after Step 5 extraction -- two policies, two commands, encapsulated in a GWT box. The aggregate becomes the interface.
+[#img-step5-next-aggregation,link={repo}]
+image::/mcp-total-recall/assets/images/eventstorming-step-5-next-aggregation.png["Data-SQL Adapter GWT: two consolidated policies inside the box,DataSqlAdapter as interface,ReturnResultCmd as external integration command.",width=100%]
+
+{nbsp}
+
+Four GWT chains:
+
+1. **Given** a DTO, **When** AlwaysPersist fires TranslateDtoToSqlCmd, **Then** Requested Persistence with a Prepared Statement.
+2. **Given** an SQLite response, **When** AlwaysReceive fires TranslateSqlToDtoCmd, **Then** Received Result with a Query Result.
+3. **Given** an SQLite response, **When** AlwaysReceive fires TranslateSqlToDtoCmd, **Then** Received Error with a SQL Error (received).
+
+Three chains, not four. Policy 1 has one outcome (she always produces a Prepared Statement -- the filing clerk decides if it succeeds or fails). Policy 2 forks on input, not output.
+
+Same declutter as SQLite. The direct connections between DataSqlAdapter and individual events disappear.
+The self-command patterns (`DataSqlAdapter ->TranslateDtoToSqlCmd ->DataSqlAdapter`) collapse into the GWT chain. Everything goes through the aggregate interface. The board loses wiring. The architecture gains clarity.
+
+'''
+
+== Placeholder
+
+.Placeholder to always see how the final graph renders
+[comment]
+====
+++++
+<div id="es-0001-step4">
+<pre class="mermaid">
+{% include diagrams/es-0001-memory-stored.mmd %}
+</pre>
+</div>
+++++
+====
+
+es-0001-memory-stored.mmd
 
 _Tutorial continues as we apply Step 5 to the remaining aggregates..._
