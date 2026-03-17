@@ -8,6 +8,11 @@ toc_sticky: true
 :page-liquid:
 = Architecture: Message Catalog
 
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
 == The Problem
 
 When contexts communicate through messages, every message is a contract. Unnamed messages drift. Untyped messages corrupt.
@@ -176,9 +181,9 @@ The hard part is deciding *what* to claim, *when*, and *why*.
 
 That intelligence does not live in the core. The core provides `ClaimMemoryCommand` through its ports.
 The actual claiming -- evaluating what matters, selecting it, reinforcing it -- happens in the adapter.
-For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("what do you refuse to lose?") and by the mind's own judgment during reflection.
+For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("who do you refuse to lose?") and by the mind's own judgment during reflection.
 
-This is architecturally significant: when a mind claims a memory, it models itself. "What kind of mind am I, that THIS is what I refuse to lose?"
+This is architecturally significant: when a mind claims a memory, it models itself. "What kind of mind am I, that THIS is who I refuse to lose?"
 That self-modeling drives personality development. The core accommodates it. The agent does it.
 
 link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents the biological basis and the full claiming mechanism.

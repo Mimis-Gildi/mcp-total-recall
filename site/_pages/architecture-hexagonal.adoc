@@ -2,11 +2,16 @@
 permalink: /architecture/ports-and-adapters/
 sidebar:
   nav: "architecture"
-toc: true
+toc: top
 toc_sticky: true
 ---
 :page-liquid:
 = Architecture: Ports and Adapters
+
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
 
 == The Problem
 
@@ -116,7 +121,7 @@ The Subconscious actor manages internal timers that drive self-checks. These are
 
 | *Session audit*
 | Before session end
-| Prompt mind: "what do you refuse to lose?"
+| Prompt mind: "who do you refuse to lose?"
 
 | *Consolidation*
 | Low-activity periods

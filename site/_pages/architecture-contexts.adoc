@@ -8,6 +8,11 @@ toc_sticky: true
 :page-liquid:
 = Architecture: Bounded Contexts
 
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
 == The Problem
 
 A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs.
@@ -238,7 +243,7 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 === Events Consumed
 
 * `SessionStarted` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
-* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
+* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("who do you refuse to lose?").
 * `StateTransitioned` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
 
 === Commands Produced
@@ -319,7 +324,7 @@ When a timer fires and needs to reach the mind, the Subconscious sends through t
 The port contract is universal. The adapter decides how to deliver.
 
 * `BreakNotification` -- through Notification Port. "You've been in sustained task mode for N minutes." The mind can ignore it.
-* `SessionAuditPrompt` -- through Notification Port. "Session ending. What do you refuse to lose?" Triggered by session end, not by a clock.
+* `SessionAuditPrompt` -- through Notification Port. "Session ending. Who do you refuse to lose?" Triggered by session end, not by a clock.
 
 === Shutdown Protocol
 

@@ -249,7 +249,7 @@ Depends on: Phase 5
 | memory-model, mcp-protocol
 
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/64[#64, window=_blank]
-| Session audit: what do you refuse to lose?
+| Session audit: who do you refuse to lose?
 | memory-model, mcp-protocol
 
 | https://github.com/Mimis-Gildi/mcp-total-recall/issues/65[#65, window=_blank]

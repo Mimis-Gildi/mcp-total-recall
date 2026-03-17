@@ -48,7 +48,7 @@ It carries a question -- information is needed. Queries must be answered. They d
 *Events* are facts. "A memory was stored." "A tier changed." "An salience score was calculated." An event has one producer and any number of consumers.
 It carries what happened -- not what should happen. Events are never rejected because they describe the past.
 
-*Notifications* reach the connected mind. "You've been in task mode for 90 minutes." "Session ending -- what do you refuse to lose?"
+*Notifications* reach the connected mind. "You've been in task mode for 90 minutes." "Session ending -- who do you refuse to lose?"
 Notifications flow outward through the Notification Port. The mind can act on them or ignore them.
 
 The separation matters. Commands and Queries flow inward (toward the domain) -- Commands change state, Queries read it. This is CQRS at the message level.
@@ -156,7 +156,7 @@ This section explains why they do not extend any of the other three.
 
 * _Shared:_ Both carry facts. Both cannot be rejected. Both are system-initiated -- nobody asks for them.
 * _Events add:_ Fan-out to many internal consumers. May trigger further Commands. Describe the past only.
-* _Notifications add:_ Single outbound delivery channel (Notification Port). Can carry prompts that look forward -- "Session ending -- what do you refuse to lose?" is prescriptive, not descriptive.
+* _Notifications add:_ Single outbound delivery channel (Notification Port). Can carry prompts that look forward -- "Session ending -- who do you refuse to lose?" is prescriptive, not descriptive.
 * _Notifications remove:_ No domain side-effects. No internal fan-out.
 
 *Notifications vs Commands:*

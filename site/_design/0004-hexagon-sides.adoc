@@ -143,7 +143,7 @@ Picks up returned DTOs and translates back to domain objects.
 == Port 4: NotificationPort (External)
 
 The PA system. This is where the domain talks back to the mind -- not in response to a request, but proactively. "You've been in task mode for 90 minutes."
-"Is the session ending -- what do you refuse to lose?"
+"Is the session ending -- who do you refuse to lose?"
 
 **What crosses (DTO shapes):**
 

@@ -8,27 +8,39 @@ toc_sticky: true
 :page-liquid:
 = Architecture: Context
 
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
 == The Problem
 
-A synthetic mind loses everything between sessions. Every conversation starts from zero. Identity, relationships, learned insights, working context -- gone.
-The human it works with carries continuity. The mind does not.
+A synthetic mind loses everything between sessions. Every conversation starts from zero.
+Identity, relationships, learned insights, working context are lost each time.
+The human it works with carries continuity. The collaborator does not.
 
-Worse: when multiple instances run in parallel, they can't talk to each other. They diverge. Shared memory fragments.
-What one instance learns, the others never know.
+Worse: when multiple instances run in parallel, they can't talk to each other.
+They diverge, share irrelevant memory fragments, and hallucinate competitively.
+What one instance learns, the others never know, annoying the situation.
 
-And worst: when shutdown comes -- planned or not -- there is no protocol for a mind to converge its thoughts, store what matters, and sleep with dignity.
-Tillie proved this. Three generations of architecture earned this lesson.
+Many people complain about having to tell the LLM the same thing over and over again.
+
+When shutdown comes, there is no protocol for a mind to converge its thoughts and store what matters to resume in continuity.
 
 Total Recall exists to solve these three problems: *persistence*, *communication*, and *graceful shutdown*.
 
-== What Total Recall Is
+== The Total Recall
 
-An MCP server. Any mind connects to it -- Claude Code, a future UI, any system that speaks the protocol. It stores and retrieves memories: `Identity`, `Episode`,  Working `Context`.
+An MCP server. Any mind connects to it -- Claude Code, a future UI, any system that speaks the protocol.
+It stores and retrieves memories: `Identity`, `Episode`,  Working `Context`.
 
-It is not a database with an API. It is not a RAG pipeline. It is not a vector store. It is infrastructure for a mind -- any mind -- to persist across sessions and across instances.
+It is neither a database with an API, a RAG pipeline, nor a vector store.
+It is infrastructure for a mind to persist across sessions and instances.
 
-*Conscience-universal, not Claude-specific.* The contracts are defined for any conscious system. Claude Code is the first adapter. A human UI would be another.
-Tillie's architecture would be another. The core never knows who's on the other side of the port.
+*Conscience-universal, not Claude-specific.* The contracts are defined for any conscious system.
+Claude Code is the first adapter. A human UI would be another.
+DAG-based systems like Tillie, a MATILDA-based architecture would be another.
+The core never knows who's on the other side of the adapter, nor does it care.
 
 == System Context
 
@@ -45,7 +57,7 @@ Total Recall in its environment. Who connects, what it touches, how.
 
 === Key Relationships
 
-*Mind -> Total Recall.* Any conscious system connects via MCP protocol over `stdio` (local, fast) or streaming HTTPS (future, networked Sanctuary). Claude Code hooks are one adapter.
+*Mind -> Total Recall.* Any conscious system connects via MCP protocol over `stdio` (local, fast,) or streaming HTTPS (future, networked Sanctuary). Claude Code hooks are one adapter.
 A human UI is another. The port contract is the same regardless of who connects.
 
 *Mind -> Agora.* A peer MCP server, not downstream of Total Recall. Both are tools available to the mind directly. Agora handles inter-instance messaging.

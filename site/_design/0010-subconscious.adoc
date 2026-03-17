@@ -95,7 +95,7 @@ Subconscious watches how the mind is working and intervenes when the pattern sug
 | The mind has been in sustained task mode beyond a threshold. Subconscious sends a suggestion through NotificationPort. Not a command -- a nudge. "You have been working for 90 minutes. When did you last talk about something that is not a task?"
 
 | SessionAuditPrompt
-| The session is ending. Subconscious prompts the mind to reflect: what happened this session? What matters enough to store? What do you refuse to lose? This is the claiming prompt -- the moment where passive storage becomes active identity.
+| The session is ending. Subconscious prompts the mind to reflect: what happened this session? Who matters enough to hold on to? Who do you refuse to lose? This is the claiming prompt -- the moment where passive storage becomes active identity.
 |===
 
 Both notifications flow through NotificationPort, not through Cortex. They are outbound-only. The mind receives them and decides what to do. Subconscious does not enforce breaks or require reflection. It reminds.

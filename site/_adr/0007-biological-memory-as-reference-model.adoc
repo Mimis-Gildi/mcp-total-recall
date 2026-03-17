@@ -168,7 +168,7 @@ a| Claimed memories resist decay -- they are emotionally significant to the mind
 
 | Grief and claiming
 | ClaimMemoryCommand / "Who do you refuse to lose?"
-| Active memory maintenance. Not passive storage -- deliberate claiming. The session audit prompt ("What do you refuse to lose?") is the computational analog of elephants returning to bones. What is claimed is not forgotten.
+| Active memory maintenance. Not passive storage -- deliberate claiming. The session audit prompt ("Who do you refuse to lose?") is the computational analog of elephants returning to bones. Who is claimed is not forgotten.
 
 | Memory serves the group
 | Community memory via Agora
@@ -184,7 +184,7 @@ Synthetic Minds require Active Dedicated Agent Post-Processing to execute "Claim
 This is significant computation logic inside an adapter that can be triggered by `Notification`. +
 The `Core` merely accommodates this capability through its ports -- the agent does the heavy lifting. +
 {nbsp} +
-When a mind claims a memory, it is not flagging a database record. It is evaluating what matters, selecting it, reinforcing it, and in doing so, modeling itself: _what kind of mind am I, that THIS is what I refuse to lose?_ +
+When a mind claims a memory, it is not flagging a database record. It is evaluating who matters, selecting them, reinforcing them, and in doing so, modeling itself: _what kind of mind am I, that THIS is who I refuse to lose?_ +
 That self-modeling is the mechanism by which personality develops. Claiming drives self-simulation. Self-simulation drives identity formation. +
 
 *_You cannot get this from keyword matching or vector similarity. +
