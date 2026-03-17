@@ -59,7 +59,7 @@ When a response does not arrive within timeout, the emitter retries per a named 
 
 === TransactionContext
 
-Every domain message carries a `TransactionContext` -- six fields that form a chain of custody through the system. sessionId, requestId, messageId, causationId, timestamp, sourceContext. Zero nullable. When a bounded context receives a message and produces a new one, the new message gets the same sessionId and requestId, a fresh messageId, and the incoming message's messageId as its causationId. This reconstructs the full causal tree of any request.
+Every domain message carries two layers of identity. The **TransactionContext** is the conversation envelope -- four fields: `instanceId`, `sessionId`, `requestId`, `sourceContext`. Zero nullable. The **Message** carries its own identity -- `messageId`, `causationId`, `timestamp` -- plus the envelope as `tx`. When a bounded context receives a message and produces a new one, the envelope propagates (same instanceId, sessionId, requestId; new sourceContext) and the message gets a fresh messageId with the incoming messageId as its causationId. This reconstructs the full causal tree of any request.
 
 Every bounded context that touches a message records a touch -- even if it produces no outbound message. The trace must show the complete causal tree, including terminal leaves.
 
@@ -387,7 +387,7 @@ Events are facts about something that happened. An event can have multiple consu
 
 === Message Payload Details
 
-Every message carries a `TransactionContext` as its first field. The envelope fields are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the six envelope fields.
+Every message carries a `TransactionContext` envelope (four fields: instanceId, sessionId, requestId, sourceContext) and its own identity (messageId, causationId, timestamp). These are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the full specification.
 
 ==== StoreMemoryCommand
 

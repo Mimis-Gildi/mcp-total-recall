@@ -180,7 +180,7 @@ graph LR
     subgraph Driver["Outer Adapter Layer"]
         SQLiteDriver["SQLite<br/>Driver"]:::actor
         subgraph SQLiteDriverGWT["SQLite Driver — Given-When-Then"]
-            %% Policy 1: Persist (outbound)
+            %% Policy 1: Persist (external)
             AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
             TranslateDtoToSqlCmd["Translate DTO<br/>to Prepared Statement"]:::actor-command
             DtoIn["DTO<br/>(in)"]:::read-model
@@ -190,7 +190,7 @@ graph LR
             SqlStatement["Prepared<br/>Statement"]:::read-model
             %% Transaction ID: domain construct, links input DTO to output Query Result
             TransactionId["Transaction<br/>ID"]:::read-model
-            %% Policy 2: Receive (inbound) -- consolidated, one output model
+            %% Policy 2: Receive (internal) -- consolidated, one output model
             AlwaysReceivePolicy["Whenever SQLite Responds<br/>Always and Immediately<br/>Receive and Translate"]:::actor-policy
             TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
             ReceivedResult["Received<br/>Result"]:::domain-event
@@ -231,7 +231,7 @@ graph LR
     DataPort --> |"Serves(Abstract Data Persistence)"| MemoryDataAdapter
     SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
 
-    %% Memory-Data Adapter GWT Policy 1: Accept and Translate (outbound)
+    %% Memory-Data Adapter GWT Policy 1: Accept and Translate (external)
     AlwaysAcceptAndTranslatePolicy --- MemoryIn
     MemoryIn --> TranslateToDataCmd
     TranslateToDataCmd --- DtoForPort
@@ -253,7 +253,7 @@ graph LR
     CancelTransactionCommand --> TransactionCancelledEvent
 
 
-    %% Memory-Data Adapter GWT Policy 2: Translate Back and Confirm (inbound)
+    %% Memory-Data Adapter GWT Policy 2: Translate Back and Confirm (internal)
     AlwaysTranslateAndConfirmPolicy --- DtoFromPort
     DtoFromPort --> TranslateToMemoryCmd
     TranslateToMemoryCmd --- ConfirmedMemory

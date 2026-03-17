@@ -58,7 +58,7 @@ Every mechanism is pluggable. Every port has a contract. Every contract is consc
 | `session_start`, `session_end`, `state_transition`
 |===
 
-Interfaces: `mimis.gildi.memory.port.inbound`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future).
+Interfaces: `internal`. Adapters: `stdio` transport (primary, implemented), streaming HTTPS (future), Claude Code hooks (lifecycle events), human UI (future).
 The ports are conscience-universal -- the same contract serves Claude, a human operator, or any future mind.
 
 === Outbound Ports
@@ -83,7 +83,7 @@ The ports are conscience-universal -- the same contract serves Claude, a human o
 | `relay` (full API designed with Agora)
 |===
 
-Interfaces: `mimis.gildi.memory.port.outbound`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).
+Interfaces: `external`. Backing service adapters: Redis (reference, not yet wired), Cold Storage (future).
 Both can run simultaneously -- graceful shutdown depends on this.
 
 Notification adapters: MCP server-initiated notifications (for Claude), UI push notifications (future, for humans).

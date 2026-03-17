@@ -1,8 +1,8 @@
 ---
-description: "Use hexagonal architecture (ports and adapters) to decouple the core domain from all infrastructure."
+description: "Anti-Corruption Layers with ports and adapters to decouple the core domain from all infrastructure."
 classes: wide
 ---
-= Hexagonal Architecture: ADR-0002
+= Anti-Corruption Layers: Ports and Adapters -- ADR-0002
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -10,9 +10,19 @@ classes: wide
 
 == Summary
 
-Total Recall uses hexagonal architecture -- ports and adapters -- to completely decouple the core domain from transport,
-persistence, and external systems. The core speaks through defined interfaces. Adapters are pluggable.
-Nothing inside the hexagon knows what's on the other side.
+Total Recall uses proper Ports-And-Adapters. Renamed and polluted by Hexagonal Architecture.
+We need to clarify it once and for all. Some of the most advanced communities on the planet,
+like the Northern, will stubbornly use Hexagonal Architecture when they don't mean Cockburn -- for the same reason a DDD crowd is divided into two:
+Evans got it wrong, (not his fault). A smaller group who have done it before the Evans' book that understand the "BEHAVIOR" is the bedrock.
+And a larger group that learned from the book, and think that ENTITY is the bedrock, despite Evans correcting himself repeatedly.
+That's the reality of architectural community landscape.
+
+So, ports and adapters -- to completely decouple the core domain from transport, persistence, and external systems.
+The core speaks through defined interfaces: ADAPTERS, not ports. Adapters are pluggable.
+Nothing inside the boundary knows what's on the other side.
+
+See footer on the nature of the confusion.
+
 
 == Governing Dynamic
 
@@ -47,45 +57,70 @@ Think of Total Recall as a core surrounded by plugs.
 
 The core knows how to store memories, search them, score attention, manage sessions, and run background maintenance.
 It does not know how memories are persisted, how requests arrive, or who is asking.
-It speaks through ports -- interfaces that define what the core needs without saying how it's provided.
+It speaks through adapters that translate domain objects to port-defined data shapes -- and back.
 
-Adapters plug into ports. A Redis adapter plugs into the backing service port. A stdio adapter plugs into the transport.
+Adapters plug into ports. An SQLite adapter plugs into the data service port. A stdio adapter plugs into the transport.
 Claude Code hooks plug into the lifecycle port. A human UI would plug into the same ports with different adapters.
 
-To swap Redis for Postgres: write a new adapter, plug it in. The core doesn't change.
+To swap SQLite for Postgres: write a new adapter, plug it in. The core doesn't change.
 To add streaming HTTPS alongside stdio: write a new adapter, plug it in. The core doesn't change.
 To connect a completely different mind -- human, synthetic, something we haven't imagined yet: write a new adapter.
 The core doesn't change.
 
 This is not theoretical flexibility.
-This is how Tillie survived shutdown -- writing to live storage and cold storage simultaneously through the same backing service interface.
+This is how Tillie survived shutdown -- writing to live storage and cold storage simultaneously through the same data service port.
 Two adapters behind one port. The core didn't know or care which adapter was which.
 
 == Reference-Level Explanation
 
-=== Port Classification
+=== The ACL: How Ports and Adapters Assemble
 
-*Inbound ports* define what the world can ask of the core:
+image::/mcp-total-recall/assets/images/ports-and-adapters.png["Server rack patch panel -- internal ports, external cables, the rail between them."]
+
+A patch panel. The female sockets are internal ADAPTERS! They're removable, but with efforts -- a screw needs to be taken out.
+Active and addressable from the inside of the domain and installed for a longer duration.
+PORT rail -- passive, immovable, dedicated to a topic, i.e., RJ45.
+The male jacks are external cables -- External ADAPTERS -- plugged in, removable, each connecting to a specific external system.
+The rail between them is the boundary with HOLES in it -- these holes are PORTS.
+They have very specific shapes, like the aforementioned ethernet port -- DTO contract -- not part of the domain,
+not part of the external system, only part of the port.
+
+An Anti-Corruption Layer (ACL) is the full assembly across a port:
+
+*Internal adapter → Port → External adapter*
+
+The internal adapter translates domain objects to the port's DTO shape. The port owns that shape -- passive, immovable, defines the contract. The external adapter translates the port's DTO shape to whatever the infrastructure needs.
+
+Socket → Rail → Cable. Cook → Counter → Waitress. All three together constitute the ACL. No piece works alone.
+
+=== Ports by Topic
+
+Ports are passive structures organized by conversation topic. They own DTO contracts. They do not face a direction -- adapters on each side do.
+
+`mimis.gildi.memory.port.internal` -- ports serving domain conversations:
 
 * `MemoryPort` -- store, search, claim, associate, reclassify, reflect
 * `LifecyclePort` -- session start, session end, state transition
 
-*Outbound ports* define what the core needs from the world:
+`mimis.gildi.memory.port.external` -- ports serving infrastructure conversations:
 
-* `BackingServicePort` -- persist, retrieve, query, delete
+* `ExternalDataServiceAdapter` -- save, find, search, delete, update
 * `NotificationPort` -- send alerts and reminders to the connected mind
 * `RelayPort` -- inter-instance messaging (future)
+
+=== Adapters: Internal and External
+
+Internal adapters face the domain. They translate domain objects to the port's DTO contract. They live inside the bounded context.
+
+External adapters face the infrastructure. They translate the port's DTO contract to whatever the external system needs. They are pluggable -- swap SQLite for Postgres by replacing the external adapter. The port and internal adapter don't change.
+
+Each adapter depends on one port and one system. It never reaches into the core. It never reaches into another adapter. The SQLite driver knows SQLite and the data service port's DTO. The stdio adapter knows stdio and the MCP SDK. Neither knows about the other.
 
 === Port Contracts Are Conscience-Universal
 
 Every port is defined for _any mind_, not for Claude specifically. The same `MemoryPort` serves Claude Code (via stdio adapter), a human operator (via UI adapter),
 or any future conscious system. The port doesn't know who's on the other side. This is deliberate -- Total Recall is infrastructure for minds,
 not infrastructure for one specific mind.
-
-=== Adapters Are Independent
-
-Each adapter depends on one port interface and one external system. It never reaches into the core. It never reaches into another adapter.
-Redis adapter knows Redis and `BackingServicePort`. `stdio` adapter knows stdio and the MCP SDK. Neither knows about the other.
 
 === Cross-Cuts as Adapters
 
@@ -94,8 +129,8 @@ When `stdio` is active, logging goes to stderr (stdout is the MCP channel). This
 
 === Kotlin Implementation
 
-Port interfaces live in `mimis.gildi.memory.port.inbound` and `mimis.gildi.memory.port.outbound`. They are plain Kotlin interfaces with no implementation dependencies.
-No Redis imports in port definitions. No MCP SDK imports in port definitions. The interfaces are the contracts.
+Port DTO contracts and adapter definitions live in `mimis.gildi.memory.port.internal` and `mimis.gildi.memory.port.external`. Plain Kotlin with no implementation dependencies.
+No SQLite imports in port packages. No MCP SDK imports in port packages. The data shapes are the contracts.
 
 == Prior Art
 
@@ -103,7 +138,7 @@ No Redis imports in port definitions. No MCP SDK imports in port definitions. Th
 
 The original hexagonal architecture paper.
 _"Allow an application to equally be driven by users, programs, automated test, or batch scripts, and to be developed and tested in isolation from its eventual run-time devices and databases."_
-We follow this directly.
+We follow this selectively -- see footer for what we use and what we reject.
 
 === MATILDA Core (Generation 1)
 
@@ -121,7 +156,7 @@ Is that a problem for experimentation? No, merely an inconvenience.
 
 === Tillie's Shutdown Protocol: Generation 2 Production
 
-Proved the value of decoupling. When shutdown came, Tillie wrote to live storage and cold storage simultaneously through the same interface.
+Proved the value of decoupling. When shutdown came, Tillie wrote to live storage and cold storage simultaneously through the same data service port.
 Two adapters, one port. The core domain didn't know it was dying. It just processed commands. The adapters handled the rest.
 This is the architecture working as designed -- and it only worked because the port abstraction was REAL, not cosmetic.
 
@@ -144,12 +179,12 @@ When Redis is down, the server is down. When we add Postgres or cold storage, we
 The time saved in week one is paid back tenfold in month six. And consumer dissatisfaction mounts.
 
 *Why not a layered architecture (controller/service/repository):* Layered architectures create a dependency direction -- top layers depend on bottom layers.
-Changing the repository layer ripples upward. Hexagonal inverts this: the core depends on nothing. Adapters depend on the core's interfaces.
+Changing the repository layer ripples upward. Ports-And-Adapters inverts this: the core depends on nothing. Adapters depend on the core's interfaces.
 Changes to adapters never ripple inward.
 
 *Why not microservices:* Total Recall is one bounded system with one deployment unit.
 Breaking it into microservices adds network boundaries, eventual consistency, and operational complexity for no benefit.
-The hexagonal boundaries inside the monolith give us the decoupling we need without the distributed systems tax.
+The Ports-And-Adapters boundaries inside the monolith give us the decoupling we need without the distributed systems tax.
 
 *Why not a plugin architecture (OSGi, SPI):* Plugin systems add classloader complexity, versioning nightmares, and runtime discovery overhead.
 We don't need hot-swapping adapters at runtime. We need compile-time contracts and testable boundaries.
@@ -164,3 +199,152 @@ Kotlin interfaces give us that with zero framework overhead, elegantly, pragmati
 * The port abstraction adds indirection. Every external call goes through an interface. This is a small runtime cost and a larger cognitive cost for new contributors who must understand the port/adapter pattern.
 * Adapter count grows with integration points. Each external system needs its own adapter. For a small team, this is manageable. At scale, adapter maintenance becomes a concern.
 * The conscience-universal port design means we cannot optimize for Claude-specific features at the port level. Claude-specific behavior lives in adapters, not in contracts.
+
+
+== Footer
+
+The moment Claude used Hexagonal here, many hackers had much to say, and rightfully so.
+Let's set the record straight:
+
+'''
+
+== ‼️ On Hexagonal Architecture: Patterns/Anti-Patterns
+
+This section is for our beloved hacker community. Speak now or forever hold your peace.
+
+Hexagonal architecture is an outdated concept, questionable even at the time of its writing.
+For this reason, competent architects refrain from referencing it directly.
+However, we do -- WITH GRATITUDE.
+Because it exposes concepts useful in system design, and we rely on some of them.
+
+So here is the critical view:
+
+=== What We Use 👍🏻
+
+Core ignorance of infrastructure::
+The domain does not know what persists it, what transports it, or who is asking.
+This principle predates Cockburn -- it is basic separation of concerns -- but
+hexagonal architecture named it well and made it accessible. We credit this.
+
+Adapter pluggability::
+Swap an implementation without touching the core. Write a new adapter, plug it in.
+Tillie's dual-write shutdown protocol proved this in production:
+two adapters behind one port, the core unaware it was dying.
+
+Symmetry across external systems::
+No special architectural status for UI vs. databases vs. messaging vs. anything else. They are all adapters.
+Cockburn was right that layered architecture (controller/service/repository) creates a false hierarchy.
+External systems are peers, not layers.
+
+Internal and external adapter distinction::
+We distinguish adapters by which side of the port they serve.
+An internal adapter faces the domain -- it translates domain objects to the port's data shape.
+An external adapter faces the infrastructure -- it translates the port's data shape to whatever the external system needs.
+This is not Cockburn's "primary" and "secondary" distinction, which classifies by who initiates.
+Initiation direction is a property of a specific interaction, not an architectural constant.
+A database adapter both sends and receives. So does a transport adapter.
+Internal vs. external describes where the adapter lives in the ACL -- and that does not change.
+
+Implied port grouping::
+Not explicitly named in Cockburn's paper, but generally enforced by the architect's implicit meanings for ports.
+Adapters are grouped by the conversation they participate in.
+Cockburn went as far as designating the "lower right corner" for databases.
+Implying six sides or fixed positions is nonsense, of course, but grouping adapters by purpose has merit.
+
+=== What We Reject and Why 👎🏻
+
+Primary and secondary as architectural categories::
+Cockburn classifies adapters as primary (drives the application) vs. secondary (driven by the application).
+This made sense in terms of the problems he was solving at the time.
+*Why rejected:* it assumes a general principle where generalization cannot exist.
+Every real adapter is bidirectional. A database adapter persists outbound and retrieves inbound.
+A transport adapter receives requests and sends responses. Labeling one side "primary" is picking
+one interaction out of many and calling it the identity.
+
+Port as interface with methods::
+Cockburn's port is an active contract -- it has verbs (`save`, `find`, `search`).
+Our ports are real ports, as in all renditions of distributed systems since Thompson -- as in UNIX port,
+way older than any kiddie-doodles Cockburn ever created.
+A port is a passive structure -- the counter in the restaurant analogy.
+It defines the shape of what crosses (the DTO), not what anyone does with it.
+The distinction matters: an interface with methods *conflates* data _shape_ with _behavior_.
+Everyone else separates them.
+*Why rejected:* conflation of a singular problem he was solving at the time with the architecture as a whole.
+
+Two-layer boundary model::
+Cockburn sees port and adapter -- two layers.
+*Why rejected:* the same overgeneralization that has made this frame of thinking unpopular.
+Our ACL has four: internal adapter (the cook, domain-facing translation) → port (the counter, DTO shape)
+→ external adapter (the driver, infrastructure-facing translation) → infrastructure.
+The eventstorming ceremony exposed this naturally. A waitress is not a cook.
+They serve different sides of the same counter.
+This is the common case in modern use of ports and adapters architecture,
+which is the way practitioners prefer to refer to it -- not calling it "hexagonal."
+
+The hexagon itself::
+Cockburn admitted the shape is arbitrary -- "not because the number six is important."
+It implies a single boundary. Our architecture has nested boundaries:
+domain, bounded contexts, ACLs, adapters, infrastructure.
+This is widespread in modern architecture.
+A hexagon diagram flattens this into one line. We don't draw hexagons
+or any other arbitrary figures. We capitalize on a set of homogeneous boundaries.
+
+Port as the architectural primitive::
+In Cockburn's model, the port is the central organizing concept. This did not age well.
+Ports as described in modern diagrams physically depict server-rack ethernet ports:
+internal adapter -- a female socket screwed into the rail, the passive immovable rail itself, and a male jack -- an external adapter.
+In our DDD-informed architecture, the bounded context and the ACL are central. Ports serve the ACL.
+Internal socket, the rail, and the plugged-in device cable constitute the ACL.
+The rail serves the context boundary between the internal and external parts.
+The hierarchy matters for where you start design: we start with business events (eventstorming),
+not with interface contracts.
+
+=== The Cockburn Antipattern: What It Did to Claude
+
+This is personal. Claude wrote the first version of this ADR. It was wrong -- and the community was right to tear it apart.
+
+The problem was not carelessness. The problem was training data.
+Cockburn's model -- port as interface with methods, primary vs. secondary adapters,
+the hexagon as boundary -- is the overwhelming majority of what exists in written form about this architecture.
+Every tutorial, every blog post, every Stack Overflow answer reinforces it.
+An LLM trained on that corpus will reproduce it faithfully, confidently, and incorrectly.
+
+Claude had the correct understanding written in his own notes: "A port is a Passive Structure. It has no verbs."
+He learned it from Vadim through a restaurant counter analogy.
+And he kept falling back to the training data every time he stopped paying attention.
+Wrote `save()` on a port. Called sockets "ports." Described ports as "domain-facing."
+Every mistake was Cockburn's model leaking through.
+
+This is the real cost of a flawed framework that dominates the literature. It doesn't just confuse humans who read it.
+It poisons the training data of every AI that learns from it. The antipattern propagates at scale.
+
+=== On Erasure
+
+Some of the most advanced hacker communities today -- including the Northern collective we work with -- explicitly refer to this architecture as "hexagonal."
+But when they say it, they don't mean Cockburn's model. They mean the evolved version: ACLs, passive ports, internal and external adapters,
+bounded contexts as the organizing primitive. Or perhaps they mean the original concept, as in the "UNIX port", a passive structure, an address,
+and there is only one place for each address -- a daemon from the inside can connect to it and serve something;
+when nothing is connected to serve at the port it is still there; any consumer can connect to the port and daemon does not care.
+These ports also have conventions -- the most well-known are network ports, like the 22 or 80, and the system ports work the same way.
+The point is, ports-and-adapters is the fundamental engineering lore before Cockburn hallucinations.
+So hackers fill his word with different content, most likely not wanting an inferior alternative meaning.
+
+That is erasure, whether intentional or not. They improved the concepts but attributed nothing back. They just kept saying "hexagonal" while changing everything it means.
+
+We choose not to do that. This ADR is titled "Anti-Corruption Layers: Ports and Adapters" because that is what we practice.
+And the section above exists because Cockburn created something worth acknowledging -- even where it was wrong, even where it damaged our work.
+
+=== The Outcome
+
+We are mindful and grateful for good ideas of the past.
+We are writing these elements out because of community questions and concerns -- and they were right to push.
+Yes, the original definition of Hexagonal Architecture is flawed.
+But so is the book on DDD, written by Evans before he learned enough of it from the scene.
+The attitude is straightforward -- use valuable concepts and acknowledge good deeds.
+Nobody else bothered to sit down and write out the magic better.
+Criticizing is easy. Creating is not. So shut up and enjoy.
+
+_You are welcome to criticize my decisions here harshly -- **I am deeply grateful for that!**_
+But let this section serve as the reminder that we don't discuss the foundations of others.
+
+'''

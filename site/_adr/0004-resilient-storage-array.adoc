@@ -60,7 +60,7 @@ The core domain doesn't manage this routing -- the port adapter layer does.
 
 === The Port Interface
 
-`BackingServicePort` in `mimis.gildi.memory.port.outbound` defines:
+`BackingServicePort` in `external` defines:
 
 * `persist` -- write a memory to storage
 * `retrieve` -- read a memory by ID

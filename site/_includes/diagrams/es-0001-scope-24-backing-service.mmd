@@ -1,0 +1,94 @@
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR
+
+    %% ---------- FACTS: Past tense -------------------------------------------
+    classDef domain-event fill: orange, stroke: magenta, color: black
+    classDef read-model fill: green, stroke: white, color: white
+
+    %% ---------- BEHAVIOR ----------------------------------------------------
+    classDef actor-policy fill: pink, stroke: green, color: black
+    classDef actor-command fill: blue, stroke: white, color: yellow
+
+    %% ---------- ACTIVE STRUCTURE --------------------------------------------
+    classDef actor fill: yellow, stroke: black, color: black
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+
+    %% ========== SCOPE: Issue #24 ============================================
+    %% Port outward: SQLite Driver (outer adapter) + SQLite (infrastructure)
+    %% The port is the boundary -- inner adapter and domain are out of scope.
+
+    subgraph ACL-Core["Port (Boundary)"]
+        DataPort["Data<br/>Port"]
+    end
+
+    subgraph Driver["Outer Adapter Layer"]
+        SQLiteDriver["SQLite<br/>Driver"]:::actor
+        subgraph SQLiteDriverGWT["SQLite Driver — Given-When-Then"]
+            %% Policy 1: Persist (external)
+            AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
+            TranslateDtoToSqlCmd["Translate DTO<br/>to Prepared Statement"]:::actor-command
+            DtoIn["DTO<br/>(in)"]:::read-model
+            DtoOut["DTO<br/>Persisted<br/>(out)"]:::read-model
+            DtoErr["DTO<br/>ERROR<br/>(out)"]:::read-model
+            RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+            SqlStatement["Prepared<br/>Statement"]:::read-model
+
+            %% Transaction ID: links input DTO to output models
+            TransactionId["Transaction<br/>ID"]:::read-model
+
+            %% Policy 2: Receive (internal)
+            AlwaysReceivePolicy["Whenever SQLite Responds<br/>Always and Immediately<br/>Receive and Translate"]:::actor-policy
+            TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
+            ReceivedResult["Received<br/>Result"]:::domain-event
+            ReceivedError["Received<br/>Error"]:::domain-event
+        end
+        SQLiteDriverGWT --- SQLiteDriver
+    end
+
+    subgraph Infrastructure["Infrastructure Boundary"]
+        SQLite["SQLite"]:::external-system
+        subgraph SQLiteGWT["SQLite — Given-When-Then"]
+            %% Given: Prepared Statement (input model)
+            PreparedStatement["Prepared<br/>Statement"]:::read-model
+            %% When: Policy → Command
+            AlwaysExecutePolicy["Whenever SQL Statement Arrives<br/>Always and Immediately<br/>Execute it"]:::actor-policy
+            ExecuteSqlCmd["Execute this<br/>SQL Statement"]:::actor-command
+            %% Then (happy): Event → Model
+            PersistedData["Persisted"]:::domain-event
+            SqlRecord["SQL<br/>Record"]:::read-model
+            %% Then (failure): Event → Model
+            FailedPersistence["Failed<br/>Persistence"]:::domain-event
+            SqlError["SQL<br/>Error"]:::read-model
+        end
+        SQLiteGWT --- SQLite
+    end
+
+    %% Relationships
+    SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
+    SQLiteDriver -.-> |"Access(Query/Command)"| SQLite
+
+    %% SQLite Driver GWT Policy 1: Persist (external)
+    AlwaysPersistPolicy --- DtoIn
+    DtoIn --> TranslateDtoToSqlCmd
+    TranslateDtoToSqlCmd --- SqlStatement
+    SqlStatement --> RequestedPersistence
+
+    %% Transaction ID links input to output models
+    DtoIn --- TransactionId
+    TransactionId --- DtoOut
+    TransactionId --- DtoErr
+
+    %% SQLite GWT: Execute
+    AlwaysExecutePolicy --> ExecuteSqlCmd
+    ExecuteSqlCmd --- PreparedStatement
+    PreparedStatement --> PersistedData
+    PersistedData --- SqlRecord
+    PreparedStatement --> FailedPersistence
+    FailedPersistence --- SqlError
+
+    %% SQLite Driver GWT Policy 2: Receive (internal)
+    AlwaysReceivePolicy --> TranslateSqlToDtoCmd
+    TranslateSqlToDtoCmd --- DtoOut
+    DtoOut --> ReceivedResult
+    TranslateSqlToDtoCmd --- DtoErr
+    DtoErr --> ReceivedError

@@ -49,7 +49,7 @@ const val CONTEXT_COMPONENT_SUBCONSCIOUS = "mimis.gildi.memory.context.Subconsci
 /** Outbound notification port -- terminal node in causation chains. */
 const val CONTEXT_COMPONENT_NOTIFICATION = "NotificationPort"
 
-/** Top-level search entry point (Total Recall's primary use case). */
+/** Top-level search entry point (Total Recall's internal use case). */
 const val CONTEXT_COMPONENT_SEARCH = "Total Recall Search"
 
 /** Shared immutable server for non-mutating tests. Created once per test run. */

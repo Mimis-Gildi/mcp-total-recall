@@ -6,7 +6,7 @@
 package mimis.gildi.memory.context
 
 /**
- * The window clerk. Entry point and dispatcher for all inbound requests.
+ * The window clerk. Entry point and dispatcher for all internal requests.
  *
  * Cortex receives from outside adapters (MCP transport, future UIs) and routes to internal bounded contexts.
  * It owns the session lifecycle and emits

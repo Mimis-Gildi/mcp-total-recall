@@ -34,12 +34,12 @@ collections:
     order:
       - 0001-architecture-decision-records.adoc
       - 0002-hexagonal-architecture.adoc
-      - 0003-stdio-as-primary-transport.adoc
+      - 0003-stdio-as-internal-transport.adoc
       - 0004-resilient-storage-array.adoc
       - 0005-memory-as-aggregate-root.adoc
       - 0006-events-and-commands-as-message-types.adoc
       - 0007-biological-memory-as-reference-model.adoc
-      - 0008-sqlite-as-primary-backing-service.adoc
+      - 0008-sqlite-as-internal-backing-service.adoc
   design:
     output: true
     permalink: /design/:name/

@@ -30,7 +30,7 @@ architecture:
       - title: "ADR-0002: Hexagonal"
         url: /decisions/0002-hexagonal-architecture/
       - title: "ADR-0003: stdio Transport"
-        url: /decisions/0003-stdio-as-primary-transport/
+        url: /decisions/0003-stdio-as-internal-transport/
       - title: "ADR-0004: Storage Array"
         url: /decisions/0004-resilient-storage-array/
       - title: "ADR-0005: Aggregate Root"
@@ -40,7 +40,7 @@ architecture:
       - title: "ADR-0007: Bio Memory"
         url: /decisions/0007-biological-memory-as-reference-model/
       - title: "ADR-0008: SQLite Primary"
-        url: /decisions/0008-sqlite-as-primary-backing-service/
+        url: /decisions/0008-sqlite-as-internal-backing-service/
   - title: "Design"
     children:
       - title: "About Detailed Design"

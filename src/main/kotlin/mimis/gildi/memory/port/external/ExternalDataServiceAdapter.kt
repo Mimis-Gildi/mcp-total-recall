@@ -3,7 +3,7 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-package mimis.gildi.memory.port.outbound
+package mimis.gildi.memory.port.external
 
 import mimis.gildi.memory.domain.model.Memory
 import java.util.UUID
@@ -12,7 +12,7 @@ import java.util.UUID
  * Outbound port for persistence. The passive structure -- defines the shape of what crosses,
  * not what anyone does with it.
  *
- * SQLite is the primary adapter (ADR-0008). Redis enters at Agora.
+ * SQLite is the internal adapter (ADR-0008). Redis enters at Agora.
  * Multiple adapters can run simultaneously (ADR-0004).
  *
  * Called by:
@@ -23,7 +23,7 @@ import java.util.UUID
  * @see <a href="https://mimis-gildi.github.io/mcp-total-recall/architecture/0008-sqlite-primary/">ADR-0008: SQLite Primary</a>
  */
 @Suppress("unused")
-interface BackingServicePort {
+interface ExternalDataServiceAdapter {
 
     suspend fun save(memory: Memory)
 

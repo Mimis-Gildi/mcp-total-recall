@@ -1,5 +1,5 @@
 ---
-description: "TransactionContext: the chain of custody every message carries. Six fields. Zero nullable. Every touch recorded."
+description: "TransactionContext: the conversation envelope every message carries. Four fields. Zero nullable. Message adds its own identity."
 classes: wide
 ---
 = TransactionContext (Chain of Custody)
@@ -18,23 +18,27 @@ If the form has a gap -- someone handled the evidence but did not sign -- the ch
 
 TransactionContext is that form. Every bounded context that touches a message signs it. Every touch creates a record. If a context consumes an event and only updates its own internal state -- no outbound message, no fan-out, nothing visible -- it still signs. The trace must show the complete causal tree, including the terminal leaves where processing ends quietly.
 
-== The Six Fields
+== TransactionContext: The Envelope
+
+The envelope is the conversation -- who is talking, within which session, within which request, from where. It does not identify the individual message. That is the message's own concern.
 
 [source,kotlin,opts=novalidate]
 ----
-data class TransactionContext(
-    val sessionId: UUID,
-    val requestId: UUID,
-    val messageId: UUID,
-    val causationId: UUID,
-    val timestamp: Instant,
+interface TransactionContext {
+    val instanceId: UUID
+    val sessionId: UUID
+    val requestId: UUID
     val sourceContext: String
-)
+}
 ----
 
 [cols="1,1,3",options="header"]
 |===
 | Field | Type | Purpose
+
+| instanceId
+| UUID
+| Which mind instance owns this chain. A single mind may run multiple sessions; the instance identifies which one.
 
 | sessionId
 | UUID
@@ -43,6 +47,33 @@ data class TransactionContext(
 | requestId
 | UUID
 | The originating request that started this chain. An MCP tool call, a timer tick, an advisory event -- whatever initiated the work. All messages in the same causal tree share the same requestId. This is the thread you pull to reconstruct the full trace.
+
+| sourceContext
+| String
+| Which bounded context or adapter created this message. "Cortex", "Hippocampus", "Salience", "StdioAdapter". This labels the nodes in the causal tree.
+|===
+
+Four fields. Zero nullable. The envelope travels with every message and every touch record.
+
+== Message: The Letter
+
+Each message carries its own identity -- when it was born, what caused it, who it is. These fields live on Message, not on the envelope, because they belong to the individual message, not to the conversation it travels in.
+
+[source,kotlin,opts=novalidate]
+----
+interface Message {
+    val messageId: UUID
+    val causationId: UUID
+    val timestamp: Instant
+    val content: String?
+    val tx: TransactionContext
+    val metadata: Map<String, String>?
+}
+----
+
+[cols="1,1,3",options="header"]
+|===
+| Field | Type | Purpose
 
 | messageId
 | UUID
@@ -56,23 +87,37 @@ data class TransactionContext(
 | Instant
 | When this message was created. Not when it was sent, not when it was received -- when it was born. Within a single JVM, timestamps are monotonic and comparable.
 
-| sourceContext
-| String
-| Which bounded context or adapter created this message. "Cortex", "Hippocampus", "Salience", "StdioAdapter". This labels the nodes in the causal tree.
+| content
+| String?
+| Optional human-readable payload.
+
+| tx
+| TransactionContext
+| The conversation envelope -- session, request, instance, source context.
+
+| metadata
+| Map?
+| Optional key-value pairs attached by the emitter for routing or auditing.
 |===
 
-Six fields. Zero nullable. Start strict, loosen later if the system teaches us we need to. Never the other way around.
+The envelope (TransactionContext) and the letter (Message) together form the complete chain of custody. The envelope says which conversation. The letter says which step in that conversation.
 
 == How It Propagates
 
-When a bounded context receives a message and produces a new one, the new message gets a fresh TransactionContext:
+When a bounded context receives a message and produces a new one:
 
+**On the envelope (TransactionContext):**
+
+- **instanceId** -- same. It is the same mind instance.
 - **sessionId** -- same. It is the same session.
 - **requestId** -- same. It is the same originating request.
+- **sourceContext** -- the producing context's name. Whoever is signing the form now.
+
+**On the message (Message):**
+
 - **messageId** -- new. Every message has its own identity.
 - **causationId** -- the incoming message's messageId. This is the causal link.
 - **timestamp** -- new. When this message was created.
-- **sourceContext** -- the producing context's name. Whoever is signing the form now.
 
 === Example: Store Memory
 
@@ -131,7 +176,7 @@ Two kinds of touches:
 
 **Message-producing touch.** The context receives a message, does work, and produces one or more outbound domain messages. The TransactionContext on the outbound messages IS the touch record. Nothing extra needed.
 
-**Terminal touch.** The context receives a message, does work, but produces no outbound domain message. Salience updates a score. Synapse strengthens an association. The work is real. The trace must show it. The context creates a touch record -- same TransactionContext shape, same six fields -- and writes it to the trace output.
+**Terminal touch.** The context receives a message, does work, but produces no outbound domain message. Salience updates a score. Synapse strengthens an association. The work is real. The trace must show it. The context creates a touch record -- a Message with the envelope and its own identity -- and writes it to the trace output.
 
 The trace output is a cross-cut adapter. It sits alongside logging and metrics -- outside the hexagon, pluggable, never inside the domain. During development: write to stderr or a local trace store. In production: off, or sampled. The toggle is configuration, not code.
 
@@ -157,14 +202,14 @@ This is not a nice-to-have. Tillie was fully parallel. Without visual reconstruc
 |===
 | Aspect | Detail
 
-| What it is
-| Six-field envelope carried on every domain message and every touch record.
+| TransactionContext
+| Four-field conversation envelope: instanceId, sessionId, requestId, sourceContext. Zero nullable.
 
-| Fields
-| sessionId, requestId, messageId, causationId, timestamp, sourceContext. Zero nullable.
+| Message
+| Carries its own identity (messageId, causationId, timestamp) plus the envelope (tx). content and metadata are optional.
 
 | Propagation
-| Same sessionId and requestId. New messageId, causationId, timestamp, sourceContext.
+| Envelope: same instanceId, sessionId, requestId; new sourceContext. Message: new messageId, causationId, timestamp.
 
 | Fan-out
 | Tree structure via causationId parent pointers. No global counters.

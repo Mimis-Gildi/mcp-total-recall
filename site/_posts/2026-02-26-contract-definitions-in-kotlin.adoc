@@ -39,12 +39,12 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 
 === Port Interfaces (5 interfaces)
 
-Inbound (`mimis.gildi.memory.port.inbound`):
+Inbound (`internal`):
 
 * *MemoryPort* -- store, search, claim, associate, reclassify, reflect
 * *LifecyclePort* -- session start, session end, state transition
 
-Outbound (`mimis.gildi.memory.port.outbound`):
+Outbound (`external`):
 
 * *BackingServicePort* -- persist, retrieve, query, delete
 * *NotificationPort* -- notify the connected mind
