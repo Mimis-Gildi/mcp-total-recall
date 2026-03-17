@@ -12,7 +12,7 @@ The link:/mcp-total-recall/design/0001-what-is-a-port/[port] is the counter -- a
 
 This document uses the same restaurant to show what adapters do on both sides of the counter, then shows the same pattern in Total Recall.
 
-== Example 1: The Waitress (Inbound Adapter)
+== Example 1: The Waitress (External Adapter)
 
 The customer says: "I'd like the ribeye, medium-rare, with mashed potatoes. And can we get some extra napkins?"
 
@@ -24,7 +24,7 @@ She did not write "the gentleman at the window would appreciate a nicely prepare
 
 She walks to the counter, clips the slip, calls "ordering!" and walks away. She is done with this step of her process. The counter takes it from here.
 
-The waitress is the inbound adapter. Her job:
+The waitress is the external adapter -- she faces the outside world. Her job:
 
 * **Listen** to the outside world (customer)
 * **Translate** from outside language to the object shape the port accepts (order slip)
@@ -36,7 +36,7 @@ She does not know what the cook will do with the slip. She does not need to. Her
 A different waitress works the same counter. She has her own style -- maybe she abbreviates differently, maybe she chats more with customers.
 But she writes the same slip format, because the counter demands it. The adapter is replaceable. The port stays the same.
 
-== Example 2: The Cook (Outbound Adapter)
+== Example 2: The Cook (Internal Adapter)
 
 The cook hears "order up!" He pulls the slip from the rail. He reads "Ribeye, med-rare."
 
@@ -45,13 +45,13 @@ Four minutes per side. Rest for five. He is translating *order slip language* in
 
 He was not told how to cook. The slip does not say "use the cast iron." The slip defines WHAT, the cook decides HOW. That is his job description. That is his behavior.
 
-When the dish is done, the same cook works the outbound side.
+When the dish is done, the same cook works the counter.
 He plates the ribeye, slides it onto the counter, calls "ribeye up, med-rare!"
-He translated *kitchen language* (his plating technique, his quality assessment) into *counter language* (a plated dish in the shape the counter expects).
+He translated *kitchen language* (his plating technique, his quality assessment) into *counter-language* (a plated dish in the shape the counter expects).
 
-The cook is the outbound adapter on the kitchen side. His job:
+The cook is the internal adapter -- he faces the domain (the kitchen). His job:
 
-* **Pick up** the object from the counter (order slip)
+* **Pick up** the object from the counter (an order slip)
 * **Translate** from the port's object shape into his own working language (kitchen operations)
 * **Do the work** -- the actual cooking, the thing only he knows how to do
 * **Put the result back** on the counter in the shape it expects (plated dish)
@@ -64,24 +64,31 @@ But he reads the same slip format and plates to the same standard, because the c
 An adapter has four properties:
 
 . **It is an Active Structure.** It has behavior. It does things. The waitress takes orders. The cook cooks. They have job descriptions.
-. **It plugs into a port.** The waitress works AT the counter, not somewhere else. She must conform to the counter's contract -- the slip format, the call-out protocol. If she cannot work the counter, she is replaced.
-. **It translates between languages.** Customer language to slip language. Slip language to kitchen language. Each adapter speaks two languages: the port's language (the slip) and its own world's language (the customer, the kitchen).
+. **It plugs into a port.** The waitress works AT the counter, not somewhere else. She must conform to the counter's contract -- the slip format, the call-out protocol.
+If she cannot work the counter, she is replaced.
+. **It translates between languages.** Customer language to slip language. Slip language to kitchen language.
+Each adapter speaks two languages: the port's language (the slip) and its own world's language (the customer, the kitchen).
 . **It is replaceable.** A new waitress works the same counter. A new cook reads the same slips. The port does not change when the adapter changes.
 
-An adapter without a port is a person standing in an empty room with no counter to work at. A port without an adapter is an empty counter -- correctly shaped, but nothing crosses it. They need each other.
+An adapter without a port is a person standing in an empty room with no counter to work at.
+A port without an adapter is an empty counter -- correctly shaped, but nothing crosses it. They need each other.
 
-== Total Recall: MCP Tool Handler as Inbound Adapter
+== Total Recall: MCP Tool Handler as External Adapter
 
 The MCP tool handler is the waitress.
 
-A mind calls `store_memory` through the MCP protocol. The call arrives as JSON: tool name, arguments, session context. That is *customer language* -- the outside world speaking in its own terms.
+A mind calls `store_memory` through the MCP protocol. The call arrives as JSON: tool name, arguments, session context.
+That is *customer language* -- the outside world speaking in its own terms.
 
-The MCP tool handler listens. It translates. It takes the JSON arguments and assembles the object shape the MemoryPort accepts: content, metadata, suggested tier, session ID. It places that object on the counter.
+The MCP tool handler listens. It translates. It takes the JSON arguments and assembles the object shape the MemoryPort accepts:
+content, metadata, suggested tier, session ID. It places that object on the counter.
 
-The handler does not know what happens inside the domain. It does not know about salience scoring, association triggers, or tier rules. It does not follow the object into the kitchen. Its job ends at the counter.
+The handler does not know what happens inside the domain. It does not know about salience scoring, association triggers, or tier rules.
+It does not follow the object into the kitchen. Its job ends at the counter.
 
 A different transport adapter -- streaming HTTPS, a human UI, a future protocol -- works the same MemoryPort.
-Different outside language (HTTP headers instead of JSON-RPC, form fields instead of tool arguments), same object shape on the counter. The adapter is replaceable. The port stays the same.
+Different outside language (HTTP headers instead of JSON-RPC, form fields instead of tool arguments), same object shape on the counter.
+The adapter is replaceable. The port stays the same.
 
 The MCP tool handler's job description:
 
@@ -93,32 +100,36 @@ The MCP tool handler's job description:
 
 Every one of those is a verb. Active Structure behavior. None of it belongs on the port.
 
-== Total Recall: Redis Adapter as Outbound Adapter
+== Total Recall: SQLite Driver as an External Adapter
 
-The Redis adapter is the cook on the storage side.
+The SQLite driver is the waitress on the storage side.
 
-Hippocampus finishes processing a `StoreMemoryCommand`. It puts a `Memory` object on the BackingServicePort counter -- content, tier, metadata, salience score. The domain is done. It walks away.
+Hippocampus (the domain) finishes processing a `StoreMemoryCommand`.
+The internal adapter (the cook) translates the `Memory` domain object into a DTO -- the port's data shape.
+It slides the DTO onto the ExternalDataServiceAdapter counter. The domain is done. It walks away.
 
-The Redis adapter picks up the `Memory` object. It translates. It thinks in *storage language*: which Redis data structure? `HSET` for the memory fields.
-What key pattern? `memory:\{id\}`. What TTL? Tier-dependent. What serialization? JSON. It takes the port's object and turns it into Redis operations.
+The SQLite driver (the external adapter) picks up the DTO. It translates.
+It thinks in *storage language*: which table? What columns? What prepared statement? What transaction isolation?
+It takes the port's DTO and turns it into SQL operations.
 
-The adapter does the work. `save`, `findById`, `search`, `delete`, `update` -- those are its verbs, its job description, its behavior.
-The cook decides cast iron or grill. The Redis adapter decides `HSET` or `ZADD`.
+The driver does the work. Translate DTO to a prepared statement, execute, translate SQL result back to DTO -- those are its verbs,
+its job description, its behavior.
+The cook decides: use cast iron or grill. The SQLite driver decides `INSERT` or `SELECT`.
 
-A different storage adapter -- Postgres, a file system, cold storage -- works the same BackingServicePort.
-Different storage language (SQL instead of Redis commands, file paths instead of key patterns), same object shape on the counter.
+A different storage adapter -- Postgres, a file system, cold storage -- works the same ExternalDataServiceAdapter port.
+Different storage language (Redis commands instead of SQL, file paths instead of table names), same DTO shape on the counter.
 The adapter is replaceable. The port stays the same.
 
-The Redis adapter's job description:
+The SQLite driver's job description:
 
-* Pick up the domain object from the BackingServicePort
-* Translate from the port's object shape into Redis operations
+* Pick up the DTO from the ExternalDataServiceAdapter port
+* Translate from the port's DTO shape into SQL operations
 * Execute the storage operations
-* Return results in the port's object shape
+* Return results in the port's DTO shape
 
-Again, all verbs. All behavior. All Active Structure. This is where `save()` lives -- not on the port.
+Again, all verbs. All behavior. "Active Structure." This is where `save()` lives -- not on the port.
 
-== What an Adapter Is NOT
+== What an Adapter Is NOT?
 
 An adapter is not a port. The waitress is not the counter. She works AT the counter.
 She is animated, it is not. She is replaceable, it is not. link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] covers the port.
@@ -132,50 +143,55 @@ They do not make business decisions.
 
 == Adapters in Total Recall
 
-*Important:* Inbound versus Outbound is ALWAYS from the perspective on the *_Root Domain_*.
-For example, outbound to a restaurant is what a delivery driver does.
-Because inbound and outbound are relative, when stated canonically, like here,
-it is from the perspective of link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[Core Domain (Actor Model) - see HEX-0001,window=_blank].
+*Important:* Internal versus External describes where the adapter sits in the ACL -- not the direction of data flow.
+An internal adapter faces the domain. An external adapter faces the infrastructure or outside world.
+Data flows both ways across every port. The adapter's position does not change.
 
 [cols="1,1,2,2,2",options="header"]
 |===
-| Adapter | Side | Port Object | Ubiquitous Language | Verbs (Job Description)
+| Adapter | Position | Port (DTO Contract) | Adapter's Language | Verbs (Job Description)
 
 | MCP Tool Handler
-| Inbound (at MemoryPort)
-| Inbound Command / Query Object
+| External (at MemoryPort)
+| Memory DTO
 | JSON-RPC, tool schemas, MCP protocol
 | parse, validate, translate, place on port
 
 | Lifecycle Hook Handler
-| Inbound (at LifecyclePort)
-| Inbound Lifecycle Objects
+| External (at LifecyclePort)
+| Lifecycle DTO
 | Claude Code hooks, transport signals
 | detect event, translate, place on port
 
-| Redis Adapter
-| Outbound (at BackingServicePort)
-| Memory Command or Query Object
-| Redis commands, key patterns, TTLs
-| save, findById, search, delete, update
+| SQLite Driver
+| External (at ExternalDataServiceAdapter)
+| Data Service DTO
+| SQL statements, prepared statements, transactions
+| translate DTO to SQL, execute, translate result back
 
 | MCP Notification Adapter
-| Outbound (at NotificationPort)
-| Message Object
+| External (at NotificationPort)
+| Notification DTO
 | MCP server notifications, JSON
 | format, send, confirm delivery
 
 | Agora Adapter (future)
-| Outbound (at RelayPort)
-| Message Object
+| External (at RelayPort)
+| Relay DTO
 | Agora protocol, network messages
 | serialize, relay, acknowledge
+
+| MemoryDataAdapter
+| Internal (at data persistence port)
+| Memory DTO
+| Domain Memory
+| Translate Memory to Memory DTO
 
 |===
 
 Every adapter has verbs. Every adapter plugs into exactly one port.
 Every adapter is replaceable without changing the port it plugs into.
-Every adapter accepts a Boundary Contract Object and makes sense of it autonomously.
+Every adapter accepts the port's DTO and makes sense of it autonomously.
 
 '''
 
