@@ -7,7 +7,7 @@ classes: wide
 
 Salience is the scoring engine. It tracks how vivid each memory is -- how recently accessed, how frequently used, whether the mind chose to hold onto it. When a score drops below a threshold, Salience recommends demotion. When it rises above one, promotion.
 
-This is the second bounded context inside the hexagon. Hippocampus owns the memories and writes to storage. Salience watches what Hippocampus does and decides what should move.
+This is the second bounded context inside the domain boundary. Hippocampus owns the memories and writes to storage. Salience watches what Hippocampus does and decides what should move.
 
 ++++
 <div id="SL-0001">
@@ -129,7 +129,7 @@ There is a gap between promotion and demotion thresholds. A memory at the bounda
 
 == No Filing Cabinet
 
-Salience has no relationship with BackingServicePort. It owns no data in Redis or anywhere else.
+Salience has no relationship with the data service port. It owns no data in SQLite or anywhere else.
 
 If Salience crashes, nothing is lost. The memories are in Hippocampus. The event stream is intact. Salience restarts, replays the events, rebuilds its projection, and resumes. The expo stepped out and came back.
 
@@ -169,7 +169,7 @@ Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
 | AttentionTierPromotionRequested and AttentionTierDemotionRequested (to Hippocampus), AttentionScoreChanged (to Recall)
 
 | Key invariant
-| Computes, never persists. No relationship with BackingServicePort.
+| Computes, never persists. No relationship with the data service port.
 
 | Key mechanism
 | Time-based decay with access boosts and claim resistance. Threshold gap prevents oscillation.
