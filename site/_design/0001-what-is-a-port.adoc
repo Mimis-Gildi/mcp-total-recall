@@ -11,7 +11,7 @@ Things cross it in both directions. Every time something crosses, it changes mea
 
 This document uses two restaurant examples to build intuition, then shows the same pattern in Total Recall.
 
-== Example 1: The Order Goes In (Inbound)
+== Example 1: The Order Goes In
 
 A waitress takes an order at table 7. She writes on a slip: "Ribeye, medium-rare. Side of mashed. Extra napkins."
 She walks to the counter, clips the slip to the rail, and calls out "ordering!"
@@ -24,9 +24,11 @@ The waitress wrote it in *dining room language* -- tables, courses, customer req
 
 The counter is where that translation happens. Not the waitress. Not the cook. The counter.
 
-The waitress is the adapter on the dining room side -- an *Active Structure*, a thing with behavior. The cook is the adapter on the kitchen side -- also an Active Structure. The counter between them is the port -- a *Passive Structure*, an inanimate thing with no behavior of its own.
+The waitress is the adapter on the dining room side -- an *Active Structure*, a thing with behavior.
+The cook is the adapter on the kitchen side -- also an Active Structure.
+The counter between them is the port -- a *Passive Structure*, an inanimate thing with no behavior of its own.
 
-== Example 2: The Dish Goes Out (Outbound)
+== Example 2: The Dish Goes Out
 
 The cook finishes the ribeye. He plates it -- sear marks at 2 o'clock, mashed at 10, sauce pooled not drizzled.
 He slides the plate onto the counter and calls "ribeye up, medium-rare!"
@@ -78,14 +80,14 @@ And the boundary through which objects move is a PORT.
 
 A port is an inanimate thing -- a Passive Structure.
 
-== Total Recall: MemoryPort as Inbound Counter
+== Total Recall: MemoryPort as Internal Counter
 
 Now the same pattern in our system.
 
 A mind (Claude, a human, any future conscious system) wants to store a memory.
 It calls `store_memory` through the MCP protocol, passing content, metadata, and a suggested tier.
 
-That call hits the *MemoryPort* -- our inbound counter.
+That call hits the *MemoryPort* -- our internal counter.
 
 On the outside (the dining room), the MCP adapter speaks *tool language*: JSON arguments, tool names, session IDs. The adapter is the waitress.
 It takes the request, formats it into what the counter expects, and slides it across.
@@ -112,27 +114,33 @@ A country's border booth is such a port, and it defines a contract on the "ID" s
 
 "Pass-port" -- passport. See?
 
-== Total Recall: BackingServicePort as Outbound Counter
+== Total Recall: ExternalDataServiceAdapter as External Counter
 
-The outbound direction works the same way.
+The other side of the domain works the same way.
 
 Hippocampus (the domain) finishes processing a `StoreMemoryCommand`. The memory needs to be persisted.
 The domain speaks *memory language*: a `Memory` object with tier, content, metadata, salience score.
 
-Hippocampus slides this across the *BackingServicePort* -- our outbound counter. It puts the `Memory` object on the counter and is done.
+The internal adapter (the cook) translates the `Memory` domain object into a DTO -- the port's data shape.
+It slides the DTO across to the *ExternalDataServiceAdapter* port -- our external side of the counter. The domain is done.
 It was thinking about aggregate consistency, tier rules, event production. It marks itself done.
 
-On the other side, the Redis adapter picks up the `Memory` object. It does not think about aggregate consistency.
-It thinks about *storage language*: which Redis data structure, what key pattern, what TTL, what serialization format.
-To the adapter, this is a write operation. To the domain, it was the completion of a business rule.
+On the other side, the SQLite driver (the external adapter) picks up the DTO. It does not think about aggregate consistency.
+It thinks about *storage language*: which table, what columns, what prepared statement, what transaction.
+To the driver, this is a "write" operation. To the domain, it was the completion of a business rule.
 
-Same object crosses the counter. Different meaning on each side.
+The same DTO crosses the counter. Different meanings on each side.
+And get this: neither the domain nor the SQLite can understand the DTO!
+That DTO is the artifact of the kitchen table: cook and waitress know, the customer doesn't.
 
-What crosses the BackingServicePort is an object -- a message. That message is a command ("persist this memory") or a query ("find this memory"). Both sides understand the object correctly, and differently. The domain sees a business operation completing. The adapter sees a storage operation beginning.
+What crosses the port is a DTO -- a data object shaped by the port's contract.
+Not a domain object, not a SQL statement. The neutral shape that both sides agreed on.
+The domain side sees a business operation completing. The infrastructure side sees a storage operation beginning.
 
-The port defines the shape of that object. What the adapter *does* with it -- `save`, `findById`, `search` -- that is the adapter's behavior, the adapter's job description. Not the port's.
+The port defines the shape of that DTO. What the external adapter *does* with it -- translate to SQL, execute,
+translate back -- that is the adapter's behavior, the adapter's job description. Not the port's.
 
-The domain does not know it is talking to Redis. It could be Postgres, a file system, cold storage. The port does not care.
+The domain does not know it is talking to SQLite. It could be Postgres, a file system, cold storage. The port does not care.
 *_It defines what crosses, not how the other side handles it._*
 
 == What a Port Is NOT
@@ -141,13 +149,19 @@ A port is not an adapter. An adapter is an Active Structure -- it has behavior, 
 The port is a Passive Structure -- an inanimate boundary, like the kitchen counter in the restaurant above.
 The waitress is not a counter. She works AT the counter, handling objects between the customer and the kitchen.
 And she is replaceable -- a different waitress works the same counter with the same slips and handles them the same way.
-The same applies for adapters: swap Redis for Postgres, the port stays the same.
+The same applies for adapters: swap SQLite for Postgres, the port stays the same.
 
 A port is not a message. The order slip is not the counter. Slips cross the counter. The counter defines what shape slips can have.
 
 A port is not business logic. The counter does not cook. It does not seat guests. It is the boundary where one world ends and another begins.
 
-A port is not an ACL. The ACL is the full assembly: Active Structure (adapter) → Passive Structure (port) → Active Structure (adapter). The port is the middle piece -- the neutral space between two living things. Just as international borders always have neutral space between countries (the duty-free zone, the international concourse), the ACL always has a passive boundary between active translators. link:/mcp-total-recall/design/0002-what-is-an-adapter/[What is an Adapter?] and link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?] examine the active structures and the full assembly.
+A port is not an ACL. The ACL is the full assembly: Active Structure (adapter) → Passive Structure (port) → Active Structure (adapter).
+The port is the middle piece -- the neutral space between two living things.
+Just as international borders always have neutral space between countries (the duty-free zone, the international concourse),
+the ACL always has a passive boundary between active translators.
+link:/mcp-total-recall/design/0002-what-is-an-adapter/["What is an Adapter?"]
+and link:/mcp-total-recall/design/0003-what-is-an-acl/["What is an ACL?"]
+examine the active structures and the full assembly.
 
 === On Translation and Contracts (Ubiquitous Language)
 
@@ -164,30 +178,30 @@ Agreement is implied here, just like countries agreeing on what kind of passport
 
 [cols="1,1,2,2",options="header"]
 |===
-| Port | Direction | Outside Language | Inside Language
+| Port | Topic | External Adapter Language | Internal Adapter Language
 
 | `MemoryPort`
-| Inbound
+| Memory operations
 | MCP tool calls, JSON, session IDs
 | Commands, queries, domain types AS Objects
 
 | `LifecyclePort`
-| Inbound
+| Session management
 | Hook events, transport signals
 | Session events, state transitions
 
-| `BackingServicePort`
-| Outbound
-| Redis keys, SQL queries, file paths
-| Memory objects, domain queries
+| `ExternalDataServiceAdapter`
+| Data persistence
+| SQL statements, file paths, storage keys
+| Memory DTOs, domain queries
 
 | `NotificationPort`
-| Outbound
+| Mind alerts
 | MCP notifications, push messages
 | Domain notifications (break, audit) objects
 
 | `RelayPort`
-| Outbound
+| Inter-instance messaging
 | Agora protocol, network messages
 | Inter-instance commands AS Objects
 |===
