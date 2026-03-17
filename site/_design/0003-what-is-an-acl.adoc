@@ -146,7 +146,7 @@ Neither side understands the DTO -- only the adapters do. The port published the
 If Postgres replaces the SQLite driver, only the external adapter changes. The counter stays the same.
 The contract stays the same. The internal adapter does not notice.
 
-You can change/rebuild booths on the border crossing the whole day. Ii will not change the nature of the thing.
+You can change/rebuild booths on the border crossing the whole day. It will not change the nature of the thing.
 Nor the nature of either side.
 
 == What an ACL Is NOT
@@ -176,7 +176,7 @@ The ACL's entire power comes from the contract being published, visible, and sha
 
 | Lifecycle
 | Lifecycle Hook Handler
-|` LifecyclePort (Lifecycle DTO)
+| LifecyclePort (Lifecycle DTO)
 | Cortex Handler
 
 | Data Persistence

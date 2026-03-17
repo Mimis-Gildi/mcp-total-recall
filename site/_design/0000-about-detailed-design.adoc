@@ -65,9 +65,9 @@ Each design document examines one bounded context from its own perspective:
 
 * *Core responsibility* -- what this context does and does not do. One paragraph, no ambiguity.
 * *Owned state* -- what data this context manages. What it persists. What it computes.
-* *Inbound contract* -- what messages this context accepts and from whom.
-* *Outbound contract* -- what messages this context produces and for whom.
-* *Port face* -- if this context touches a hexagonal port, what the ACL looks like: domain language on one side, infrastructure language on the other.
+* *Internal contract* -- what ubiquitous language is applied facing inward.
+* *External contract* -- what ubiquitous language is applied to an external party.
+* *ACL assembly* -- if this context touches a port, what the ACL looks like: domain language on one side, infrastructure language on the other.
 * *Invariants* -- rules that must always hold. If violated, something is broken.
 * *Open questions* -- what is not yet decided, and what evidence would resolve it.
 
@@ -78,7 +78,7 @@ Each design document examines one bounded context from its own perspective:
 | Section | Purpose
 
 | *Architecture*
-| The vision. What the system looks like at a distance. Bounded contexts, message flows, hexagonal boundaries.
+| The vision. What the system looks like at a distance. Bounded contexts, message flows, ACL boundaries.
 
 | *Decisions (ADRs)*
 | The reasoning. Why each architectural choice was made, what alternatives were rejected, what evidence drove it.
