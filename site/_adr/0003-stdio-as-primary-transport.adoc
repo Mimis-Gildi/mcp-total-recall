@@ -3,6 +3,9 @@ description: "Use stdio as the primary MCP transport. Streaming HTTPS as seconda
 classes: wide
 ---
 = `stdio` as Primary Transport: ADR-0003
+:includedir: ../_includes/_fragments
+
+
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -28,6 +31,8 @@ Gen 3v1's coupling to SSE meant the transport change required a server rewrite.
 This is the same structural pattern that ADR-0002 addresses -- when infrastructure choices are hardcoded, changing them ripples through the system.
 The hexagonal architecture (ADR-0002) ensures this cannot happen again: transport is an adapter behind a port.
 But choosing the right primary transport still matters for performance, simplicity, and operational characteristics.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Guide-Level Explanation
 

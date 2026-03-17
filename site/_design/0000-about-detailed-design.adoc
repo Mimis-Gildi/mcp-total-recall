@@ -3,6 +3,7 @@ description: "Why detailed design comes before implementation, and what it produ
 classes: wide
 ---
 = About Detailed Design
+:includedir: ../_includes/_fragments
 :hacker-culture: https://en.wikipedia.org/wiki/Hacker_culture[Hacker Culture,window=_blank]
 
 _Whilst on the Scene and at the heart of the {hacker-culture} why do we front-load the design, which is more waterfall than even Agile, minimalist, and fragile exportation of our culture?_ -- as asked by a community member recently.
@@ -18,6 +19,8 @@ Two reasons.
 
 - One is precedent.
 - The other is community.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 === Precedent
 

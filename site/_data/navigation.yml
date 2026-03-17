@@ -30,7 +30,7 @@ architecture:
       - title: "ADR-0002: Ports and Adapters"
         url: /decisions/0002-ports-and-adapters/
       - title: "ADR-0003: stdio Transport"
-        url: /decisions/0003-stdio-as-internal-transport/
+        url: /decisions/0003-stdio-as-primary-transport/
       - title: "ADR-0004: Storage Array"
         url: /decisions/0004-resilient-storage-array/
       - title: "ADR-0005: Aggregate Root"

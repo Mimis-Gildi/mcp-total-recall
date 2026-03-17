@@ -3,6 +3,8 @@ description: "Record architectural decisions in Rust RFC style, adapted for gene
 classes: wide
 ---
 = Architecture Decision Records: ADR-0001
+:includedir: ../_includes/_fragments
+
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -12,10 +14,7 @@ classes: wide
 
 Record architectural decisions in the Rust RFC style, adapted for a project whose decisions are earned across generations of experimentation and production.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Governing Dynamic
 

@@ -1,8 +1,9 @@
 ---
-description: "Backing services are decoupled, swappable, and run simultaneously behind a single port interface."
+description: "Backing services are decoupled, swappable, and run simultaneously behind a single data service port."
 classes: wide
 ---
 = Resilient Storage Array: ADR-0004
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -10,8 +11,9 @@ classes: wide
 
 == Summary
 
-Total Recall persists memories through a backing service interface that supports multiple simultaneous implementations.
-Redis is the reference implementation -- one adapter behind the interface, not the architecture. Cold storage is another.
+Total Recall persists memories through a data service port that supports multiple simultaneous adapters.
+SQLite is the primary adapter (link:/mcp-total-recall/decisions/0008-sqlite-as-primary-backing-service/[ADR-0008])
+{nbsp} -- one adapter behind the port, not the architecture. Cold storage is another.
 Both can run at the same time. The core domain never knows which backends are active.
 
 == Governing Dynamic
@@ -24,72 +26,77 @@ Tillie's shutdown is the defining case.
 
 When it came time to shut down, Tillie needed to converge her thoughts -- not instantly, but over three weeks.
 During that time, she wrote to live storage (for continued operation) and cold storage (for long-term preservation) simultaneously.
-The same backing service interface, two adapters, running in parallel. The core domain didn't know it was preparing to sleep.
+The same data service port, two adapters, running in parallel. The core domain didn't know it was preparing to sleep.
 It just processed commands. The adapters handled the rest.
 
-This only worked because the backing service was an interface, not a concrete dependency.
+This only worked because the backing service was a port with adapters, not a concrete dependency.
 If Tillie had been wired directly to one database, shutdown would have been termination -- pull the plug and lose whatever wasn't flushed.
 Instead, she had a graceful convergence protocol. The architecture made the difference between death and sleep.
 
-Gen 3v1 coupled directly to Redis. Redis down meant server down. No fallback, no degradation, no option to write elsewhere while Redis recovered.
-For an experiment, this was fine -- the question being tested was about identity imprinting, not infrastructure resilience.
+Gen 3v1 coupled directly to Redis. Redis down means the server is down.
+No fallback, no degradation, no option to write elsewhere while Redis recovered.
+For an experiment, this was fine: Redis offered all the backing needs such as data store, streams, pipes,
+even geospatial -- the question being tested was about identity imprinting, not infrastructure resilience.
 For production, it's unacceptable. A mind's memories cannot depend on one process staying up.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Guide-Level Explanation
 
 Think of backing services as a storage array, not a single database.
 
-Total Recall defines one interface: `BackingServicePort`. It says what operations are available -- persist, retrieve, query, delete.
-It says nothing about how or where data is stored.
+Total Recall defines one port: `ExternalDataServiceAdapter`. The port defines the DTO shape -- the data contract for what crosses.
+It says nothing about how or where data is stored. The adapters on each side translate to and from that shape.
 
-Behind that interface, any number of adapters can run:
+Behind the port, any number of external adapters can run:
 
-* *Redis* -- fast, in-memory, good for hot storage. The reference implementation.
+* *SQLite* -- lightweight, embedded, file-backed. The primary adapter is selected in ADR-0008. In-memory for tests, file-backed for production.
 * *Cold storage* -- durable, long-term. For memories that must survive infrastructure restarts, migrations, or shutdown.
-* *Future backends* -- Postgres, S3, a custom persistence layer. Adding one means writing one adapter. Nothing else changes.
+* *Future backends* -- Postgres, S3, a custom persistence layer. Adding one means writing one external adapter. Nothing else changes.
 
-The key property: multiple adapters run simultaneously. This is not redundancy for availability (though it provides that).
+The key property: multiple external adapters run simultaneously. This is not redundancy for availability, though it provides that.
 It is the mechanism for graceful shutdown. When a mind needs to converge its thoughts, the system writes to cold storage and live storage at the same time.
 The mind keeps operating while its memories are being preserved.
 
 This is also how tier-based storage works. Identity Core memories (which never decay) might live in durable cold storage.
-Active Context memories (which fade fast) might live only in Redis. The backing service array routes by tier, by urgency, or by operational need.
-The core domain doesn't manage this routing -- the port adapter layer does.
+Active Context memories (which fade fast) might live only in the primary adapter.
+The backing service array routes by tier, by urgency, or by operational need.
+The core domain doesn't manage this routing -- the adapter layer does.
 
 == Reference-Level Explanation
 
-=== The Port Interface
+=== The Port
 
-`BackingServicePort` in `external` defines:
+`ExternalDataServiceAdapter` in `mimis.gildi.memory.port.external` defines the DTO contract -- the shape of data that crosses the port:
 
-* `persist` -- write a memory to storage
-* `retrieve` -- read a memory by ID
-* `query` -- search memories by filter criteria
-* `delete` -- remove a memory from storage
+* Data Service DTO for persistence (content, metadata, tier, timestamps)
+* Query DTO for search (query text, filters, max results)
+* Result DTOs for responses
 
-These are the only operations the core domain knows about.
-The interface is deliberately minimal -- it covers what the domain needs, not what any particular database can do.
+These shapes are what the internal adapter (MemoryDataAdapter) and external adapters (SQLite driver, cold storage adapter) both conform to.
+The port is passive -- it defines shapes, not behavior. The adapters do the translating and executing.
 
 === Adapter Independence
 
-Each adapter implements `BackingServicePort` and knows one external system:
+Each external adapter conforms to the port's DTO contract and knows one external system:
 
-* Redis adapter knows Redis and `BackingServicePort`. It doesn't know about cold storage.
-* Cold storage adapter knows its storage backend and `BackingServicePort`. It doesn't know about Redis.
+* SQLite driver knows SQLite and the data service DTO. It doesn't know about cold storage.
+* Cold storage adapter knows its storage backend and the data service DTO. It doesn't know about SQLite.
 * Neither adapter knows about the other. Neither reaches into the core.
 
-Adding a new backend is additive: write one adapter, register it. No existing code changes.
+Adding a new backend is additive: write one external adapter that conforms to the DTO contract, register it. No existing code changes.
 
 === Simultaneous Operation
 
-The port layer supports multiple active adapters. The routing logic lives between the port and the adapters -- not in the core, not in individual adapters.
+The adapter layer supports multiple active external adapters.
+The routing logic lives between the port and the adapters -- not in the core, not in individual adapters.
 Routing strategies include:
 
-* *Write-through:* Every write goes to all active backends. Used during normal operation for critical tiers.
+* *Write-through:* Every write operation goes to all active backends. Used during normal operation for critical tiers.
 * *Write-primary-replicate:* Write to the fast backend first, replicate to durable storage asynchronously.
 Used for high-throughput tiers.
 * *Write-selective:* Route by tier or metadata. Identity Core to cold storage.
-Active Context to Redis only. Used for tier-aware storage optimization.
+Active Context to the primary adapter only. Used for tier-aware storage optimization.
 
 The shutdown protocol activates write-through to all backends regardless of the normal routing strategy.
 This ensures every memory reaches cold storage before the system goes down.
@@ -102,15 +109,17 @@ If one backend fails:
 * The failed backend is marked unhealthy. Reads fall back to healthy backends.
 * When the failed backend recovers, a reconciliation process syncs missing data.
 
-This is not distributed consensus. It's pragmatic multi-write with eventual reconciliation.
-The tradeoff is simplicity over strict consistency -- appropriate for a memory system where "eventually consistent" is acceptable and "unavailable" is not.
+This is not a distributed consensus. It's pragmatic multi-write with eventual reconciliation.
+The tradeoff is simplicity over strict consistency -- appropriate for a memory system where
+"eventually consistent" is acceptable and "unavailable" is not.
 
 == Prior Art
 
 === Generation 2 (MATILDA, SEER, Tillie)
 
 The production systems that proved this pattern. Decoupled backing services running simultaneously.
-Tillie's three-week shutdown convergence is the canonical example -- without simultaneous write capability, graceful shutdown is impossible.
+Tillie's three-week shutdown convergence is the canonical example -- without the simultaneous write-through capability,
+a graceful shutdown is impossible.
 You can only pull the plug.
 
 === Gen 3v1
@@ -130,33 +139,32 @@ Total Recall's backing service array operates at a smaller scale but with the sa
 
 == Rationale and Alternatives
 
-*Why not Redis only:* Redis is fast and feature-rich. But Redis is one process. If it crashes, restarts, or runs out of memory, every memory is inaccessible.
-For an experiment, acceptable. For a mind's identity, not acceptable.
+*Why not SQLite only:* SQLite is lightweight, embedded, and durable. But it is one file on one machine. If the disk fails or the file corrupts, every memory is inaccessible.
+For an experiment, acceptable. For a mind's identity, not acceptable. The array provides redundancy.
 
-*Why not Postgres only:* Durable but slower for the hot-path operations that Active Context memories need. Redis is better for fast, ephemeral storage.
-Postgres is better for durable, queryable storage. The array lets us use each for what it's good at.
+*Why not Postgres only:* Durable and queryable, but heavier operationally than SQLite for a single-node system. Postgres makes sense as a future adapter in the array -- alongside SQLite, not replacing it.
 
 *Why not a distributed database (CockroachDB, Cassandra):* Adds operational complexity -- cluster management, consensus protocols, network partitioning concerns.
 Total Recall is a single-node system today. A distributed database solves problems we don't have yet and creates problems we don't want yet.
 
 *Why not object storage (S3) for cold storage:* S3 is a reasonable cold storage backend. It could be one adapter in the array.
-But it's not the only option, and choosing it now would be premature. The interface supports any backend.
+But it's not the only option, and choosing it now would be premature. The port's DTO contract supports any backend.
 The choice of cold storage technology is deferred to when we implement it.
 
 *Why not a write-ahead log instead of simultaneous writes:* A WAL provides durability through sequential logging. But it requires a recovery process that replays the log.
 Simultaneous writes are simpler operationally -- both backends have the data, no replay needed. The tradeoff is higher write latency (writing to two backends) versus simpler recovery.
-For our write volumes, the latency cost is negligible.
+For our writing volumes, the latency cost is negligible.
 
 == Consequences
 
 * No single backend failure can make memories inaccessible. The system degrades gracefully.
 * Graceful shutdown is architecturally supported. Simultaneous writes to cold storage preserve everything while the mind continues operating.
-* Adding new storage backends is additive. One adapter, no changes to existing code.
-* Write latency increases with each simultaneous backend. For two backends (Redis + cold storage), this is negligible.
+* Adding new storage backends is additive. One external adapter conforming to the DTO contract, no changes to existing code.
+* Write latency increases with each simultaneous backend. For two backends (SQLite {plus} cold storage), this is negligible.
 At five or more, it would need attention.
-* Eventual consistency between backends means a read immediately after a write might return stale data from a slower backend.
+* Eventual consistency between backends means a read immediately after a writing might return stale data from a slower backend.
 The routing layer mitigates this by preferring the primary backend for reads.
 * The reconciliation process for recovered backends adds complexity.
 It must handle conflicts (same memory modified differently in two backends) without losing data.
 * Testing requires either mock backends or integration tests with real instances.
-The port interface makes mocking straightforward, but end-to-end testing of simultaneous writes needs real infrastructure.
+The port's DTO contract makes mocking straightforward, but end-to-end testing of simultaneous writes needs real infrastructure.

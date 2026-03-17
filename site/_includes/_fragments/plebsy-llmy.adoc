@@ -1,0 +1,12 @@
+
+'''
+
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
+The narrative below is a graphic explanation in LLM-speak. +
+⚠️ *Community Help:* _Human narrator rewrite is wanted._ ⚠️
+
+'''
