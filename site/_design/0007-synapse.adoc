@@ -7,7 +7,7 @@ classes: wide
 
 Synapse maintains the connections between memories. Not the memories themselves -- those belong to Hippocampus. The threads that link one memory to another. This memory relates to that person. That decision caused this outcome. These two things happened in the same session.
 
-This is the third bounded context inside the hexagon. Hippocampus stores memories. Salience scores them. Synapse connects them.
+This is the third bounded context inside the domain boundary. Hippocampus stores memories. Salience scores them. Synapse connects them.
 
 ++++
 <div id="SY-0001">
@@ -138,7 +138,7 @@ The traversal can go deep. Memory A connects to B, B connects to C, C connects t
 
 == Its Own File Cabinet
 
-Synapse persists separately from Hippocampus. Hippocampus stores memories through BackingServicePort. Synapse stores associations through its own persistence channel.
+Synapse persists separately from Hippocampus. Hippocampus stores memories through the ExternalDataServiceAdapter port. Synapse stores associations through its own persistence channel.
 
 Why separate? Because the shapes are different. Hippocampus puts Memory objects on the counter -- id, content, metadata, tier. Synapse puts Association objects on a different counter -- memory IDs, type, strength. Different shapes, different storage concerns, different persistence.
 
