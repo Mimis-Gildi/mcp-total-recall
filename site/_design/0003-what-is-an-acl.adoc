@@ -8,7 +8,9 @@ An ACL is the whole picture. Waitress, counter, cook -- seen together.
 
 Not a thing you build. A thing you see when you step back and look at the full translation path across a boundary.
 
-link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] defined the port -- the counter, a Passive Structure. link:/mcp-total-recall/design/0002-what-is-an-adapter/[Design B] defined the adapter -- the waitress and the cook, Active Structures with behavior. This document shows what happens when you put them together.
+link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] defined the port -- the counter, a Passive Structure.
+link:/mcp-total-recall/design/0002-what-is-an-adapter/[Design B] defined the adapter -- the waitress and the cook, Active Structures with behavior.
+This document shows what happens when you put them together.
 
 == The Full Journey of an Order
 
@@ -16,47 +18,75 @@ Follow the ribeye from customer to kitchen.
 
 The customer says: "I'd like the ribeye, medium-rare, with mashed potatoes."
 
-*Step 1: The waitress translates.* She writes the slip in the format the counter accepts. Customer language becomes counter language. Active Structure doing its job.
+*Step 1: The waitress translates.* She writes the slip in the format the counter accepts. Customer language becomes counter language.
+Active Structure doing its job.
 
-*Step 2: The slip sits on the counter.* Passive Structure. It defines the shape. The slip conforms to the counter's contract. Nobody is translating. The object just sits at the boundary.
+*Step 2: The slip sits on the counter.* Passive Structure. It defines the shape. The slip conforms to the counter's contract.
+Nobody is translating. The object just sits at the boundary.
 
-*Step 3: The cook translates.* He pulls the slip and reads it in kitchen language. Counter language becomes kitchen language. Active Structure doing its job.
+*Step 3: The cook translates.* He pulls the slip and reads it in kitchen language.
+The "counter" language becomes kitchen language. Active Structure doing its job.
 
-Three steps. Two translations. One boundary. The customer's intent survived the crossing -- medium-rare means medium-rare on both sides -- but the *language* changed completely. The customer was thinking about dinner. The cook is thinking about sear temperatures.
+Three steps. Two translations. One boundary.
+The customer's intent survived the crossing -- medium-rare means medium-rare on both sides -- but the *language* changed completely.
+The customer was thinking about dinner. The cook is thinking about sear temperatures.
 
 That full path -- Active Structure, Passive Structure, Active Structure -- is the Anti-Corruption Layer.
 
 == Why "Anti-Corruption"?
 
-Without the counter between them, the waitress would walk into the kitchen and tell the cook what to do. "Use the cast iron. Sear four minutes per side." She would be speaking kitchen language she does not understand, corrupting the cook's process with her guesses about how cooking works.
+Without the counter between them, the waitress would walk into the kitchen and tell the cook what to do.
+"Use the cast iron. Sear four minutes per side."
+She would be speaking kitchen language she does not understand, corrupting the cook's process with her guesses about how cooking works.
 
-Or the cook would walk into the dining room and interrogate the customer. "What internal temperature do you want? How do you feel about a reverse sear?" He would be speaking kitchen language to someone who cannot understand it, corrupting the customer's experience.
+Or the cook would walk into the dining room and interrogate the customer.
+"What internal temperature do you want? How do you feel about a reverse sear?"
+He would be speaking kitchen language to someone who cannot understand it, corrupting the customer's experience.
 
-The counter prevents this. Each side speaks only to the counter, in the counter's language. The counter's contract is simple enough that both sides can conform to it without understanding each other. The corruption cannot cross because the boundary is explicit and the contract is shared.
+The counter prevents this. Each side speaks only to the counter, in the counter's language.
+The counter's contract is simple enough that both sides can conform to it without understanding each other.
+The corruption cannot cross because the boundary is explicit and the contract is shared.
 
-That is what "anti-corruption" means. Not security. Not validation. Protection of each side's language from the other side's assumptions.
+That is what "anti-corruption" means. Not security. Not validation.
+**Protection** of each side's language from the other side's assumptions.
 
 == A Convenience Construct
 
-Nobody in the restaurant calls it "the Anti-Corruption Layer." The waitress thinks about customers. The cook thinks about food. Neither thinks about the ACL.
+Nobody in the restaurant calls it "the Anti-Corruption Layer." The waitress thinks about customers.
+The cook thinks about food. Neither thinks about the ACL.
 
-The ACL is what the *architect* sees when stepping back. It is an observation, not an instruction. You do not build an ACL. You build adapters that plug into ports. The ACL emerges from that assembly.
+The ACL is what the *architect* sees when stepping back. It is an observation, not an instruction. You do not build an ACL.
+You build adapters that plug into ports. The ACL emerges from that assembly.
 
-This matters for implementation. No class is called `AntiCorruptionLayer`. No package is named `acl`. There is a port interface. There are adapter implementations. When they are plugged together, the architect can point at the assembly and say "that is our ACL." But the developers building the adapters do not need to know or care about that label.
+This matters for implementation. No class is called `AntiCorruptionLayer`. No package is named `acl`. There is a port interface.
+There are adapter implementations. When they are plugged together, the architect can point at the assembly and say "that is our ACL."
+But the developers building the adapters do not need to know or care about that label.
 
-The ACL is a convenience construct -- a name for a pattern that exists named or not. Every restaurant has one. No restaurant built one on purpose.
+The ACL is a convenience construct -- a name for a pattern that exists named or not.
+Every restaurant has one. No restaurant built one on purpose.
+
+Think of the border crossing example again. It's a hole in the fence. When you want order to it: put a booth on either side.
+Two booths and the fence hole work together to serve a single mission. They're a single "component." That's an ACL.
 
 == The Contract Lives in the Core
 
-The port's contract -- the shape of the slip -- is defined in the core domain. Not by the waitress, not by the cook. The restaurant owner decided what order slips look like. Both sides conform.
+The port's contract -- the shape of the slip -- is defined in the core domain. Not by the waitress, not by the cook.
+The restaurant owner decided what order slips look like. Both sides conform.
 
-In software, this means the port interfaces and the objects that cross them are published by the domain. They are the SDK. When someone writes a new adapter -- a new waitress, a new cook -- they import the port's contract and conform to it.
+In software, this means the port interfaces and the objects that cross them are published by the domain. They are the SDK.
+When someone writes a new adapter -- a new waitress, a new cook -- they import the port's contract and conform to it.
 
-This is why the Babel fish from _The Hitchhiker's Guide_ is the wrong metaphor. The Babel fish is a magic translator with no explicit contract. It hides the boundary. You put it in your ear and suddenly understand Vogon poetry. There is no passport, no slip format, no shared shape that both sides agreed on. The fish just works.
+This is why the Babel fish from _The Hitchhiker's Guide_ is the WRONG metaphor. The Babel fish is a magic translator with no explicit contract.
+It hides the boundary. You put it in your ear and suddenly understand Vogon poetry.
+There is no passport, no slip format, no shared shape that both sides agreed on. The fish just works.
 
-An ACL is the opposite. The boundary is explicit. The contract is published. Both sides can see what shape the objects must take. A new adapter can be written by a stranger who has never met the other side -- they only need the contract. The border patrol officer does not need to know you personally. Your passport conforms to the agreed shape. That is enough.
+An ACL is the opposite. The boundary is explicit. The contract is published. Both sides can see what shape the objects must take.
+A new adapter can be written by a stranger who has never met the other side -- they only need the contract.
+The border patrol officer does not need to know you personally. Your passport conforms to the agreed shape. That is enough.
 
-== Total Recall: The Inbound ACL
+Architecturally, ACL **serves** the boundary. And most often it is expressed through composition.
+
+== Total Recall: The Internal ACL
 
 The full path of `store_memory`:
 
@@ -82,82 +112,94 @@ Domain Handler (cook -- Active Structure)
   does the work: persist, score, associate
 ....
 
-Three steps. Two translations. One boundary. The mind's intent survived -- "store this memory" means "store this memory" on both sides. But the language changed from JSON tool calls to domain commands.
+Three steps. Two translations. One boundary. The mind's intent survived -- "store this memory" means "store this memory" on both sides.
+But the language changed from JSON tool calls to domain commands.
 
-The MCP Tool Handler does not know about `StoreMemoryCommand`. The domain handler does not know about JSON-RPC. They both know the shape of what crosses the MemoryPort -- because the core domain published that contract.
+The MCP Tool Handler does not know about `StoreMemoryCommand`. The domain handler does not know about JSON-RPC.
+They both know the shape of what crosses the MemoryPort -- because the core domain published that contract.
 
-== Total Recall: The Outbound ACL
+== Total Recall: The External ACL
 
 The full path of persisting a memory:
 
 ....
-Hippocampus (cook -- Active Structure)
-  finishes: processing StoreMemoryCommand
-  translates: domain state into port object (Memory with tier, content, metadata, score)
-  places on counter
+MemoryDataAdapter (cook -- Internal Adapter, Active Structure)
+  finishes: receives a Memory domain object from Hippocampus
+  translates: Memory into DTO -- the port's data shape
+  places DTO on the counter
       │
       ▼
-BackingServicePort (counter -- Passive Structure)
-  contract: Memory object shape
+ExternalDataServiceAdapter (counter -- Passive Structure)
+  contract: Data Service DTO shape
   defined by: core domain
       │
       ▼
-Redis Adapter (waitress on the storage side -- Active Structure)
-  picks up: Memory object
-  translates: into Redis operations (HSET, key patterns, TTLs)
+SQLite Driver (waitress on the storage side -- External Adapter, Active Structure)
+  picks up: DTO
+  translates: into SQL operations (prepared statements, transactions)
   does the work: the actual persistence
 ....
 
-Same pattern. The domain does not know it is talking to Redis. Redis does not know about domain rules. They both know the shape of the Memory object -- because the core domain published that contract.
+Same pattern. The domain does not know it is talking to SQLite. SQLite does not know about domain rules.
+Neither side understands the DTO -- only the adapters do. The port published the contract. Both adapters conform.
 
-If the Redis adapter is replaced by Postgres, only the bottom Active Structure changes. The counter stays the same. The contract stays the same. The domain does not notice.
+If Postgres replaces the SQLite driver, only the external adapter changes. The counter stays the same.
+The contract stays the same. The internal adapter does not notice.
+
+You can change/rebuild booths on the border crossing the whole day. Ii will not change the nature of the thing.
+Nor the nature of either side.
 
 == What an ACL Is NOT
 
-An ACL is not a class. There is no `AntiCorruptionLayer.kt`. The ACL is the assembly of adapter + port + adapter. You see it in the architecture diagram, not in the source tree.
+An ACL is not a class. There is no `AntiCorruptionLayer.kt`. The ACL is the assembly of adapter + port + adapter.
+You see it in the architecture diagram, not in the source tree.
 
-An ACL is not middleware. Middleware sits in the middle and processes traffic. The ACL has no middle processor -- the port is passive. The translations happen on the edges, in the adapters.
+An ACL is not middleware. Middleware sits in the middle and processes traffic. The ACL has no middle processor -- the port is passive.
+The translations happen on the edges, in the adapters.
 
-An ACL is not validation. Input validation is part of what an adapter does (the waitress checks the order makes sense before writing the slip). But the ACL's purpose is language translation, not input checking.
+An ACL is not validation. Input validation is part of what an adapter does (the waitress checks the order makes sense before writing the slip).
+But the ACL's purpose is language translation, not input checking.
 
-An ACL is not a Babel fish. The Babel fish hides the boundary. The ACL makes the boundary explicit. The Babel fish has no published contract. The ACL's entire power comes from the contract being published, visible, and shared.
+An ACL is not a Babel fish. The Babel fish hides the boundary. The ACL makes the boundary explicit. The Babel fish has no published contract.
+The ACL's entire power comes from the contract being published, visible, and shared.
 
-== The Two ACLs in Total Recall
+== The ACLs in Total Recall
 
 [cols="1,2,2,2",options="header"]
 |===
-| ACL | Outside Adapter | Port (Contract) | Inside Adapter
+| ACL | External Adapter | Port (DTO Contract) | Internal Adapter
 
-| Inbound Memory
+| Memory
 | MCP Tool Handler
-| MemoryPort (content, metadata, tier, session_id)
+| MemoryPort (Memory DTO)
 | Domain Command Handler
 
-| Inbound Lifecycle
+| Lifecycle
 | Lifecycle Hook Handler
-| LifecyclePort (instance_id, reason, context)
+|` LifecyclePort (Lifecycle DTO)
 | Cortex Handler
 
-| Outbound Storage
-| Redis Adapter
-| BackingServicePort (Memory object)
-| Hippocampus
+| Data Persistence
+| SQLite Driver
+| ExternalDataServiceAdapter (Data Service DTO)
+| MemoryDataAdapter
 
-| Outbound Notification
+| Notification
 | MCP Notification Adapter
-| NotificationPort (Notification object)
+| NotificationPort (Notification DTO)
 | Subconscious
 
-| Outbound Relay (future)
+| Relay (future)
 | Agora Adapter
-| RelayPort (Message object)
+| RelayPort (Relay DTO)
 | Domain Relay Handler
 |===
 
-Five ports. Five ACLs. None of them were built as ACLs. Each was built as an adapter plugged into a port. The ACL is the name for the pattern, visible from the architect's chair.
+Five ports. Five ACLs. None of them were built as ACLs. Each was built as adapters plugged into a port.
+The ACL is the name for the pattern, visible from the architect's chair.
 
 '''
 
-*Previous: link:/mcp-total-recall/design/0002-what-is-an-adapter/[What is an Adapter?]* -- the Active Structure, the waitress and the cook.
+*Previous: link:/mcp-total-recall/design/0002-what-is-an-adapter/[What is an Adapter?]* -- the Active Structure, the waitress, and the cook.
 
-*Next: link:/mcp-total-recall/design/0004-hexagon-sides/[Hexagon Sides]* -- which ports exist, where they face, and what crosses each one.
+*Next: link:/mcp-total-recall/design/0004-hexagon-sides/[Port Topology]* -- which ports exist and what crosses each one.
