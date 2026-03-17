@@ -12,6 +12,11 @@ link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] defined the port --
 link:/mcp-total-recall/design/0002-what-is-an-adapter/[Design B] defined the adapter -- the waitress and the cook, Active Structures with behavior.
 This document shows what happens when you put them together.
 
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
 == The Full Journey of an Order
 
 Follow the ribeye from customer to kitchen.
@@ -202,4 +207,4 @@ The ACL is the name for the pattern, visible from the architect's chair.
 
 *Previous: link:/mcp-total-recall/design/0002-what-is-an-adapter/[What is an Adapter?]* -- the Active Structure, the waitress, and the cook.
 
-*Next: link:/mcp-total-recall/design/0004-hexagon-sides/[Port Topology]* -- which ports exist and what crosses each one.
+*Next: link:/mcp-total-recall/design/0004-port-topology/[Port Topology]* -- which ports exist and what crosses each one.

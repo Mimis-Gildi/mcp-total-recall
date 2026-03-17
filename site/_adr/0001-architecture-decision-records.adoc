@@ -13,8 +13,8 @@ classes: wide
 Record architectural decisions in the Rust RFC style, adapted for a project whose decisions are earned across generations of experimentation and production.
 
 IMPORTANT::
-This documentation is told ad nauseam for younger contributors to have an easier time.
-And it is primarily told by primary benefactors, the agentic minds and curated by older system engineers.
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
 If you are an expert not needing all the fluff -- go straight for the diagrams.
 
 == Governing Dynamic

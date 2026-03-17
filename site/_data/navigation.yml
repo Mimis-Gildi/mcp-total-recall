@@ -51,8 +51,8 @@ architecture:
         url: /design/0002-what-is-an-adapter/
       - title: "C: What is an ACL?"
         url: /design/0003-what-is-an-acl/
-      - title: "D: Hexagon Sides"
-        url: /design/0004-hexagon-sides/
+      - title: "D: Port Topology"
+        url: /design/0004-port-topology/
       - title: "E1: Hippocampus (Vault)"
         url: /design/0005-tiered-memory/
       - title: "E2: Salience (Focus)"

@@ -271,8 +271,8 @@ _Documents will be added as each bounded context is examined._
 | What is an ACL? (Adapter + Port + Adapter)
 | Done
 
-| link:/mcp-total-recall/design/0004-hexagon-sides/[D]
-| Hexagon Sides
+| link:/mcp-total-recall/design/0004-port-topology/[D]
+| Port Topology
 | Done
 
 | link:/mcp-total-recall/design/0005-tiered-memory/[E1]

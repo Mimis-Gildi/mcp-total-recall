@@ -11,6 +11,11 @@ Things cross it in both directions. Every time something crosses, it changes mea
 
 This document uses two restaurant examples to build intuition, then shows the same pattern in Total Recall.
 
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
 == Example 1: The Order Goes In
 
 A waitress takes an order at table 7. She writes on a slip: "Ribeye, medium-rare. Side of mashed. Extra napkins."

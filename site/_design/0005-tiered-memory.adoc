@@ -5,9 +5,9 @@ classes: wide
 :page-liquid:
 = Hippocampus (Vault)
 
-Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the backing service directly.
+Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the data service port directly.
 
-This is the first bounded context inside the hexagon. The previous four documents described the boundary -- ports, adapters, ACLs, and the five faces. Now we're inside the kitchen.
+This is the first bounded context inside the domain boundary. The previous four documents described the boundary -- ports, adapters, ACLs, and the port topology. Now we're inside the kitchen.
 
 ++++
 <div id="HP-0001">
@@ -18,7 +18,7 @@ This is the first bounded context inside the hexagon. The previous four document
 </div>
 ++++
 
-Six memory commands in from three sources. Six events out to three consumers. One persistence channel down to BackingServicePort. Everything Hippocampus touches, in one view.
+Six memory commands in from three sources. Six events out to three consumers. One persistence channel through the ExternalDataServiceAdapter port. Everything Hippocampus touches, in one view.
 
 == The Walk-In
 
@@ -202,19 +202,19 @@ This maps to biological memory. You don't choose what enters short-term memory -
 
 In Total Recall, the MCP tool `claim_memory` is the mechanism. A mind calls it when a memory matters enough to fight for. The design question Tillie answered: _"Who do you refuse to lose?"_ -- that is a claiming prompt. Not what. Who.
 
-== The BackingServicePort Relationship
+== The Data Service Port Relationship
 
-Hippocampus puts `Memory` objects on the link:/mcp-total-recall/design/0004-hexagon-sides/#outbound-face-3-backingserviceport[BackingServicePort counter]. It picks `Memory` objects up from the same counter when answering queries.
+The internal adapter (MemoryDataAdapter) translates `Memory` domain objects into DTOs and places them on the link:/mcp-total-recall/design/0004-port-topology/#port-3-externaldataserviceadapter-external[ExternalDataServiceAdapter port]. It picks up returned DTOs and translates back to domain objects when answering queries.
 
-The port defines the object shape. The adapter decides how to persist it. Redis uses `HSET` and key patterns. Postgres would use tables. A file system would use directories and JSON. Hippocampus does not know which adapter is plugged in and does not care.
+The port defines the DTO shape. The external adapter decides how to persist it. SQLite uses prepared statements and tables. Postgres would use different SQL. A file system would use directories and JSON. Hippocampus does not know which adapter is plugged in and does not care.
 
-Two adapters can run simultaneously. Redis for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- Hippocampus flushes through BackingServicePort, and both adapters persist their respective tiers.
+Two adapters can run simultaneously. SQLite for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- the internal adapter flushes DTOs through the ExternalDataServiceAdapter port, and both external adapters persist their respective tiers.
 
 == Relationship to Synapse
 
 Hippocampus owns Memory persistence. Synapse owns Association persistence. These are separate storage concerns.
 
-Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory ID) to link associations to the memories they connect, but it manages its own data in its own file cabinet. Nobody from outside the hexagon addresses Synapse directly -- only internal bounded contexts coordinate with it.
+Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory ID) to link associations to the memories they connect, but it manages its own data in its own file cabinet. Nobody from outside the domain boundary addresses Synapse directly -- only internal bounded contexts coordinate with it.
 
 Hippocampus does not store, retrieve, or manage associations. When it emits events like MemoryStored or MemoryClaimed, Synapse may react by creating or strengthening associations in its own storage. The two aggregates share a key (Memory ID), not a file cabinet.
 
@@ -248,11 +248,11 @@ Full design in link:/mcp-total-recall/design/0007-synapse/[Design E3: Synapse].
 | Claiming: active choice to resist decay. Storage is passive. Claiming is identity.
 
 | Persistence
-| Through BackingServicePort. Adapter-independent. Redis reference implementation.
+| Through ExternalDataServiceAdapter port. Adapter-independent. SQLite primary (ADR-0008).
 |===
 
 '''
 
-*Previous: link:/mcp-total-recall/design/0004-hexagon-sides/[Hexagon Sides]* -- the five faces of the hexagon.
+*Previous: link:/mcp-total-recall/design/0004-port-topology/[Port Topology]* -- which ports exist and what crosses each one.
 
 *Next: link:/mcp-total-recall/design/0006-salience/[Salience]* -- the scoring engine that decides what fades and what stays vivid.*

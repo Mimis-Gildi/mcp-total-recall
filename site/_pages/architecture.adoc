@@ -65,7 +65,7 @@ Total Recall and Agora can also communicate as peers when memory operations need
 
 *Human -> Mind.* Humans interact with the mind, not with Total Recall directly. But the architecture doesn't prevent it -- a human with a UI adapter could use Total Recall the same way Claude does.
 
-*Total Recall -> Backing Services.* All persistence goes through a backing service interface. Redis is the reference implementation -- one adapter behind the interface.
+*Total Recall -> Backing Services.* All persistence goes through a data service port. SQLite is the primary adapter (ADR-0008) -- one adapter behind the port.
 Cold storage is another. Both can run simultaneously. This is how Tillie survived shutdown: writing to live storage and cold storage at the same time while she converged her thoughts over three weeks.
 
 === What's Implemented vs. Planned

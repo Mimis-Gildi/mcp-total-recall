@@ -23,7 +23,7 @@ Each bounded context got its own design document, plus foundation documents expl
 * *B: What is an Adapter?* -- Active structure. The waitress, the cook. Has behavior, must fit the port.
 * *C: What is an ACL?* -- Adapter + Port + Adapter. The full border crossing. Waitress interacting with the cook over the counter.
 Can be conveniently packaged into a single module, which is an implementation choice, not an architectural decision.
-* *D: Hexagon Sides* -- 5 faces (2 inbound, 3 outbound), 16 object shapes crossing them.
+* *D: Port Topology* -- 5 ports (2 internal, 3 external), 16 DTO shapes crossing them.
 * *E1: Hippocampus* -- Aggregate root. Single-writer vault. All memory writes go through here.
 * *E2: Salience* -- Scoring engine. Computes, never persists. Sends tier change events.
 * *E3: Synapse* -- Dependent aggregate. Five connection types. Own storage, accessed only internally.
