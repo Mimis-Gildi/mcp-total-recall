@@ -1,32 +1,38 @@
 ---
-description: "Every face of the hexagon: which ports exist, what crosses each one, and which adapters plug in."
+description: "Every port in Total Recall: what crosses each one, which adapters plug in, and how the ACLs assemble."
 classes: wide
 ---
-= Hexagon Sides
+= Port Topology
 
-The hexagon has five faces. Two face inward (toward the minds that use Total Recall), three face outward (toward infrastructure the domain depends on).
+Total Recall has five ports. Two serve domain conversations (internal), three serve infrastructure conversations (external).
 
-Each face is a link:/mcp-total-recall/design/0001-what-is-a-port/[port] -- a Passive Structure defining the shape of what crosses. Each port has one or more link:/mcp-total-recall/design/0002-what-is-an-adapter/[adapters] -- Active Structures that plug in and do the work. Together, each port and its adapters form an link:/mcp-total-recall/design/0003-what-is-an-acl/[ACL] -- the full translation path.
+Each port is a link:/mcp-total-recall/design/0001-what-is-a-port/[Passive Structure] defining the DTO shape of what crosses.
+Each port has one or more link:/mcp-total-recall/design/0002-what-is-an-adapter/[adapters] -- Active Structures that plug in and do the work.
+Together, each port and its adapters form an link:/mcp-total-recall/design/0003-what-is-an-acl/[ACL] -- the full translation path.
 
-This document names every face.
+This document names every port.
 
 == The Restaurant, One Last Time
 
-A restaurant has faces too. The front door faces the street -- customers come in. The kitchen window faces the alley -- deliveries arrive. The counter faces both the dining room and the kitchen. The service door faces the parking lot -- staff comes and goes.
+A restaurant has boundaries too. The front door faces the street -- customers come in. The kitchen window faces the alley -- deliveries arrive.
+The counter faces both the dining room and the kitchen. The service door faces the parking lot -- staff comes and goes.
 
-Each face has a different purpose, a different contract, a different set of adapters working it. The front door has a host. The kitchen window has a receiving clerk. The counter has waitresses and cooks. The service door has a lock and a key.
+Each boundary has a different purpose, a different contract, a different set of adapters working it.
+The front door has a host. The kitchen window has a receiving clerk. The counter has waitresses and cooks.
+The service door has a lock and a key.
 
-Total Recall is the same. Each face of the hexagon serves a different purpose. Different things cross. Different adapters work each side.
+Total Recall is the same. Each port serves a different conversation topic. Different DTOs cross.
+Different adapters work through designated ports on each side.
 
-== Inbound Face 1: MemoryPort
+== Port 1: MemoryPort (Internal)
 
 The main entrance. This is where minds interact with their memories.
 
-**What crosses:**
+**What crosses (DTO shapes):**
 
 [cols="1,3",options="header"]
 |===
-| Object | Shape
+| DTO | Shape
 
 | Store request
 | content, metadata, suggested tier, session ID
@@ -47,27 +53,29 @@ The main entrance. This is where minds interact with their memories.
 | criteria (staleness, time span, weak associations), scope
 |===
 
-Six object shapes. Each is an order slip with a different format. The port defines all six shapes. The adapters on both sides conform.
+Six DTO shapes. Each is an order slip with a different format. The port defines all six shapes. The adapters on both sides conform.
 
-**Outside adapters (who places objects on the counter):**
+**External adapters (that place DTOs on the counter from the outside):**
 
 - *stdio Transport* -- the primary adapter. Speaks MCP JSON-RPC. Implemented.
-- *Streaming HTTPS* -- future. Speaks HTTP. Same object shapes, different outside language.
-- *Human UI* -- future. Speaks form fields, clicks, selections. Same object shapes, different outside language.
+- *Streaming HTTPS* -- future. Speaks HTTP. Same DTO shapes, different external language.
+- *Human UI* -- future. Speaks form fields, clicks, selections. Same DTO shapes, different external language.
 
-**Inside adapter (who picks up objects from the counter):**
+**Internal adapter (who picks up DTOs from the counter toward the domain):**
 
-The domain command/query handler. Translates port objects into `StoreMemoryCommand`, `SearchQuery`, `ClaimMemoryCommand`, `AssociateCommand`, `ReclassifyMemoryCommand`, `ReflectQuery`. Dispatches to the appropriate bounded context.
+The domain command/query handler. Translates port DTOs into `StoreMemoryCommand`, `SearchQuery`,
+`ClaimMemoryCommand`, `AssociateCommand`, `ReclassifyMemoryCommand`, `ReflectQuery`.
+Dispatches to the appropriate bounded context.
 
-== Inbound Face 2: LifecyclePort
+== Port 2: LifecyclePort (Internal)
 
 The staff entrance. This is where session events arrive -- a mind connects, disconnects, or changes state.
 
-**What crosses:**
+**What crosses (DTO shapes):**
 
 [cols="1,3",options="header"]
 |===
-| Object | Shape
+| DTO | Shape
 
 | Session start
 | instance ID, mind type, resumption data
@@ -79,62 +87,69 @@ The staff entrance. This is where session events arrive -- a mind connects, disc
 | instance ID, old state, new state, context
 |===
 
-Three object shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters. A missed session end means the Subconscious never triggers the audit prompt.
+Three DTO shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters.
+A missed session end means the Subconscious never triggers the audit prompt.
 
-**Outside adapters:**
+**External adapters:**
 
-- *Claude Code Hooks* -- primary. Detects `session_start`, `session_end`, `tool_call` events from the hook system. Implemented (partially -- hooks exist, adapter is stub).
+- *Claude Code Hooks* -- primary. Detects `session_start`, `session_end`, `tool_call` events from the hook system.
+Implemented (partially -- hooks exist, adapter is stub).
 - *Human UI* -- future. Detects login/logout, idle timeout, focus changes.
 
-**Inside adapter:**
+**Internal adapter:**
 
-Cortex handler. Translates lifecycle events into session state. Loads identity and last session on start. Triggers Subconscious on end.
+Cortex handler. Translates lifecycle DTOs into session state. Loads identity and last session on start.
+Triggers Subconscious on end.
 
-== Outbound Face 3: BackingServicePort
+== Port 3: ExternalDataServiceAdapter (External)
 
 The kitchen loading dock. This is where the domain sends memories to be persisted and retrieves them back.
 
-**What crosses:**
+**What crosses (DTO shapes):**
 
 [cols="1,3",options="header"]
 |===
-| Object | Shape
+| DTO | Shape
 
-| Memory (outbound)
+| Data Service DTO (persist)
 | ID, content, metadata, tier, salience score, timestamps
 
-| Memory (inbound -- returned)
-| same shape, populated by the adapter
+| Data Service DTO (returned)
+| same shape, populated by the external adapter
 
-| Query (outbound)
+| Query DTO
 | query text, filters, max results
 
-| Query result (inbound)
-| list of Memory objects matching the query
+| Query result DTO
+| list of Data Service DTOs matching the query
 |===
 
-The port defines the Memory object shape. The adapter decides how to store it. Redis uses `HSET` and key patterns. Postgres would use tables and SQL. A file system would use directories and JSON files. The domain does not know and does not care.
+The port defines the Data Service DTO shape. The external adapter decides how to store it. SQLite uses prepared statements and tables.
+Postgres would use different SQL. A file system would use directories and JSON files. The domain does not know and does not care.
 
-**Outside adapters:**
+**External adapters:**
 
-- *Redis Adapter* -- reference implementation. Not yet wired.
+- *SQLite Driver* -- primary adapter (ADR-0008). In-memory for tests, file-backed for production.
 - *Cold Storage Adapter* -- future. For ARCHIVE tier memories that need cheaper, slower persistence.
 
-Both can run simultaneously. Graceful shutdown depends on this -- the domain flushes through BackingServicePort, and both adapters persist their respective tiers.
+Both can run simultaneously. Graceful shutdown depends on this -- the internal adapter flushes DTOs through the port,
+and both external adapters persist their respective tiers.
 
-**Inside adapter:**
+**Internal adapter:**
 
-Hippocampus. The only bounded context that actually goes to storage. It puts Memory objects on the counter after processing commands. It picks up Memory objects from the counter when answering queries.
+MemoryDataAdapter. The domain-facing translator. Takes `Memory` domain objects from Hippocampus, translates them to the port's Data Service DTO shape.
+Picks up returned DTOs and translates back to domain objects.
 
-== Outbound Face 4: NotificationPort
+== Port 4: NotificationPort (External)
 
-The PA system. This is where the domain talks back to the mind -- not in response to a request, but proactively. "You've been in task mode for 90 minutes." "Session ending -- what do you refuse to lose?"
+The PA system. This is where the domain talks back to the mind -- not in response to a request, but proactively. "You've been in task mode for 90 minutes."
+"Is the session ending -- what do you refuse to lose?"
 
-**What crosses:**
+**What crosses (DTO shapes):**
 
 [cols="1,3",options="header"]
 |===
-| Object | Shape
+| DTO | Shape
 
 | Break notification
 | minutes in task mode, suggestion
@@ -146,46 +161,52 @@ The PA system. This is where the domain talks back to the mind -- not in respons
 | recalled memories, depth reached, origin request ID
 |===
 
-Three object shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
+Three DTO shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
 
-**Outside adapters:**
+**External adapters:**
 
 - *MCP Notification Adapter* -- for Claude. Uses MCP server-initiated notifications. Implemented (stub).
 - *UI Notification Adapter* -- future. For human minds. Push notifications, toast messages, whatever the UI provides.
 
-**Inside adapter:**
+**Internal adapter:**
 
-The Subconscious. It decides when to notify based on timers, thresholds, and session state. It puts notification objects on the counter. It does not know whether the mind receiving the notification is Claude or a human.
+The Subconscious. It decides when to notify based on timers, thresholds, and session state.
+It translates domain state into notification DTOs and places them on the port.
+It does not know whether the mind receiving the notification is Claude or a human.
 
-== Outbound Face 5: RelayPort
+== Port 5: RelayPort (External)
 
-The mail room. This is where one instance of Total Recall communicates with another -- through Agora, the inter-instance message bus.
+The mail room. This is where one instance of Total Recall communicates with another -- through Agora,
+the inter-instance message bus.
 
-**What crosses:**
+**What crosses (DTO shapes):**
 
 [cols="1,3",options="header"]
 |===
-| Object | Shape
+| DTO | Shape
 
 | Relay message
 | target instance ID, payload, message type
 |===
 
-One object shape for now. The payload is opaque to the port -- the port cares about the envelope (who it goes to), not the letter inside.
+One DTO shape for now. The payload is opaque to the port -- the port cares about the envelope (who it goes to), not the letter inside.
 
-**Outside adapter:**
+**External adapter:**
 
-- *Agora Adapter* -- future. Agora is a separate MCP server that the mind also connects to directly. The relay adapter speaks Agora's protocol to pass messages between Total Recall instances.
+- *Agora Adapter* -- future. Agora is a separate MCP server that the mind also connects to directly.
+The relay adapter speaks Agora's protocol to pass messages between Total Recall instances.
 
-**Inside adapter:**
+**Internal adapter:**
 
 Not yet designed. The domain handler for relay messages will be specified when Agora's design is done.
 
-This is the only port where both sides are future. The port contract exists in the codebase (`RelayPort.kt`), but neither adapter exists yet.
+This is the only port where both sides are future. The port contract exists in the codebase (`RelayPort.kt`),
+but neither adapter exists yet.
 
 == Cross-Cuts
 
-Three concerns attach to the hexagon without going through ports. They are not faces -- they are infrastructure that the hexagon wears.
+Three concerns attach to the boundary without going through ports.
+They are not ports -- they are infrastructure worn by the system.
 
 [cols="1,2,2",options="header"]
 |===
@@ -206,41 +227,42 @@ Three concerns attach to the hexagon without going through ports. They are not f
 
 Cross-cuts attach as adapters but never live inside the domain. The core is testable without them.
 
-== The Full Hexagon
+== Port Topology Summary
 
-Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. Multiple adapters per face, each replaceable, each conforming to the port's contract.
+Five ports. Two internal, three external. Thirteen DTO shapes crossing today.
+Multiple adapters per port, each replaceable, each conforming to the port's contract.
 
 [cols="1,1,1,1,1",options="header"]
 |===
-| Face | Port | Direction | Objects Crossing | Adapters
+| # | Port | Topic | DTOs Crossing | External Adapters
 
 | 1
 | MemoryPort
-| Inbound
+| Memory operations
 | 6 shapes
 | stdio, HTTPS (future), Human UI (future)
 
 | 2
 | LifecyclePort
-| Inbound
+| Session management
 | 3 shapes
 | Claude Code Hooks, Human UI (future)
 
 | 3
-| BackingServicePort
-| Outbound
-| 4 shapes (2 directions)
-| Redis, Cold Storage (future)
+| ExternalDataServiceAdapter
+| Data persistence
+| 4 shapes
+| SQLite Driver, Cold Storage (future)
 
 | 4
 | NotificationPort
-| Outbound
+| Mind alerts
 | 3 shapes
 | MCP Notifications, UI Notifications (future)
 
 | 5
 | RelayPort
-| Outbound
+| Inter-instance messaging
 | 1 shape
 | Agora (future)
 |===
@@ -251,4 +273,4 @@ The diagram link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL
 
 *Previous: link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?]* -- the full assembly: Adapter + Port + Adapter.
 
-*Next: the bounded contexts that live inside the hexagon, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus] -- the aggregate root.*
+*Next: the bounded contexts that live inside the domain boundary, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus] -- the aggregate root.*
