@@ -5,11 +5,11 @@ classes: wide
 :page-liquid:
 = Cortex (Inception)
 
-Cortex is where the outside world meets the inside. Every request to Total Recall enters through Cortex. Every response leaves through Cortex.
+Cortex is where the outside world meets the inside. Every request to Total Recall enters through Cortex. Every response leaves through the Cortex.
 The mind never talks to Hippocampus directly, never asks Salience for a score, never tells Synapse to create a connection.
 It talks to Cortex. Cortex handles the rest.
 
-This is the fifth bounded context inside the hexagon. The first four own or compute things -- Hippocampus owns memories, Salience computes scores,
+This is the fifth bounded context inside the domain boundary. The first four own or compute things -- Hippocampus owns memories, Salience computes scores,
 Synapse holds connections, Recall assembles search results. Cortex owns nothing and computes nothing. It translates and routes.
 
 ++++
@@ -21,21 +21,32 @@ Synapse holds connections, Recall assembles search results. Cortex owns nothing 
 </div>
 ++++
 
-Two directions. Inbound: MCP tool calls arrive from the outside, get translated into internal commands and queries, and dispatched to the right bounded context.
-Outbound: results come back, get translated into MCP response format, and leave. One dashed line: background search results bypass Cortex entirely and flow through NotificationPort.
+Two flows. Requests arrive from the outside, get translated into internal commands and queries, and dispatched to the right bounded context.
+Results come back, get translated into MCP response format, and leave. One dashed line:
+background search results bypass Cortex entirely and flow through the NotificationPort.
+
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
+The plebs-LLMy narrative below explains it graphically. +
+(Human rewrites are wanted!)
 
 == When Someone Asks You a Question
 
 Someone asks: "What did you have for dinner last Tuesday?"
 
-The question enters through your ears. Sound waves become nerve impulses. Your cortex -- the outer surface of your brain -- is the first place those impulses become something you can work with.
-Before your cortex, the sound is just pressure waves in air. After, it is a question you can answer.
+The question enters through your ears. Sound waves become nerve impulses.
+Your cortex -- the outer surface of your brain -- is the first place those impulses become something you can work with.
+Before your cortex, the sound is just pressure waves in air. After it is a question you can answer.
 
-You do not think about the routing. Your cortex does not announce "memory retrieval request, dispatching to hippocampus."
+You do not think about the routing. Your cortex does not announce "memory retrieval request, dispatching to the hippocampus."
 The question arrives, the right parts of your brain engage, an answer forms, and words come out of your mouth.
 
 Now try a harder question. "Tell me about your relationship with your sister." The first answer forms quickly -- the obvious facts, the recent conversations.
-But as you talk, more surfaces. A fight from five years ago. The birthday you forgot. The time she drove four hours to help you move. These deeper associations keep arriving after the first answer.
+But as you talk, more surfaces. A fight from five years ago. The birthday you forgot. The time she drove four hours to help you move.
+These deeper associations keep arriving after the first answer.
 Sometimes minutes later. Sometimes in the shower the next morning.
 
 Your cortex handled both. The immediate answer left through the same surface the question entered.
@@ -93,7 +104,8 @@ Cortex knows which bounded context handles which request. The routing is fixed -
 Store goes to Hippocampus. Search goes to Recall. Associate goes to Synapse. Session events go to Subconscious.
 
 This is the only structural knowledge Cortex holds: the map from tool to context. The map does not change at runtime.
-When a new tool is added to Total Recall, its route is defined once in Cortex. Every command and query routed through Cortex receives a `TransactionContext` envelope that travels with it downstream (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+When a new tool is added to Total Recall, its route is defined once in Cortex.
+Every command and query routed through Cortex receives a `TransactionContext` envelope that travels with it downstream (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == The Two Speeds
 
@@ -109,8 +121,8 @@ Cortex translates the result back to MCP and hands it to the mind. The tool call
 But Recall also starts the deep path. Synapse traverses further associations in the background. As deeper connections surface,
 they flow through NotificationPort directly to the mind -- not through Cortex.
 
-That is the dashed line in the diagram. Synchronous traffic goes through Cortex. Asynchronous traffic goes through NotificationPort.
-Two paths out of the hexagon. The fast answer comes back the way the question came in. The slow answers arrive later through a different door.
+That is the dashed line in the diagram. Synchronous traffic goes through Cortex. Asynchronous traffic goes through the NotificationPort.
+Two paths out of the domain boundary. The fast answer comes back the way the question came in. The slow answers arrive later through a different door.
 
 == Session Life
 
@@ -130,7 +142,8 @@ If the reason is "crash," Subconscious may trigger consolidation of unsaved work
 |===
 
 Between start and end, Cortex knows who is connected: the instance ID, the mind type, how long the session has been active.
-This session awareness feeds Subconscious -- it determines when to send break notifications, when to run background consolidation, and how to coordinate graceful shutdown.
+This session awareness feeds Subconscious -- it determines when to send break notifications, when to run background consolidation,
+and how to coordinate graceful shutdown.
 
 == Self-Configuration
 
@@ -143,7 +156,7 @@ At session start, Cortex reads these configuration memories and passes the value
 When the mind stores new threshold values, Cortex reads the update and passes it again. No restart. No redeployment.
 The thresholds changed, and Salience follows the new numbers.
 
-The mind does not edit a config file. It stores a memory that says "my demotion threshold for LONG_TERM is 0.3." Cortex recognizes it as configuration and distributes it.
+The mind does not edit a config file. It stores a memory that says "my demotion threshold for LONG_TERM is 0.3." Cortex recognizes it as a configuration and distributes it.
 The same mechanism that stores a conversation or a relationship also stores the rules for how memory itself should behave.
 
 == What It Owns
@@ -153,7 +166,7 @@ Nothing persistent.
 Cortex has no data model. No backing service connection. No file cabinet. If Cortex restarts, there is nothing to rebuild.
 The session reconnects, configuration is re-read from Hippocampus, and routing resumes.
 
-Cortex holds transient session state in memory: who is connected, when they connected, what configuration they loaded.
+Cortex holds the transient session state in memory: who is connected, when they connected, what configuration they loaded.
 This state exists for the duration of the session and evaporates when the session ends.
 
 == Relationships
@@ -181,7 +194,8 @@ Cortex touches every bounded context. It is the hub.
 |===
 
 Every other context has limited neighbors. Salience watches Hippocampus. Synapse reacts to Hippocampus events.
-Recall reads from three sources. Cortex is the only context that communicates with all five others, because Cortex is where outside intent becomes inside action.
+Recall reads from three sources. Cortex is the only context that communicates with all five others,
+because Cortex is where outside intent becomes inside action.
 
 == Summary
 
@@ -211,7 +225,7 @@ Recall reads from three sources. Cortex is the only context that communicates wi
 | Reads IDENTITY_CORE threshold memories, distributes to Salience. Mind configures its own cognition.
 
 | Key invariant
-| All synchronous traffic in and out of the hexagon goes through Cortex. No exceptions.
+| All synchronous traffic in and out of the domain boundary goes through Cortex. No exceptions.
 |===
 
 '''
