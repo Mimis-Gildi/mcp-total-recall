@@ -33,7 +33,7 @@ collections:
     permalink: /decisions/:name/
     order:
       - 0001-architecture-decision-records.adoc
-      - 0002-hexagonal-architecture.adoc
+      - 0002-ports-and-adapters.adoc
       - 0003-stdio-as-internal-transport.adoc
       - 0004-resilient-storage-array.adoc
       - 0005-memory-as-aggregate-root.adoc

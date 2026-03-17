@@ -30,7 +30,7 @@ If you don't document the reason a decision was made, the decision becomes a mys
 | link:/mcp-total-recall/decisions/0001-architecture-decision-records/[ADR-0001]
 | The ADR format itself. Rust RFC adapted -- Summary, Motivation, Guide-Level, Reference-Level, Rationale, Consequences.
 
-| link:/mcp-total-recall/decisions/0002-hexagonal-architecture/[ADR-0002]
+| link:/mcp-total-recall/decisions/0002-ports-and-adapters/[ADR-0002]
 | Ports and adapters. Three generations proved that coupling kills. Production requires decoupling.
 
 | link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[ADR-0003]

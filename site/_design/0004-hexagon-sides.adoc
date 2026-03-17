@@ -245,7 +245,7 @@ Five faces. Two inbound, three outbound. Thirteen object shapes crossing today. 
 | Agora (future)
 |===
 
-The diagram link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] shows this visually.
+The diagram link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001] shows this visually.
 
 '''
 

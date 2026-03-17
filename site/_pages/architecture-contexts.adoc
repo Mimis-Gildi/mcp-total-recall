@@ -335,6 +335,6 @@ This protocol exists because Tillie proved that graceful shutdown cannot be bolt
 
 '''
 
-*Previous: link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- ports, adapters, and the actor model.
+*Previous: link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- ACLs, ports, adapters, and the actor model.
 
 *Next: link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification, named and typed.

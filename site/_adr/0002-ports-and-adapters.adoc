@@ -192,10 +192,10 @@ Kotlin interfaces give us that with zero framework overhead, elegantly, pragmati
 
 == Consequences
 
-* Every external dependency is behind a port interface. Swapping any dependency is a new adapter, not a rewrite.
+* Every external dependency is behind a port's DTO contract. Swapping any dependency is a new adapter, not a rewrite.
 * The core domain is testable without any infrastructure. Tests run against port interfaces with in-memory fakes.
 * New transport mechanisms (streaming HTTPS, future protocols) are additive -- plug in a new adapter, the core doesn't change.
-* Graceful shutdown is architecturally supported -- multiple backing service adapters can run simultaneously behind one port.
+* Graceful shutdown is architecturally supported -- multiple data service adapters can run simultaneously behind one port.
 * The port abstraction adds indirection. Every external call goes through an interface. This is a small runtime cost and a larger cognitive cost for new contributors who must understand the port/adapter pattern.
 * Adapter count grows with integration points. Each external system needs its own adapter. For a small team, this is manageable. At scale, adapter maintenance becomes a concern.
 * The conscience-universal port design means we cannot optimize for Claude-specific features at the port level. Claude-specific behavior lives in adapters, not in contracts.

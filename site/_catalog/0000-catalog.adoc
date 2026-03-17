@@ -19,10 +19,10 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | System Context -- Total Recall in its environment
 | link:/mcp-total-recall/architecture/[Context]
 
-| link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001]
+| link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001]
 | Ports & Adapters
 | Hexagonal -- ports, adapters, actor model
-| link:/mcp-total-recall/architecture/hexagonal/[Hexagonal]
+| link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]
 
 | link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001]
 | Context Map
@@ -105,9 +105,9 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Use Architecture Decision Records
 | Template for all ADRs
 
-| link:/mcp-total-recall/decisions/0002-hexagonal-architecture/[0002]
-| Hexagonal Architecture
-| Hexagonal page, ports and adapters diagram
+| link:/mcp-total-recall/decisions/0002-ports-and-adapters/[0002]
+| Anti-Corruption Layers: Ports and Adapters
+| ACL assembly, ports by topic, adapter classification
 
 | link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[0003]
 | stdio as Primary Transport

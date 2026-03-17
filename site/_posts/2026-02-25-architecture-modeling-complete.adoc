@@ -18,7 +18,7 @@ Issue #3 is merged. Total Recall has its architectural foundation.
 Four architecture pages now document the system design:
 
 * *link:/mcp-total-recall/architecture/[System Context]* -- what Total Recall is, who connects, how it fits into Yggdrasil
-* *link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- ports and adapters, the actor model, cross-cut concerns
+* *link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- ACLs, ports, adapters, the actor model, cross-cut concerns
 * *link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]* -- six actors (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) and their message flows
 * *link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification named and typed
 

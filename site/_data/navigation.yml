@@ -17,8 +17,8 @@ architecture:
     children:
       - title: "Context"
         url: /architecture/
-      - title: "Hexagonal"
-        url: /architecture/hexagonal/
+      - title: "Ports and Adapters"
+        url: /architecture/ports-and-adapters/
       - title: "Bounded Contexts"
         url: /architecture/contexts/
       - title: "Message Catalog"
@@ -27,8 +27,8 @@ architecture:
     children:
       - title: "ADR-0001: Use ADRs"
         url: /decisions/0001-architecture-decision-records/
-      - title: "ADR-0002: Hexagonal"
-        url: /decisions/0002-hexagonal-architecture/
+      - title: "ADR-0002: Ports and Adapters"
+        url: /decisions/0002-ports-and-adapters/
       - title: "ADR-0003: stdio Transport"
         url: /decisions/0003-stdio-as-internal-transport/
       - title: "ADR-0004: Storage Array"

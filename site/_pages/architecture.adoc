@@ -83,4 +83,4 @@ All contracts are defined in Kotlin. 9 MCP tools are registered and callable. Ba
 
 '''
 
-*Next: link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- how Total Recall is structured internally.
+*Next: link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- how Total Recall is structured internally.

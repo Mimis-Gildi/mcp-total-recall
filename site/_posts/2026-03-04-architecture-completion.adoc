@@ -45,7 +45,7 @@ This is how you trace any event back to the command that caused it, the request 
 Ten architecture diagrams across the four progressive pages:
 
 * link:/mcp-total-recall/architecture/#CTX-0001[CTX-0001] -- System Context
-* link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] -- Ports and Adapters
+* link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001] -- Ports and Adapters
 * link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001] -- Bounded Contexts
 * link:/mcp-total-recall/architecture/messages/#MSG-0001[MSG-0001] -- Store Memory
 * link:/mcp-total-recall/architecture/messages/#MSG-0002[MSG-0002] -- Search Memory
