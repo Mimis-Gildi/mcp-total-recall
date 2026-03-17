@@ -5,9 +5,11 @@ classes: wide
 :page-liquid:
 = Salience (Focus)
 
-Salience is the scoring engine. It tracks how vivid each memory is -- how recently accessed, how frequently used, whether the mind chose to hold onto it. When a score drops below a threshold, Salience recommends demotion. When it rises above one, promotion.
+Salience is the scoring engine. It tracks how vivid each memory is -- how recently accessed, how frequently used, whether the mind chose to hold onto it.
+When a score drops below a threshold, Salience recommends demotion. When it rises above one, promotion.
 
-This is the second bounded context inside the domain boundary. Hippocampus owns the memories and writes to storage. Salience watches what Hippocampus does and decides what should move.
+This is the second bounded context inside the domain boundary. Hippocampus owns the memories and writes to storage.
+Salience watches what Hippocampus does and decides what should move.
 
 ++++
 <div id="SL-0001">
@@ -18,23 +20,39 @@ This is the second bounded context inside the domain boundary. Hippocampus owns 
 </div>
 ++++
 
-Three event streams in from Hippocampus. One sweep command from Subconscious. Thresholds from Cortex. Three outputs to two consumers. No persistence channel.
+There are three event streams in from Hippocampus. One sweep command from Subconscious.
+Thresholds from Cortex. Three outputs to two consumers. No persistence channel.
+
+IMPORTANT::
+This documentation is verbose to benefit new contributors. +
+Agentic primary contributors make it LLMy despite senior reviewer edits. +
+If you are an expert not needing all the fluff -- go straight for the diagrams.
+
+The explanation below is an LLM narrative.
 
 == The Expo
 
-The expeditor stands at the pass. In a professional kitchen, the pass is the steel counter between the cooking line and the dining room -- the last stop before food goes out. The expo doesn't cook. Doesn't have a station. The expo watches.
+The expeditor stands at the pass. In a professional kitchen,
+the pass is the steel counter between the cooking line and the dining room -- the last stop before food goes out.
+The expo doesn't cook. Doesn't have a station. The expo watches.
 
-Every plate that lands on the pass, the expo tracks. How long has that risotto been sitting? Is table 7's steak keeping pace with their appetizer? The fish that came up two minutes ago -- still good, or dying?
+Every plate that lands on the pass, the expo tracks. How long has that risotto been sitting?
+Is table 7's steak keeping pace with their appetizer? The fish that came up two minutes ago -- still good, or not?
 
-The expo doesn't set the standards. The head chef decides what "dying on the pass" means. Two minutes for fish. Five for a braise. The expo applies whatever standards the chef posted.
+The expo doesn't set the standards. The head chef decides what "bad on the pass" means.
+Two minutes for fish. Five for steak. The expo applies whatever standards the chef posted.
 
-When the head chef calls "how are we looking?" -- the expo runs through everything and calls back. "Table 12 is behind, fire their mains. That salmon has been sitting -- run it now. The short rib? Still perfect, leave it."
+When the head chef calls "how we are looking." -- the expo runs through everything and calls back.
+"Table 12 is behind, fire their mains. That salmon has been sitting -- run it now. The short rib? Still perfect, leave it."
 
-If the expo steps out, the kitchen keeps running. Food is still on the pass, orders are still on the tickets. When the expo walks back in, they look around, read the room, and pick up where they left off. The state is in the kitchen, not in the expo's notes.
+If the expo steps out, the kitchen keeps running. Food is still on the pass, orders are still on the tickets.
+When the expo walks back in, they look around, read the room, and pick up where they left off.
+The state is in the kitchen, not in the expo's notes.
 
 == What It Watches
 
-Salience watches three events from Hippocampus. All three fire after persistence -- by the time Salience sees them, the memory is already written.
+Salience watches three events from Hippocampus. All three fire after persistence -- by the time Salience sees them,
+the memory is already written.
 
 [cols="1,2",options="header"]
 |===
@@ -50,7 +68,8 @@ Salience watches three events from Hippocampus. All three fire after persistence
 | Marks it claimed. Drops the decay rate. The mind said this one matters -- Salience respects that.
 |===
 
-Three events. Each one updates the projection. Every event carries a `TransactionContext` identifying its source and tracing its path (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+Three events. Each one updates the projection.
+Every event carries a `TransactionContext` identifying its source and tracing its path (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == What It Keeps
 
@@ -76,7 +95,9 @@ Salience keeps one thing: a score for each memory.
 | Boolean -- whether the mind actively held onto this
 |===
 
-This projection is not persisted. It lives in the process and nowhere else. If Salience restarts, it rebuilds by replaying events from Hippocampus. The projection is a view of Hippocampus state, not a copy of it.
+This projection has not persisted. It lives in the process and nowhere else.
+If Salience restarts, it rebuilds by replaying events from Hippocampus.
+The projection is a view of the Hippocampus state, not a copy of it.
 
 == What It Calls Out
 
@@ -99,13 +120,16 @@ When a score crosses a threshold, Salience calls it out.
 | Recall
 |===
 
-AttentionTierPromotionRequested and AttentionTierDemotionRequested are recommendations. Hippocampus decides whether to act on them. In practice, it does -- the aggregate root trusts the scoring engine's math. But the write authority belongs to Hippocampus.
+AttentionTierPromotionRequested and AttentionTierDemotionRequested are recommendations. Hippocampus decides whether to act on them.
+In practice, it does -- the aggregate root trusts the scoring engine's math. But the writing authority belongs to Hippocampus.
 
 == The Sweep
 
 Salience doesn't run its own clock. Subconscious does.
 
-When Subconscious sends `DecaySweep`, Salience walks the entire projection. For each memory: recalculate the score based on elapsed time and decay rate. Check the new score against tier thresholds. If it crossed -- call it out.
+When Subconscious sends `DecaySweep`, Salience walks the entire projection.
+For each memory: recalculate the score based on elapsed time and decay rate.
+Check the new score against tier thresholds. If it crossed -- call it out.
 
 IDENTITY_CORE memories are exempt. Their scores don't drop. The recipe book doesn't expire.
 
@@ -113,37 +137,54 @@ IDENTITY_CORE memories are exempt. Their scores don't drop. The recipe book does
 
 The expo doesn't decide what "dying on the pass" means. The chef does.
 
-Tier thresholds are configuration. They are stored as memories in Hippocampus, in the IDENTITY_CORE tier -- the mind's own preferences about how its memory should behave. Cortex reads these configuration memories and passes them to Salience.
+Tier thresholds are configuration. They are stored as memories in Hippocampus,
+in the IDENTITY_CORE tier -- the mind's own preferences about how its memory should behave.
+Cortex reads these configuration memories and passes them to Salience.
 
-When the mind stores new threshold values, Cortex reads them and Salience adapts. No restart. No redeployment. The rules on the wall changed, and the expo follows the new rules.
+When the mind stores new threshold values, Cortex reads them and Salience adapts. No restart. No redeployment.
+The rules on the wall changed, and the expo follows the new rules.
 
 == The Score
 
-Score decays with time. Every moment a memory goes unaccessed, its score drops. The rate depends on the tier -- fast for ACTIVE_CONTEXT, slow for LONG_TERM, very slow for ARCHIVE.
+Score decays with time. Every moment a memory goes unaccessed, its score drops.
+The rate depends on the tier -- fast for ACTIVE_CONTEXT, slow for LONG_TERM, very slow for ARCHIVE.
 
-Access reverses decay. Every time a memory is touched, the score bumps up and the clock resets. A memory that gets accessed every day stays vivid indefinitely.
+Access reverses decay. Every time a memory is touched, the score bumps up, and the clock resets.
+A memory that gets accessed every day stays vivid indefinitely.
 
-Claiming reduces the decay rate. A claimed memory still fades if never accessed -- but it fades slower. The mind said it matters, so the scoring engine gives it more time.
+Claiming reduces the decay rate. A claimed memory still fades if never accessed -- but it fades slower.
+The mind said it matters, so the scoring engine gives it more time.
 
-There is a gap between promotion and demotion thresholds. A memory at the boundary doesn't bounce between tiers on small fluctuations. It has to clearly rise or clearly fall before Salience calls it.
+There is a gap between promotion and demotion thresholds.
+A memory at the boundary doesn't bounce between tiers on small fluctuations.
+It has to clearly rise or clearly fall before Salience calls it.
 
 == No Filing Cabinet
 
 Salience has no relationship with the data service port. It owns no data in SQLite or anywhere else.
 
-If Salience crashes, nothing is lost. The memories are in Hippocampus. The event stream is intact. Salience restarts, replays the events, rebuilds its projection, and resumes. The expo stepped out and came back.
+If Salience crashes, nothing is lost. The memories are in Hippocampus.
+The event stream is intact. Salience restarts, replays the events, rebuilds its projection, and resumes.
+The expo stepped out and came back.
 
-A score can always be recomputed from a memory's timestamps, access history, and claim status. Persisting derived data creates a second source of truth. Hippocampus is the source. Salience computes from it.
+A score can always be recomputed from a memory's timestamps, access history, and claim status.
+Persisting derived data creates a second source of truth. Hippocampus is the source.
+Salience computes from it.
 
 == Relationship to Hippocampus
 
-Hippocampus and Salience are tightly coupled. Every memory event Hippocampus emits, Salience consumes. Every tier change Salience recommends, Hippocampus executes.
+Hippocampus and Salience are tightly coupled. Every memory event Hippocampus emits, Salience consumes.
+Every tier change Salience recommends, Hippocampus executes.
 
-The coupling is one-directional in authority. Hippocampus does not ask Salience for permission. Salience does not command Hippocampus. Salience recommends. Hippocampus decides. The communication is event-driven in both directions -- neither calls the other directly.
+The coupling is one-directional in authority. Hippocampus does not ask Salience for permission.
+Salience does not command Hippocampus. Salience recommends. Hippocampus decides.
+The communication is event-driven in both directions -- neither calls the other directly.
 
 == Relationship to Recall
 
-Recall needs scores to rank search results. Salience emits AttentionScoreChanged after every recalculation. Recall maintains its own copy of current scores, built from those events. At search time, Recall assembles memories from Hippocampus, scores from its local copy, and associations from Synapse. No query to Salience needed.
+Recall needs scores to rank search results. Salience emits AttentionScoreChanged after every recalculation.
+Recall maintains its own copy of current scores, built from those events.
+At search time, Recall assembles memories from Hippocampus, scores from its local copy, and associations from Synapse. No query to Salience needed.
 
 Full design in link:/mcp-total-recall/design/0008-recall/[Design E4: Recall].
 
