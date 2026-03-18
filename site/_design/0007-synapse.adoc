@@ -2,8 +2,9 @@
 description: "Synapse: the relationship layer. Maintains typed connections between memories. Has its own file cabinet."
 classes: wide
 ---
-:page-liquid:
 = Synapse (Matrix)
+:page-liquid:
+:includedir: ../_includes/_fragments
 
 Synapse maintains the connections between memories. Not the memories themselves -- those belong to Hippocampus.
 The threads that link one memory to another. This memory relates to that person. That decision caused this outcome.
@@ -24,12 +25,7 @@ Synapse connects them.
 Three events in from Hippocampus. One command from Cortex. One output to Recall.
 Its own persistence channel -- separate from Hippocampus. Synapse keeps its own file cabinet.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
-
-This is an explanatory narrative.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == "Hon, Where Did I Put My Keys?"
 

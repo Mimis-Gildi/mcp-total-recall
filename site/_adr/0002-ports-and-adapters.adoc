@@ -348,3 +348,5 @@ _You are welcome to criticize my decisions here harshly -- **I am deeply gratefu
 But let this section serve as the reminder that we don't discuss the foundations of others.
 
 '''
+
+Rewritten much of slop out by https://github.com/rdd13r[`rdd13r`] 2026-03-15.

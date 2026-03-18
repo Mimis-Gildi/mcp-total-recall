@@ -5,7 +5,6 @@ classes: wide
 = Architecture Decision Records: ADR-0001
 :includedir: ../_includes/_fragments
 
-
 * *Status:* Accepted
 * *Date:* 2026-02-28
 * *Authors:* Claude, Vadim Kuhay

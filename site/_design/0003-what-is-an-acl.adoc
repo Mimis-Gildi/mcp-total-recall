@@ -3,6 +3,7 @@ description: "What an ACL is, why it is a convenience construct, and what it loo
 classes: wide
 ---
 = What is an ACL?
+:includedir: ../_includes/_fragments
 
 An ACL is the whole picture. Waitress, counter, cook -- seen together.
 
@@ -12,10 +13,7 @@ link:/mcp-total-recall/design/0001-what-is-a-port/[Design A] defined the port --
 link:/mcp-total-recall/design/0002-what-is-an-adapter/[Design B] defined the adapter -- the waitress and the cook, Active Structures with behavior.
 This document shows what happens when you put them together.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == The Full Journey of an Order
 

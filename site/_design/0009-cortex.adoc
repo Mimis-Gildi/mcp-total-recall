@@ -2,8 +2,9 @@
 description: "Cortex: the entry point. Translates between the outside world and the bounded contexts inside. Owns nothing."
 classes: wide
 ---
-:page-liquid:
 = Cortex (Inception)
+:page-liquid:
+:includedir: ../_includes/_fragments
 
 Cortex is where the outside world meets the inside. Every request to Total Recall enters through Cortex. Every response leaves through the Cortex.
 The mind never talks to Hippocampus directly, never asks Salience for a score, never tells Synapse to create a connection.
@@ -25,13 +26,7 @@ Two flows. Requests arrive from the outside, get translated into internal comman
 Results come back, get translated into MCP response format, and leave. One dashed line:
 background search results bypass Cortex entirely and flow through the NotificationPort.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
-
-The plebs-LLMy narrative below explains it graphically. +
-(Human rewrites are wanted!)
+include::{includedir}/plebsy-llmy.adoc[]
 
 == When Someone Asks You a Question
 

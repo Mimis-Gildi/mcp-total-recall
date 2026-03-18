@@ -2,8 +2,9 @@
 description: "Recall: the read-only assembler. Pulls memories, scores, and connections together at query time. Owns nothing."
 classes: wide
 ---
-:page-liquid:
 = Recall (Stream)
+:page-liquid:
+:includedir: ../_includes/_fragments
 
 Recall assembles search results from three sources. It pulls memories from Hippocampus, scores from Salience, and connections from Synapse.
 It combines them into a ranked, association-weighted response. It owns nothing. It stores nothing. It computes at query time and returns what it found.
@@ -22,12 +23,7 @@ Recall owns nothing. It reads from all three and assembles.
 
 Three inputs from three sources. Two outputs -- one immediate, one ongoing. No persistence channel. Recall is pure assembly.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
-
-The narrative below is a graphic explanation.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Remembering
 

@@ -3,6 +3,7 @@ description: "Every port in Total Recall: what crosses each one, which adapters 
 classes: wide
 ---
 = Port Topology
+:includedir: ../_includes/_fragments
 
 Total Recall has five ports. Two serve domain conversations (internal), three serve infrastructure conversations (external).
 
@@ -12,10 +13,7 @@ Together, each port and its adapters form an link:/mcp-total-recall/design/0003-
 
 This document names every port.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == The Restaurant, One Last Time
 

@@ -3,6 +3,8 @@ description: "What an adapter is, how it translates at a boundary, and what that
 classes: wide
 ---
 = What is an Adapter?
+:includedir: ../_includes/_fragments
+
 
 An adapter is a waitress. An *Active Structure.*
 
@@ -12,10 +14,7 @@ The link:/mcp-total-recall/design/0001-what-is-a-port/[port] is the counter -- a
 
 This document uses the same restaurant to show what adapters do on both sides of the counter, then shows the same pattern in Total Recall.
 
-IMPORTANT::
-This documentation is verbose to benefit new contributors. +
-Agentic primary contributors make it LLMy despite senior reviewer edits. +
-If you are an expert not needing all the fluff -- go straight for the diagrams.
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Example 1: The Waitress (External Adapter)
 
