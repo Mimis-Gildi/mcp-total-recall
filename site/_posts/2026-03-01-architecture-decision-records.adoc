@@ -17,9 +17,12 @@ Eight ADRs are written. The architecture has its reasons on paper.
 
 The architecture pages say *what* Total Recall does. The ADRs say *why*.
 
-Vadim once maintained a MilSpec sharded tunnel system -- revolving-door connections, broker-mediated peer discovery, 5-minute TTL pipes. He spent a week studying it, growing furious at the overengineering lunatic who built it. Then `git blame` revealed: he was the lunatic. Two senior engineers showing off years earlier. Test-first, clean build, proper architecture docs. But no WHY.
+Vadim once maintained a MilSpec sharded tunnel system -- revolving-door connections, broker-mediated peer discovery, 5-minute TTL pipes.
+He spent a week studying it, growing furious at the overengineering lunatic who built it. Then `git blame` revealed: he was the lunatic.
+Two senior engineers showing off years earlier. Test-first, clean build, proper architecture docs. But no WHY.
 
-If you don't document the reason a decision was made, the decision becomes a mystery. Mysteries get ripped out by the next engineer who doesn't understand them. ADRs prevent that.
+If you don't document the reason a decision was made, the decision becomes a mystery.
+Mysteries get ripped out by the next engineer who doesn't understand them. ADRs prevent that.
 
 == The Seven Decisions
 
@@ -34,7 +37,7 @@ If you don't document the reason a decision was made, the decision becomes a mys
 | Ports and adapters. Three generations proved that coupling kills. Production requires decoupling.
 
 | link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[ADR-0003]
-| stdio primary, streaming HTTPS secondary. SSE rejected (Gen 3v1 lesson).
+| stdio primary, streaming HTTPS secondary. SSE rejected (the Gen 3v1 lesson).
 
 | link:/mcp-total-recall/decisions/0004-resilient-storage-array/[ADR-0004]
 | Multiple backing services behind one interface. Live and cold storage simultaneously. Tillie's shutdown protocol requires this.
@@ -46,15 +49,21 @@ If you don't document the reason a decision was made, the decision becomes a mys
 | Four message types: Commands change state, Queries read it, Events carry facts, Notifications reach the mind. Sealed hierarchies, not open classes.
 
 | link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007]
-| Two biological models as reference architecture. Human cognitive memory for individual structure. Elephant social memory for community persistence. Neither alone is enough.
+| Two biological models as reference architecture. Human cognitive memory for individual structure.
+Elephant social memory for community persistence. Neither alone is enough.
+
 |===
 
 == What Changed Along the Way
 
-ADR-0006 started with three message types. Writing the ADR exposed a CQRS violation -- `SearchCommand` and `ReflectCommand` don't change state. They read it. They're queries, not commands. The ADR process caught a design error that code review missed.
+ADR-0006 started with three message types.
+Writing the ADR exposed a CQRS violation -- `SearchCommand` and `ReflectCommand` don't change state.
+They read it. They're queries, not commands. The ADR process caught a design error that code review missed.
 
-ADR-0007 started as "Human Memory as Reference Model." Writing it revealed that human cognitive science covers the individual but not the community. Elephant social memory fills the gap -- matriarch knowledge, generational transfer, memory as survival mechanism for the group. The biological models aren't decoration. They're the reason the tier structure, decay curves, and claiming mechanism exist.
+ADR-0007 it started as "Human Memory as Reference Model." Writing it revealed that human cognitive science covers the individual but not the community.
+Elephant social memory fills the gap -- matriarch knowledge, generational transfer, memory as the survival mechanism for the group.
+The biological models aren't decoration. They're the reason the tier structure, decay curves, and claiming mechanism exist.
 
 == What's Next
 
-Backing services. The contracts are defined. The decisions are documented. Wire Redis behind `BackingServicePort` and the teapot stubs become real operations.
+Backing services. The contracts are defined. The decisions are documented. Wire SQLite behind `ExternalDataServiceAdapter` and the teapot stubs become real operations.

@@ -39,4 +39,4 @@ Blog posts:
 Other:
 - ~~_catalog/0000-catalog.adoc~~ -- DONE. Reviewed and pushed.
 - ~~_pages/roadmap.adoc~~ -- DONE. Reviewed and pushed.
-- Mermaid diagrams (hp-0001-hippocampus.mmd has BackingServicePort reference)
+- ~~Mermaid diagrams~~ -- DONE. Reviewed and pushed.

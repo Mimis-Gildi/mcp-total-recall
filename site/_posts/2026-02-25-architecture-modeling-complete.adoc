@@ -1,8 +1,8 @@
 ---
 categories: [announcements]
-tags: [hexagonal, bounded-contexts, messages, milestone]
+tags: [ports-and-adapters, bounded-contexts, messages, milestone]
 excerpt: >
-    Issue #3 merged. Four architecture pages document the hexagonal design, bounded contexts, and message catalog.
+    Issue #3 merged. Four architecture pages document the ports-and-adapters design, bounded contexts, and message catalog.
 classes: wide
 comments: true
 hidden: false
@@ -17,13 +17,18 @@ Issue #3 is merged. Total Recall has its architectural foundation.
 
 Four architecture pages now document the system design:
 
-* *link:/mcp-total-recall/architecture/[System Context]* -- what Total Recall is, who connects, how it fits into Yggdrasil
-* *link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- ACLs, ports, adapters, the actor model, cross-cut concerns
-* *link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]* -- six actors (Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) and their message flows
-* *link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification named and typed
+* *link:/mcp-total-recall/architecture/[System Context]* -- what Total Recall is,
+who connects, how it fits into Yggdrasil
+* *link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- ACLs,
+ports, adapters, the actor model, cross-cut concerns
+* *link:/mcp-total-recall/architecture/contexts/[Bounded Contexts]* -- six actors
+(Hippocampus, Synapse, Salience, Recall, Cortex, Subconscious) and their message flows
+* *link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command,
+query, event, and notification named and typed
 
 All diagrams are live Mermaid -- rendered in the browser, not static images.
-Sequence diagrams trace the full path through the domain for store, search, claim, decay sweep, session lifecycle, and reflect operations.
+Sequence diagrams trace the full path through the domain for store, search, claim,
+decay sweep, session lifecycle, and reflect operations.
 
 == Key Decisions
 
@@ -31,13 +36,14 @@ Sequence diagrams trace the full path through the domain for store, search, clai
 |===
 | Decision | Rationale
 
-| Hexagonal architecture
-| Generations 1 and 3v1 showed coupling limits during experimentation. Production requires ports and adapters.
+| Ports and adapters
+| Generations 1 and 3v1 showed coupling limits during experimentation.
+Production requires decoupled ACLs.
 
 | Actor model internally
 | Isolation, message passing, no shared mutable runtime state. Each bounded context owns its data.
 
-| Memory as aggregate root
+| Memory as an aggregate root
 | All writes go through Hippocampus. No other context persists directly.
 
 | Conscience-universal ports
@@ -49,4 +55,5 @@ Sequence diagrams trace the full path through the domain for store, search, clai
 
 == What's Next
 
-Issue #4: port these designs into Kotlin. Interfaces, domain types, sealed message hierarchies. Code that matches the diagrams.
+Issue #4: port these designs into Kotlin. Interfaces, domain types, sealed message hierarchies.
+Code that matches the diagrams.

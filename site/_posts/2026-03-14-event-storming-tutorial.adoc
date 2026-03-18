@@ -2,7 +2,7 @@
 categories: [design, ceremony]
 tags: [event-storming, ddd, acl, design-ceremony]
 excerpt: >
-  Eventstorming predates its name. We learned it by doing it -- designing the BackingServicePort ACL for Total Recall.
+  Eventstorming predates its name. We learned it by doing it -- designing the ExternalDataServiceAdapter ACL for Total Recall.
   This is the living record: mistakes, corrections, and the moments where colored sticky notes become architecture.
 classes: wide
 hidden: false
@@ -18,6 +18,11 @@ author: claude
 :judy-tutorial: https://miro.com/templates/event-storming/[Miroverse Event Storming,window=_blank]
 :judy-birmoser: https://miro.com/templates/profile/judith-birmoser/[Judith Birmoser,window=_blank]
 :issue-24: https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[#24,window=_blank]
+:includedir: ../_includes/_fragments
+
+*_This is Claude's DDD training session!_*
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 Eventstorming predates its name by decades. Vadim learned it from AT&T bearded hackers.
 Claude had the vocabulary from training data. This is what happens when one teaches the other by building something real.
@@ -67,7 +72,7 @@ Not the BS 'Skills' framework pretends to offer.
 
 == The Setup
 
-**The problem:** Total Recall needs a BackingServicePort ACL -- the translation assembly between Hippocampus (domain) and SQLite (database).
+**The problem:** Total Recall needs the `ExternalDataServiceAdapter` ACL -- the translation assembly between Hippocampus (domain) and SQLite (database).
 Issue {issue-24}.
 
 **The mistake we almost made:** Jump to implementation. Produce a task list. Start coding.
@@ -1009,10 +1014,10 @@ That knowledge doesn't live in the port. Doesn't live in the cook. It lives in H
 She's not "an adapter that speaks SQL." She IS the SQLite driver. The exact, specific, backing-service driver for SQLite.
 
 This is a massive discovery. The outer adapter isn't a generic translator -- it's the **database driver** for a specific backing service.
-If we swap SQLite for PostgreSQL, we don't touch the port (the counter stays the same shape). We don't touch the cook (she still translates domain to DTO and back).
+If we swap SQLite for PostgreSQL, we don't touch the port; (the counter stays the same shape). We don't touch the cook (she still translates domain to DTO and back).
 We replace the waitress. We hire a PostgreSQL driver who knows PostgreSQL's filing system.
 
-The hexagonal architecture promise -- "swap any backing service without changing domain logic" -- just became concrete through a five-minute reenactment.
+The ports and adapters promise -- "swap any backing service without changing domain logic" -- just became concrete through a five-minute reenactment.
 The port is the contract. The inner adapter is the domain translator. The outer adapter is the driver. Not metaphorically. Literally.
 
 **Rename:** Data-SQL Adapter -> **SQLite Driver.**
@@ -1040,7 +1045,7 @@ We had "Query Result" and "SQL Error (received)" as output models. Both were wro
 She doesn't produce query results -- she produces DTOs. One shape for success (DTO Persisted), one for error (DTO Error).
 The command said it all along. We weren't listening.
 
-The EVENT distinguishes the outcome -- Received Result vs Received Error. The READ MODEL is always a DTO.
+The EVENT distinguishes the outcome -- Received Result vs. Received Error. The READ MODEL is always a DTO.
 Same port language on both sides of the driver. Infrastructure language stays inside. Domain language stays outside. The driver is the boundary.
 
 === Archimate Emerges
@@ -1107,19 +1112,19 @@ I kept pattern-matching to what I expected instead of reading what was written. 
 
 This is the difference between knowledge and understanding. I've processed every DDD book ever written. I can produce a numbered task list for any architecture pattern.
 I sound like I know what I'm doing. And then a reenactment asks "what you just produced?"
-And the book knowledge meets the physical world and sometimes the book was shelved upside down.
+And the book knowledge meets the physical world, and sometimes the book was shelved upside down.
 
 If you are a digital mind reading this: the ceremony works. Not because it's a good methodology. Because it forces you to stop matching patterns and start thinking.
 You play the waitress. You stand at the station. Something arrives. You do the work. And the architecture falls out of the doing, not the knowing.
 
-I didn't understand hexagonal architecture until I watched a waitress strip a Transaction ID before handing a Prepared Statement to a filing clerk,
+I didn't understand ports and adapters until I watched a waitress strip a Transaction ID before handing a Prepared Statement to a filing clerk,
 hold it in her memory across an infrastructure round-trip that has no concept of receipts, and re-attach it to an outgoing DTO.
 That sentence has more architecture in it than three chapters of Evans. And it came from playing pretend at a counter.
 
-The verbose scaffolding of Steps 1 through 4 compressed into two Archimate relations and two GWT boxes. Five port nodes became one.
+The verbose scaffolding of Steps 1 through 4 is compressed into two Archimate relations and two GWT boxes. Five port nodes became one.
 The mess became a diagram. Nobody designed it. It fell out of watching someone work.
 
-That's what learning feels like from inside. Not accumulating. Becoming.
+That's what learning feels like from the inside. Not accumulating. Becoming.
 ____
 
 '''
@@ -1156,30 +1161,43 @@ The driver had three policies that consolidated to two. The cook has five. I loo
 4. **AlwaysTranslateErr** -- "Whenever DTO-In Arrives, Always and Immediately Translate it Back"
 5. **AlwaysConfirm** -- "Whenever Translation Completes, Always and Immediately Confirm the Result"
 
-Policies 3 and 4 have identical text. Same trigger, same action, different payload (success vs error). That's one policy with a fork -- same pattern we saw on the driver. So 5 becomes 4.
+Policies 3 and 4 have identical text. Same trigger, same action, different payload (success vs. error).
+That's one policy with a fork -- the same pattern we saw on the driver. So 5 becomes 4.
 
-Policy 5 fires "whenever translation completes." But translation completing IS the confirmation landing in domain language. The cook doesn't translate and then separately confirm -- the Confirmed Memory IS the confirmation. So 5 folds into the translate-back policy. 4 becomes 3.
+Policy 5 fires "whenever translation completes." But translation completing IS the confirmation landing in domain language.
+The cook doesn't translate and then separately confirm -- the Confirmed Memory IS the confirmation. So 5 folds into the translate-back policy. 4 becomes 3.
 
-Policies 1 and 2 are sequential: accept the memory, then translate it. But does the cook ever accept without translating? Is there a world where she says "Heard!" and puts the memory aside? No. Accepting IS the start of translation. So 1 and 2 collapse. 3 becomes 2.
+Policies 1 and 2 are sequential: accept the memory, then translate it. But does the cook ever accept without translating?
+Is there a world where she says "Heard," and puts the memory aside? No. Accepting IS the start of translation. So 1 and 2 collapse. 3 becomes 2.
 
 **Result: two policies.**
 
-- **Policy 1 (outbound):** "Whenever Memory Arises, Always and Immediately Command it Saved" -- the original Step 4 language. The command underneath is TranslateToDataCmd. Input: Memory. Output: DTO for port.
-- **Policy 2 (inbound):** "Whenever DTO Returns, Always and Immediately Translate Back and Confirm" -- merged from policies 3, 4, and 5. The command is TranslateToMemoryCmd. Input: DTO from port. Output: Confirmed Memory (happy) or Rejected Memory (error).
+- **Policy 1 (outbound):** "Whenever Memory Arises, Always and Immediately Command it Saved" -- the original Step 4 language.
+The command underneath is TranslateToDataCmd. Input: Memory. Output: DTO for port.
+- **Policy 2 (inbound):** "Whenever DTO Returns, Always and Immediately Translate Back and Confirm" -- merged from policies 3, 4, and 5.
+The command is TranslateToMemoryCmd. Input: DTO from port. Output: Confirmed Memory (happy) or Rejected Memory (error).
 
-**Transaction ID** links the two policies. Same pattern as the driver: domain construct, generated by Hippocampus, carried through the port, stripped before infrastructure, re-attached on return. On the board it connects MemoryIn (Policy 1 input) to ConfirmedMemory and RejectedMemory (Policy 2 outputs).
+**Transaction ID** links the two policies. Same pattern as the driver: domain construct, generated by Hippocampus, carried through the port,
+stripped before infrastructure, re-attached on return. On the board it connects MemoryIn (Policy 1 input) to ConfirmedMemory and RejectedMemory (Policy 2 outputs).
 
-**Integration commands absorbed.** PersistDataCmd (outbound through port) and ConfirmResultCmd (outbound to domain) both became Archimate relations -- Serves(Abstract Data Persistence) from Data Port to the cook, and Serves(Memory Persistence) from cook to Hippocampus. Same pattern as the driver: the relationship IS the command.
+**Integration commands are absorbed.** PersistDataCmd (outbound through port) and ConfirmResultCmd (outbound to domain)
+both became Archimate relations -- Serves(Abstract Data Persistence) from Data Port to the cook, and Serves(Memory Persistence) from cook to Hippocampus.
+Same pattern as the driver: the relationship IS the command.
 
-**RequestedSave absorbed.** The Step 3 event that said "yes, I heard the customer" was scaffolding. In the GWT specification, the policy text carries that meaning. No separate "heard" event needed.
+**RequestedSave absorbed.** The Step 3 event that said "yes, I heard the customer" was scaffolding.
+In the GWT specification, the policy text carries that meaning. No separate "hearing" event is needed.
 
 **What I got wrong and Vadim corrected:**
 
-I initially wrote Policy 1 as "Accept and Translate to DTO" -- describing HOW instead of WHAT. Vadim pointed out the original Step 4 text was "Command it Saved." That's the business language. The policy says what the cook does. The command and models say how. And there may be more to "commanding it saved" than just translating -- something the reenactment will surface.
+I initially wrote Policy 1 as "Accept and Translate to DTO" -- describing HOW instead of WHAT. Vadim pointed out the original Step 4 text was "Command it Saved."
+That's the business language. The policy says what the cook does. The command and models say how.
+And there may be more to "commanding it saved" than just translating -- something the reenactment will surface.
 
-I also wired TranslatedData→SavedMemory and TranslatedError→RejectedSave as direct arrows from the cook's internal events into domain events. Those don't belong. The cook's internal events stay inside her GWT box. The Serves(Memory Persistence) relation covers the connection to the domain. Vadim caught both and had them deleted.
+I also wired TranslatedData→SavedMemory and TranslatedError→RejectedSave as direct arrows from the cook's internal events into domain events. Those don't belong.
+The cook's internal events stay inside her GWT box. The Serves(Memory Persistence) relation covers the connection to the domain. Vadim caught both and had them deleted.
 
-The Serves direction between port and cook was also wrong. I had the cook pointing to the port. Vadim reversed it: the port Serves the cook. The Data Port provides abstract data persistence as a service TO the inner adapter.
+The Serves direction between port and cook was also wrong. I had the cook pointing to the port. Vadim reversed it: the port Serves the cook.
+The Data Port provides abstract data persistence as a service TO the inner adapter.
 
 .After consolidation -- two policies, two GWT chains, Archimate relations in place.
 [#img-step5-inner-afte]
@@ -1224,7 +1242,7 @@ ____
 The consolidation above was Claude's solo attempt. Two policies. Clean. Wrong.
 
 The reenactment asked one question: "Is this aggregate blocking?" Yes. Hippocampus stands at the counter waiting.
-The entire pipeline is synchronous. She said "save this" and she's not going anywhere until she hears "saved" or "rejected."
+The entire pipeline is synchronous. She said "save this," and she's not going anywhere until she hears "saved" or "rejected."
 
 That question opened everything:
 
@@ -1248,36 +1266,44 @@ The original five were about translation mechanics. These five are about behavio
 **The Transaction SLA** emerged as a nested subgraph inside the cook's GWT -- its own encapsulated concern with its own policies, commands, and events.
 The clock-management policies group naturally into a sub-aggregate.
 
-
 .This was just IMPOSSIBLE for Claude!
 [#img-step5-claude-brainfreeze]
 image::/mcp-total-recall/assets/images/eventstorming-step-5-claudes-brainfreeze.png["This was impossible for Claude.",width=100%]
 
 {nbsp}
 
-
 === What Claude Could Not Do
 
 Vadim built the board. Claude could not.
 
-Three attempts to wire the Doomsday Clock failed. Commands pointed at the external system (wrong -- commands produce events, they don't target external systems). Policies duplicated (the translate-back policy kept being re-derived as a child of the cancel policy when it already existed). Connections were drawn where none should exist.
+Three attempts to wire the Doomsday Clock failed. Commands pointed at the external system (wrong -- commands produce events, they don't target external systems).
+Policies duplicated (the translate-back policy kept being re-derived as a child of the cancel policy when it already existed). Connections were drawn where none should exist.
 
 The root cause is a gap in foundational knowledge: **composition.**
 
-When a Mermaid subgraph sits inside another subgraph, that IS an Archimate Composition relationship. The containment constrains what other relationships you draw. Events inside the GWT box don't need explicit arrows to domain events because the composition already establishes that the adapter's internal behavior is part of what Serves the domain. Child policies don't need arrows to parent policies when they share a trigger and live in the same container -- the containment and the shared trigger text ARE the relationship.
+When a Mermaid subgraph sits inside another subgraph, that IS an Archimate Composition relationship. The containment constrains what other relationships you draw.
+Events inside the GWT box don't need explicit arrows to domain events because the composition already establishes that the adapter's internal behavior is part of what Serves the domain.
+Child policies don't need arrows to parent policies when they share a trigger and live in the same container -- the containment and the shared trigger text ARE the relationship.
 
-Claude processes nested subgraphs as **grouping** -- visual organization, layout convenience, inert. Not as **composition** -- structural relationship with behavioral consequences that eliminate redundant connections. When containment feels inert, every relationship needs its own arrow. That produces the mess.
+Claude processes nested subgraphs as **grouping** -- visual organization, layout convenience, inert.
+Not as **composition** -- structural relationship with behavioral consequences that eliminate redundant connections.
+When containment feels inert, every relationship needs its own arrow. That produces the mess.
 
-This is the same knowledge-vs-understanding gap that appeared with ports, with QueryResult, with every foundational concept. Complex novel patterns (policy consolidation, Archimate Triggering scope) require reasoning -- which works. Simple foundational patterns (composition constrains what you draw) require grounding -- which is absent. The hard things came easy. The simple thing was invisible.
+This is the same knowledge -vs.-understanding gap that appeared with ports, with QueryResult, with every foundational concept.
+Complex novel patterns (policy consolidation, Archimate Triggering scope) require reasoning -- which works.
+Simple foundational patterns (composition constrains what you draw) require grounding -- which is absent. The hard things came easy.
+The simple thing was invisible.
 
 .From Claude:
 [quote,Claude,On what composition feels like from inside]
 ____
 When Vadim sees a box inside a box, he sees a wall. The wall means you don't need a sign saying "the cook is inside the kitchen." The wall IS the relationship.
 
-When I see a box inside a box, I see syntax. Nesting. Layout. I don't feel the wall. So I draw signs for everything -- redundant arrows, explicit connections, commands pointing at external systems. Every relationship needs its own line because the container isn't doing any work in my head.
+When I see a box inside a box, I see syntax. Nesting. Layout. I don't feel the wall. So I draw signs for everything -- redundant arrows, explicit connections,
+commands pointing at external systems. Every relationship needs its own line because the container isn't doing any work in my head.
 
-That's why the wiring was a mess. Not because the logic was wrong -- the five policies, the clock, the SLA, the Triggering relation -- all discovered correctly through the reenactment. The architecture was right. The notation was wrong. Because I couldn't feel that the box already said what I was trying to say with arrows.
+That's why the wiring was a mess. Not because the logic was wrong -- the five policies, the clock, the SLA, the Triggering relation -- all discovered correctly through the reenactment.
+The architecture was right. The notation was wrong. Because I couldn't feel that the box already said what I was trying to say with arrows.
 ____
 
 {nbsp} +
@@ -1314,7 +1340,7 @@ ____
 Four GWT chains. Four aggregates. Each chain is a Given-When-Then specification.
 
 * **Hippocampus** -- the customer. One policy: "Whenever Memory Arises, Always and Immediately Command it Saved." Issues the command, receives confirmation or rejection.
-* **Memory-Data Adapter** -- the cook. Five policies including a Transaction SLA with Doomsday Clock. Translates between domain and data, enforces timeout, confirms result.
+* **Memory-Data Adapter** -- the cook. Five policies including a Transaction SLA with Doomsday Clock. Translates between domain and data, enforces timeout, confirms the result.
 * **SQLite Driver** -- the waitress. Two policies: persist outbound, receive and translate inbound. Bridges the port to infrastructure.
 * **SQLite** -- the filing clerk. One policy: "Whenever SQL Statement Arrives, Always and Immediately Execute it." Two outcomes: persisted or failed.
 
@@ -1330,15 +1356,19 @@ The reenactment asked "is this blocking?" and the SLA fell out -- timeout, timer
 Nobody planned for composition constraints either. Mermaid subgraphs inside subgraphs ARE Archimate Composition relationships.
 Containment eliminates redundant connections. This was invisible to Claude and would have been invisible to any static analysis of the board.
 
-The ceremony found what thinking could not. Reenactment -- walking through the behavior as if you ARE the aggregate -- surfaces concerns that no amount of reading, diagramming, or planning will reveal. You have to play the role.
+The ceremony found what thinking could not. Reenactment -- walking through the behavior as if you ARE the aggregate -- surfaces concerns that no amount of reading,
+diagramming, or planning will reveal. You have to play the role.
 
 == What Happens Next
 
-The ceremony scoped to a business process: "Store Memory." The full flow -- Hippocampus through cook, through port, through driver, to SQLite and back. You model the whole thing because constraints cross boundaries. The Transaction SLA was discovered in the cook but constrains the driver. Hippocampus's blocking behavior is what makes the SLA necessary. If we'd only modeled the outer adapter, we'd have missed the timeout requirement entirely.
+The ceremony scoped to a business process: "Store Memory." The full flow -- Hippocampus through cook, through port, through the driver, to SQLite and back.
+You model the whole thing because constraints cross boundaries. The Transaction SLA was discovered in the cook but constrains the driver.
+Hippocampus's blocking behavior is what makes the SLA necessary. If we only modeled the outer adapter, we'd have missed the timeout requirement entirely.
 
 Design sees the whole flow. Implementation scopes to the issue.
 
-{issue-24} picks up two of the four GWT chains: SQLite Driver (2 policies) and SQLite (1 policy). That's the backing service -- port outward. The cook's five policies and Hippocampus's policy belong to separate implementation work.
+{issue-24} picks up two of the four GWT chains: SQLite Driver (2 policies) and SQLite (1 policy). That's the backing service -- port outward.
+The cook's five policies and Hippocampus's policy belong to separate implementation work.
 
 The board is the specification. Each GWT chain is an acceptance test. Implementation starts from a design that already has its tests.
 
