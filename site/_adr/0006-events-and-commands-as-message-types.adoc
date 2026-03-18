@@ -59,9 +59,9 @@ Notifications flow outward through the Notification Port. The mind can act on th
 The separation matters. Commands and Queries flow inward (toward the domain) -- Commands change state, Queries read it. This is CQRS at the message level.
 Events flow between contexts. Notifications flow outward (toward the mind). Each direction has different semantics and different failure modes.
 
-Command and Event are implemented as Kotlin `sealed interface` hierarchies.
-Query is a regular `interface` with sealed sub-hierarchies (currently `RecallQuery`).
-Notification is a regular `interface` with three sealed sub-hierarchies (`WellnessNotification`, `AuditNotification`, `RecallNotification`).
+All four root types -- Command, Query, Event, Notification -- are plain Kotlin `interface` types extending `Message`.
+The sealing happens at the sub-hierarchy level: `sealed interface MemoryCommand : Command`, `sealed interface RecallQuery : Query`, etc.
+This gives exhaustive matching within each sub-hierarchy while keeping the roots open for new sub-hierarchies.
 Each variant is a data class with a typed payload.
 The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
@@ -72,7 +72,7 @@ The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
 [source,kotlin,opts=novalidate]
 ----
-sealed interface Command
+interface Command : Message
 sealed interface MemoryCommand : Command
 data class StoreMemoryCommand(...) : MemoryCommand
 data class ClaimMemoryCommand(...) : MemoryCommand
@@ -91,7 +91,7 @@ sealed interface RecallQuery : Query
 data class SearchQuery(...) : RecallQuery
 data class ReflectQuery(...) : RecallQuery
 
-sealed interface Event
+interface Event : Message
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
 // ... 17 total variants
@@ -114,14 +114,13 @@ See link:/mcp-total-recall/design/0011-transaction-context/[Design F: Transactio
 
 === Why Sealed, Not Open
 
-Sealed hierarchies are closed -- no external code can add new variants. This is deliberate:
+The sub-hierarchies are sealed -- no external code can add new variants within a sub-hierarchy. This is deliberate:
 
-* The compiler enforces exhaustive `when` expressions. Adding a new variant to any hierarchy forces every handler to be updated.
-* The message catalog is the system's contract. If anyone can add message types, the contract is undefined.
-* Runtime surprises are eliminated. A handler for `Command` knows it will only ever see the defined variants.
+* The compiler enforces exhaustive `when` expressions on sealed sub-hierarchies. Adding a new variant to `MemoryCommand` forces every handler matching on `MemoryCommand` to be updated.
+* The message catalog is the system's contract. If anyone can add variants within a sub-hierarchy, the contract is undefined.
+* Runtime surprises are eliminated. A handler for `MemoryCommand` knows it will only ever see the defined variants.
 
-An open hierarchy (interface or abstract class) would allow external modules to add message types.
-This is appropriate for plugin systems. It is wrong for a domain where every message is a named, documented contract.
+The root types (Command, Query, Event, Notification) are plain interfaces -- new sub-hierarchies can be added as the domain grows. But within each sub-hierarchy, the set is closed. This balances extensibility at the category level with safety at the variant level.
 
 === Command Semantics
 
@@ -273,6 +272,5 @@ Each interaction requires constructing a message object and routing it. For curr
 The architecture page and the code agree because they describe the same sealed hierarchies.
 * Testing is straightforward. To test a context, send it messages and verify the messages it produces.
 No mocking of other contexts is needed.
-* The sealed hierarchy cannot be extended without modifying the source.
-This is a feature for contract integrity and a constraint for extensibility.
-If external plugins ever need to define custom messages, this decision would need to be revisited.
+* Sealed sub-hierarchies cannot be extended without modifying the source.
+This is a feature for contract integrity within each sub-hierarchy. New sub-hierarchies can be added to the open root types without modifying existing code.
