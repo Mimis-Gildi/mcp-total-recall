@@ -37,6 +37,6 @@ Blog posts:
 - 2026-03-16-backing-service-implementation.adoc -- the one we started tonight
 
 Other:
-- _catalog/0000-catalog.adoc -- fixed links, removed old audit section. Still needs full pass (stale port names, direction language in Ports to Code table).
+- ~~_catalog/0000-catalog.adoc~~ -- DONE. Reviewed and pushed.
 - _pages/roadmap.adoc -- only fixed the "who" line
 - Mermaid diagrams (hp-0001-hippocampus.mmd has BackingServicePort reference)
