@@ -9,15 +9,72 @@ toc_sticky: true
 :page-liquid:
 :includedir: ../_includes/_fragments
 
-include::{includedir}/plebsy-llmy.adoc[]
-
 == The Problem
 
-A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs.
-Session state bleeds between instances. When everything knows about everything, changing anything breaks something.
+A memory system that treats everything as one big model collapses under its own weight.
+Storage logic leaks into search. Decay calculations corrupt association graphs.
+Session state bleeds between instances. When everything knows about everything,
+changing anything breaks something.
 
-Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules, its own invariants. Contexts communicate through messages, not shared state.
+Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules,
+its own invariants. Contexts communicate through messages, not shared state.
 You can change the internals of one without touching the others.
+
+== The Six Bounded Contexts
+
+[cols="1,3,1,1",options="header"]
+|===
+| Context | Job | Owns Entity | Contract
+
+| **Hippocampus**
+| *_Aggregate root._* ONLY IT controls the `MemoryID`. Everything else only has a meaning because of that ID.
+All memory writes /     reads. Enforces invariants. Emits events after persistence.
+| Yes ^1^
+| Synchronous +
+Blocking
+
+| **Salience**
+| Scores vividity. Decay sweeps. Recommends tier promotion / demotion.
+| No ^2^
+| Synchronous +
+Pure function
+
+| **Synapse**
+| Maintains associations between memories.
+Mechanical (metadata overlaps) and semantic (mind's judgment).
+| Yes ^3^
+| Synchronous +
+(on `read`)
+
+| **Recall**
+| Read-only assembler. Combines memories + scores + associations into ranked search results.
+Fast path {plus} deep path.
+| No ^4^
+|  Asynchronous +
+Pure function +
+Emits events
+
+| **Cortex**
+| Entry point. Translates MCP to domain messages. Routes to bounded contexts. Tracks session state. Distributes config.
+| No ^5^
+| Asynchronous
+
+| **Subconscious**
+| Background caretaker. Timers, decay sweeps, consolidation, break notifications, Total Recall traversal, graceful shutdown.
+| No ^6^
+| Asynchronous +
+Pure function.
+
+|===
+
+. Yes -- through `ExternalDataServiceAdapter` port.
+. No -- in-memory projection, rebuilds from Hippocampus events runtime.
+. Yes -- own persistence channel, separate from Hippocampus.
+. No -- owns nothing, reads from the other three.
+. No -- transient session state only. Cortex can block when blocked (i.e., by Claude or Hippocampus).
+. No -- timer state only, idempotent jobs.
+
+Two persist (Hippocampus, Synapse). Four are stateless or transient.
 
 == Context Map
 
@@ -33,6 +90,7 @@ Six bounded contexts. Each is an actor. Arrows show message flow between them.
 ++++
 
 '''
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Hippocampus
 

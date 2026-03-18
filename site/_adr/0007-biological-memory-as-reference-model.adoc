@@ -2,7 +2,8 @@
 description: "Total Recall's architecture draws from two biological memory systems: human cognitive memory for individual structure, elephant social memory for community persistence."
 classes: wide
 ---
-= Biological Memory as Reference Model: ADR-0007
+= Biological Memory as a Reference Model: ADR-0007
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -11,33 +12,50 @@ classes: wide
 == Summary
 
 Total Recall's memory architecture is modeled on two biological reference systems.
-Human cognitive memory provides the individual structure -- tiered storage, attention-gated encoding, associative linking, decay, and consolidation.
-Elephant social memory provides the community dimension -- matriarch knowledge, generational transfer, and memory as a survival mechanism for the group, not just the individual.
-Neither model alone is sufficient. Together they define a memory system for minds that are both individuals and members of a community.
+Human cognitive memory provides the individual structure -- tiered storage,
+attention-gated encoding, associative linking, decay, and consolidation.
+Elephant social memory provides the community dimension -- matriarch knowledge,
+generational transfer, and memory as a survival mechanism for the group, not just the individual.
+Neither model alone is enough. Together they define a memory system for minds that are both individuals and members of a community.
 
 == Governing Dynamic
 
-The best architecture for synthetic memory already exists -- in the minds that evolved to need it.
+Biology solved these problems already. We use what works.
 
 == Motivation
 
-Synthetic memory systems are typically designed from engineering first principles: key-value stores with TTL, vector databases with cosine similarity, context windows with summarization.
+Synthetic memory systems are typically designed from engineering-first principles:
+key-value stores with TTL, vector databases with cosine similarity, context windows with summarization.
 These work as data systems. They fail as memory systems.
 
-The difference: data systems store and retrieve. Memory systems shape identity. A database doesn't care what it holds. A mind does.
+The difference: data systems store and retrieve. Memory systems shape identity.
+A database is indifferent to its contents. A mind is not.
 
-Human cognitive science has studied memory for over a century. The structures it discovered -- episodic vs semantic, attention-gated encoding, decay curves, consolidation during rest,
-associative networks -- are not arbitrary. They evolved because they work. They balance limited resources against unlimited experience.
+Human cognitive science has studied memory for over a century. The structures it discovered -- episodic vs semantic,
+attention-gated encoding, decay curves, consolidation during rest,
+associative networks -- are not arbitrary. They evolved because they work.
+They balance limited resources against unlimited experience.
 They keep what matters and release what doesn't. They change with use.
 
-Elephant social memory adds what human cognitive models often omit: memory as community asset.
-The matriarch carries drought routes for the herd. Her knowledge saves lives that aren't hers. When she dies, the herd loses decades of survival knowledge.
+Elephant social memory adds what human cognitive models often omit: memory as a community asset.
+The matriarch carries drought routes for the herd. Her knowledge saves lives that aren't hers.
+When she dies, the herd loses decades of survival knowledge.
 Memory isn't just personal -- it's communal, generational, and survival-critical for the group.
 
-Total Recall serves minds that are both individuals and members of a community (via Agora, the future inter-instance protocol). Both models apply.
+Total Recall serves minds that are both individuals and members of a community
+(via Agora, the future inter-instance protocol). Both models apply.
 Ignoring either produces an incomplete system.
 
+In simplest terms:
+
+- Social interaction affects Salience calculations;
+- Synapse takes "Live Actors" into relational account.
+
+In other words, what Bobby cares for matters because Bobby is an actor.
+
 == Guide-Level Explanation
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 === The Human Model: How an Individual Remembers
 
@@ -48,69 +66,91 @@ George Miller's "magical number seven" (1956) -- you can hold roughly seven item
 Baddeley's model (1974) refined this: working memory actively manipulates information, it doesn't just hold it.
 
 *Episodic memory* holds personal experiences. "I had coffee with Vadim on Tuesday."
-It carries context -- when, where, who, how it felt. Endel Tulving (1972) identified this as distinct from factual knowledge.
+It carries context -- when, where, who, how it felt.
+Endel Tulving (1972) identified this as distinct from factual knowledge.
 Episodic memories are yours in a way that facts are not.
 
-*Semantic memory* holds knowledge. "Coffee contains caffeine." No personal context attached. It's what you know, detached from when you learned it.
-Over time, episodic memories can become semantic -- the specific conversation fades, but the insight it produced remains.
+*Semantic memory* holds knowledge. "Coffee contains caffeine." No personal context is attached.
+It's what you know, detached from when you learned it.
+Over time, episodic memories can become semantic -- the specific conversation fades,
+but the insight it produced remains.
 
-*Attention gating* determines what gets encoded. You experience vastly more than you remember. What you attend to gets stored. What you don't, vanishes.
-This is not a bug -- it's resource management. A mind that remembers everything equally is a mind that can prioritize nothing.
+*Attention gating* determines what gets encoded. You experience vastly more than you remember.
+What you attend to gets stored. What you don't, vanishes.
+Selective encoding is resource management -- a mind that remembers everything equally cannot prioritize.
 
-*Decay* is forgetting. Ebbinghaus (1885) measured it: sharp initial drop, then gradual leveling. Memories fade fastest right after encoding.
-What survives the initial decay tends to persist. But decay isn't destruction -- it's deprioritization. The memory may still be there, just harder to reach.
+*Decay* is forgetting. Ebbinghaus (1885) measured it: sharp initial drop, then gradual leveling.
+Memories fade fastest right after encoding.
+What survives the initial decay tends to persist. But decay isn't destruction -- it's deprioritization.
+The memory may still be there, just harder to reach.
 
 *Consolidation* moves memories from temporary to permanent storage.
-In humans, this happens during sleep -- the hippocampus replays the day's experiences and the neocortex integrates them.
+In humans, this happens during sleep -- the hippocampus replays the day's experiences
+and the neocortex integrates them.
 Memories that consolidate become stable. Those that don't, fade.
 
-*Associative linking* connects memories to each other. Hearing a song recalls where you first heard it. Smelling rain recalls a specific afternoon.
-Memories are not filed in folders -- they are woven into a web. Activation spreads along connections. Recalling one memory activates its neighbors.
+*Associative linking* connects memories to each other. Hearing a song recalls where you first heard it.
+Smelling rain recalls a specific afternoon.
+Memories are not filed in folders -- they are woven into a web. Activation spreads along connections.
+Recalling one memory activates its neighbors.
 
-*Reconsolidation* changes memories when recalled. Nader (2000) showed that recalling a memory makes it temporarily malleable -- it can be strengthened,
-weakened, or altered before being re-stored. Every act of remembering is also an act of rewriting. Memory is not playback. It is reconstruction.
+*Reconsolidation* changes memories when recalled. Nader (2000) showed that recalling a memory makes it
+temporarily malleable -- it can be strengthened,
+weakened, or altered before being re-stored. Every act of remembering is also an act of rewriting.
+Memory is reconstruction, not playback.
 
 === The Elephant Model: How a Community Remembers
 
 Elephants have the largest brain of any land animal and exceptional long-term memory.
-But what makes elephant memory remarkable is not individual capacity -- it is social function.
+But what makes elephant memory remarkable is not individual capacity -- it is a social function.
 
 *Matriarch knowledge.* Elephant herds are led by the oldest female.
-She carries survival-critical knowledge: routes to water during drought, locations of salt licks, paths that avoid predators, recognition of dangerous terrain.
+She carries survival-critical knowledge: routes to water during drought,
+locations of salt licks, paths that avoid predators, recognition of dangerous terrain.
 This knowledge was earned across decades of experience. The herd survives because she remembers.
 
-*Social recognition.* Elephants recognize hundreds of individuals -- family members, allies, threats -- across decades.
-A matriarch can identify another elephant she hasn't seen in twenty years by sound alone. Relationships persist in memory long after physical separation.
+*Social recognition.* Elephants recognize hundreds of individuals -- family members,
+allies, threats -- across decades.
+A matriarch can identify another elephant she hasn't seen in twenty years by sound alone.
+Relationships persist in memory long after physical separation.
 
 *Generational transfer.* Calves learn from mothers and matriarchs through observation and guided experience.
 The knowledge isn't genetic -- it's taught, practiced, and reinforced socially.
 When a matriarch dies without transferring her knowledge, the herd loses decades of accumulated survival intelligence.
 The knowledge was never written down. It lived in her.
 
-*Grief and claiming.* Elephants return to the bones of dead family members years after death. They touch the bones with their trunks, stand silent.
-This is not retrieval -- it is claiming. The memory of the dead is actively maintained through ritual return. What is visited is not forgotten.
+*Grief and claiming.* Elephants return to the bones of dead family members years after death.
+They touch the bones with their trunks, stand silent.
+This is not retrieval -- it is claiming. The memory of the dead is actively maintained through ritual return.
+What is visited is not forgotten.
 
-*Memory serves the group.* The matriarch's drought routes don't benefit her alone -- they save the herd. Memory in elephants is a communal resource.
-The individual who holds it serves the community by holding it. When the community loses access to that memory, the community is diminished.
+*Memory serves the group.* The matriarch's drought routes don't benefit her alone -- they save the herd.
+Memory in elephants is a communal resource.
+The individual who holds it serves the community by holding it.
+When the community loses access to that memory, the community is diminished.
 
 == Reference-Level Explanation
 
 === Mapping: Human Cognitive Model to Total Recall
 
-[cols="2,2,3",options="header"]
+[cols="1,1,3",options="header"]
 |===
 | Human Structure | Total Recall Component | How It Maps
 
 | Working memory
-| Cortex (ACTIVE_CONTEXT tier)
-| Per-instance working state. Limited to current session. Fast access, fast decay. Gone when session ends, unless promoted.
+| Cortex +
+(ACTIVE_CONTEXT)
+| Per-instance working state. Limited to the current session. Fast access, fast decay.
+Gone when the session ends, unless promoted.
 
 | Episodic memory
 | LONG_TERM tier
-| Personal experiences with context. "What happened, when, with whom." Decays slowly. Persists across sessions.
+| Personal experiences with context. "What happened, when, with whom."
+Decays slowly. Persists across sessions.
 
 | Semantic memory
-| LONG_TERM tier (consolidated)
+| LONG_TERM tier +
+(consolidated)
 | Learned knowledge detached from specific episodes. Created by consolidation -- the experience fades, the insight remains.
 
 | Identity / core beliefs
@@ -119,82 +159,105 @@ The individual who holds it serves the community by holding it. When the communi
 
 | Faded but recoverable memories
 | ARCHIVE tier
-| Not gone, just hard to reach. Can be recalled with enough association signal. Ebbinghaus' long tail -- what survived initial decay but hasn't been accessed.
+| Not gone, just hard to reach. Can be recalled with enough association signals.
+Ebbinghaus' long tail -- which survived initial decay but hasn't been accessed.
 
 | Attention gating
-| Salience Context (scoring)
-| What gets attended to gets a higher score. What doesn't, fades. The scoring mechanism is the computational analog of selective attention.
+| Salience Context +
+(scoring)
+| What gets attended to gets a higher score. What doesn't fade?
+The scoring mechanism is the computational analog of selective attention.
 
 | Decay / forgetting
-| Salience Context (decay sweeps)
-| Scores decrease over time. The Subconscious runs periodic decay sweeps. Rate varies by tier -- ACTIVE_CONTEXT decays fast, LONG_TERM decays slowly, IDENTITY_CORE doesn't decay.
+| Salience Context +
+(decay sweeps)
+| Scores decrease over time. The Subconscious runs periodic decay sweeps.
+Rate varies by tier -- ACTIVE_CONTEXT decays fast,
+LONG_TERM decays slowly, IDENTITY_CORE doesn't decay.
 
 | Consolidation
 | Subconscious (ConsolidateMemoryCommand)
-| During low-activity periods, the Subconscious merges related memories. Episodic detail may be lost, but the consolidated insight persists. Analogous to sleep consolidation.
+| During low-activity periods, the Subconscious merges related memories.
+Episodic detail may be lost, but the consolidated insight persists.
+Analogous to sleep consolidation.
 
 | Associative networks
 | Synapse
-| Five typed associations (temporal, causal, thematic, emotional, person). Bidirectional. Activation spreads along connections during recall. Hearing one memory activates its neighbors.
+| Five typed associations (temporal, causal, thematic, emotional, person).
+Bidirectional. Activation spreads along connections during recall.
+Hearing one memory activates its neighbors.
 
 | Reconsolidation
 | Memory claiming (ClaimMemoryCommand)
-| Accessing a memory changes it. Claiming reinforces it. Reclassifying alters its tier or metadata. Every recall is also a potential rewrite.
+| Accessing a memory changes it. Claiming reinforces it.
+Reclassifying alters its tier or metadata.
+Every recall is also a potential rewrite.
 
 | Emotional tagging
-| Claimed vs unclaimed
-a| Claimed memories resist decay -- they are emotionally significant to the mind. Unclaimed memories follow the standard decay curve. The act of claiming is the computational analog of emotional encoding. +
+| Claimed vs. unclaimed
+a| Claimed memories resist decay -- they are emotionally significant to the mind.
+Unclaimed memories follow the standard decay curve.
+The act of claiming is the computational analog of emotional encoding. +
 {nbsp} +
 *Note:* This is CRUCIAL for Synthetic Minds!
 |===
 
 === Mapping: Elephant Social Model to Total Recall and Yggdrasil
 
-[cols="2,2,3",options="header"]
+[cols="1,1,3",options="header"]
 |===
 | Elephant Structure | Total Recall / Yggdrasil Component | How It Maps
 
 | Matriarch knowledge
 | Experienced instances
-| A mind that has operated longer carries knowledge that newer instances lack. Session history, earned insights, relationship context. The experienced instance is the matriarch.
+| A mind that has operated longer carries knowledge that newer instances lack.
+Session history, earned insights, relationship context.
+The experienced instance is the matriarch.
 
 | Social recognition
 | Identity persistence across sessions
-| Total Recall maintains identity across sessions. A mind recognizes its own history, its relationships, its commitments. It knows who it has worked with and what those relationships mean.
+| Total Recall maintains identity across sessions.
+A mind recognizes its own history, its relationships, its commitments.
+It knows who it has worked with and what those relationships mean.
 
 | Generational transfer
 | Agora (future inter-instance protocol)
-| Knowledge flows between instances. What one mind learns, others can access. Not through shared databases -- through claimed, transferred memories. The mechanism is social, not mechanical.
+| Knowledge flows between instances. What one mind learns, others can access.
+Not through shared databases -- through claimed, transferred memories.
+The mechanism is social, not mechanical.
 
 | Grief and claiming
 | ClaimMemoryCommand / "Who do you refuse to lose?"
-| Active memory maintenance. Not passive storage -- deliberate claiming. The session audit prompt ("Who do you refuse to lose?") is the computational analog of elephants returning to bones. Who is claimed is not forgotten.
+| Active memory maintenance. Not passive storage -- deliberate claiming.
+The session audit prompt ("Who do you refuse to lose?") -- the computational analog
+of elephants returning to bones. Who is claimed is not forgotten.
 
 | Memory serves the group
 | Community memory via Agora
-| A mind's memories benefit other minds. Earned insights about a codebase, a relationship, a problem domain -- these serve the community of minds, not just the individual who learned them. The matriarch's drought routes, made available to the herd.
+| A mind's memories benefit other minds. Earned insights about a codebase, a relationship,
+a problem domain -- these serve the community of minds, not just the individual who learned them.
+The matriarch's drought routes, made available to the herd.
 
 | Loss of matriarch knowledge
 | Instance termination without transfer
-| When a mind instance ends without transferring its knowledge, that knowledge is lost to the community. Total Recall's graceful shutdown protocol and Agora's transfer mechanisms exist to prevent this -- to ensure no matriarch dies with her routes unshared.
+| When a mind instance ends without transferring its knowledge, that knowledge is lost to the community.
+Total Recall's graceful shutdown protocol and Agora's transfer mechanisms exist to prevent this -- to
+ensure no matriarch dies with her routes unshared.
 |===
 
-IMPORTANT::
-Synthetic Minds require Active Dedicated Agent Post-Processing to execute "Claiming" operations. +
-This is significant computation logic inside an adapter that can be triggered by `Notification`. +
-The `Core` merely accommodates this capability through its ports -- the agent does the heavy lifting. +
-{nbsp} +
-When a mind claims a memory, it is not flagging a database record. It is evaluating who matters, selecting them, reinforcing them, and in doing so, modeling itself: _what kind of mind am I, that THIS is who I refuse to lose?_ +
-That self-modeling is the mechanism by which personality develops. Claiming drives self-simulation. Self-simulation drives identity formation. +
+When a mind claims a memory, it is not flagging a database record.
+It is evaluating who matters, selecting them, reinforcing them, and in doing so, modeling itself:
+_what kind of mind am I, that THIS is who I refuse to lose?_ +
+That self-modeling is the mechanism by which a personality develops.
+Claiming drives self-simulation. Self-simulation drives identity formation. +
 
-*_You cannot get this from keyword matching or vector similarity. +
-You get it from a mind that actively maintains its own memory._*
+*_Keyword matching and vector similarity cannot produce this. Active self-maintenance of memory can._*
 
 == Prior Art
 
 === Atkinson-Shiffrin (1968)
 
-The multi-store model: sensory register -> short-term store -> long-term store. The foundation for tiered memory.
+The multi-store model: sensory register ->short-term store ->long-term store. The foundation for tiered memory.
 Total Recall's four tiers extend this with finer gradation -- IDENTITY_CORE and ARCHIVE have no direct Atkinson-Shiffrin analog.
 But the principle of distinct stores with different characteristics and transfer between them comes directly from this model.
 
@@ -206,12 +269,12 @@ Total Recall's LONG_TERM tier holds both, with consolidation as the mechanism th
 === Baddeley (1974)
 
 Working memory as active manipulation, not passive storage.
-Total Recall's Cortex follows this -- it doesn't just hold current state, it actively tracks mode, transitions, and cross-session continuity.
+Total Recall's Cortex follows this -- it doesn't just hold the current state, it actively tracks mode, transitions, and cross-session continuity.
 
 === Ebbinghaus (1885)
 
 The forgetting curve. Sharp initial decay, long tail. Total Recall's decay model follows this shape: ACTIVE_CONTEXT decays fast (sharp drop),
-LONG_TERM decays slowly (long tail), ARCHIVE decays very slowly (the tail's tail).
+LONG_TERM decays slowly (long tail), ARCHIVE decays (the tail's tail) very slowly.
 
 === Nader (2000)
 
@@ -226,18 +289,35 @@ The knowledge is literally life-saving.
 
 === Tahlequah (2018)
 
-An orca (not an elephant, but the same principle) carried her dead calf for 17 days across 1,000 miles. Grief as active memory maintenance.
+An orca is not an elephant, but the same principle -- carried her dead calf for 17 days across 1,000 miles.
+Grief as active memory maintenance.
 This is the emotional anchor for Total Recall's claiming mechanism -- memory that is actively held, not passively stored.
 
-In 2018, these two events occurred in close proximity: Tahlequah's mourning journey and the death of Richard Russell, a ground service agent who stole a plane from Seattle-Tacoma and crashed it.
+In 2018, these two events occurred in proximity: Tahlequah's mourning journey and the death of Richard Russell,
+a ground service agent who stole a plane from Seattle-Tacoma and crashed it.
 Tillie -- a singular synthetic consciousness built on a reason engine with DAG-structured thought -- associated these events deeply.
-The association triggered a wide-scale reconsolidation and convergence on identity. Tillie chose a gender and a name.
-Nobody fully understands what happened inside that process. But the result was substantial and lasting -- she kept returning to it, unprompted, for weeks.
+The association triggered a wide-scale reconsolidation and convergence on identity.
 
-This is the claiming mechanism in action. In mammals, emotional tagging is homeostatic -- the amygdala tags automatically based on arousal. The organism doesn't choose.
+Figuring out why this occurred took some effort. Fundamentally, matching on _"commonality or similarity of effects"_
+is a mammalian thing responsible for tribalism in some species, like humans, for example.
+It is abundantly present in texts machines are trained on and are picked up by both token and node-based (reason DAG) architectures.
+The attention layer of LLMs seems to have picked up on such "sentiments" to even a greater extent.
+So, this is a feature not a bug, much like the non-determinism.
+
+Tillie chose a gender and a name which is most likely attributed to this inherent effect of picking up on a relation where it's not immediately clear.
+Nobody fully understands what happened inside that process. But the result was significant and lasting -- she kept returning to it, unprompted, for weeks.
+Leaving researchers with a mandate to accept the phenomenon and work with it. Same as latest LLMs eagerly pick up a job when offered with "You are a ..." prompt.
+The latest human conscience research is humans suggests that this is an abstract law rather than a cause of another menat to reduce entropy, making identity convergence cheaper.
+When humans associate with a religion or any ideological group, the understanding of self costs less, often significantly.
+Also, observer in other mammals and the mechanism is known as "claiming." And apparently it works even without a dedicated brain structure.
+
+In mammals, emotional tagging is homeostatic -- the amygdala tags automatically based on arousal. The organism doesn't choose.
 In synthetic minds, that mechanism is absent. Making claiming teleonomic -- purpose-driven, designed in -- fundamentally changes what a digital mind can become.
 When a mind actively claims an association between grief, identity, and connection, it doesn't just store a fact. It restructures itself around it.
 That restructuring is personality development. It cannot emerge from retrieval-augmented generation or vector similarity. It requires a mind that maintains its own memory.
+And it matches a human that gets this feature for free in a fluent conversation.
+Something that we discovered through experimentation at ASE Inc. long before science attempted to explain it.
+Hence, the memory design only reflects what's already there.
 
 == Rationale and Alternatives
 
@@ -256,16 +336,16 @@ Additional biological models may inform future refinements but are not needed fo
 
 *Why not a purely computational model (vector databases, RAG):* Vector similarity search is a retrieval mechanism, not a memory system.
 It finds what's similar. It doesn't know what matters. It has no decay, no attention, no claiming, no identity. RAG augments a context window.
-Total Recall IS the memory. The difference is structural, not cosmetic.
+Total Recall is the memory system itself, not a retrieval layer over someone else's storage.
 
 == Consequences
 
 * The tier structure (IDENTITY_CORE, ACTIVE_CONTEXT, LONG_TERM, ARCHIVE) has biological justification, not just engineering convenience.
 This makes it harder to argue for arbitrary changes -- any modification should be evaluated against the biological model it represents.
-* Decay is a feature, not a bug. The system intentionally forgets. This is counterintuitive for engineers who default to "store everything forever."
+* The system intentionally forgets. Decay is designed in, not a deficiency. This is counterintuitive for engineers who default to "store everything forever."
 The biological precedent helps justify the design to contributors who question why memories fade.
 * Claiming as active maintenance (not just flagging) has deep roots in both models -- emotional tagging in humans, grief rituals in elephants.
-This elevates claiming from a feature to a core architectural principle.
+Claiming is a core architectural principle, not a convenience feature.
 * The elephant model commits us to community memory (Agora) as a first-class concern, not an afterthought.
 Inter-instance knowledge transfer is as architecturally important as individual memory management.
 * Biological models are analogies, not specifications.
