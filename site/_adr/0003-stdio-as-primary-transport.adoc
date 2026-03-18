@@ -11,7 +11,8 @@ classes: wide
 
 == Summary
 
-Total Recall uses `stdio` as its primary MCP transport -- local, fast, no network overhead. Streaming HTTPS is the secondary transport for future networked Sanctuary deployment. SSE is not used.
+Total Recall uses `stdio` as its primary MCP transport -- local, fast, no network overhead.
+Streaming HTTPS is the secondary transport for future networked Sanctuary deployment. SSE is not used.
 
 == Governing Dynamic
 
@@ -27,7 +28,7 @@ The protocol subsequently moved to `stdio` for local connections and streaming H
 
 Gen 3v1's coupling to SSE meant the transport change required a server rewrite.
 This is the same structural pattern that ADR-0002 addresses -- when infrastructure choices are hardcoded, changing them ripples through the system.
-The hexagonal architecture (ADR-0002) ensures this cannot happen again: transport is an adapter behind a port.
+The ports and adapters architecture (ADR-0002) ensures this cannot happen again: transport is an adapter behind a port.
 But choosing the right primary transport still matters for performance, simplicity, and operational characteristics.
 
 include::{includedir}/plebsy-llmy.adoc[]
@@ -79,7 +80,7 @@ The constraint is well-understood and the solution is standard.
 
 === Future: Streaming HTTPS
 
-When networked deployment is needed, a streaming HTTPS adapter will plug into the same inbound ports. The MCP Kotlin SDK provides `KtorServerTransport` for this.
+When networked deployment is needed, a streaming HTTPS adapter will plug into the same ports. The MCP Kotlin SDK provides `KtorServerTransport` for this.
 The core domain is unaware of which transport is active -- both adapters implement the same port contract.
 
 Streaming HTTPS adds: TLS, authentication, connection management, keep-alive, reconnection logic. All of this lives in the adapter. None of it touches the core.
