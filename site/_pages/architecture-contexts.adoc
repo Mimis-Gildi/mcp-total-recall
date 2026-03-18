@@ -90,6 +90,7 @@ Six bounded contexts. Each is an actor. Arrows show message flow between them.
 ++++
 
 '''
+
 include::{includedir}/plebsy-llmy.adoc[]
 
 == Hippocampus

@@ -40,7 +40,7 @@ architecture:
       - title: "ADR-0007: Bio Memory"
         url: /decisions/0007-biological-memory-as-reference-model/
       - title: "ADR-0008: SQLite Primary"
-        url: /decisions/0008-sqlite-as-internal-backing-service/
+        url: /decisions/0008-sqlite-as-primary-backing-service/
   - title: "Design"
     children:
       - title: "About Detailed Design"
