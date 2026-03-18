@@ -2,12 +2,17 @@
 description: "Hippocampus: the aggregate root. The only bounded context that writes to storage."
 classes: wide
 ---
-:page-liquid:
 = Hippocampus (Vault)
+:page-liquid:
+:includedir: ../_includes/_fragments
 
-Hippocampus is the aggregate root. Every memory in Total Recall lives here. Every write to persistent storage goes through here. No other bounded context touches the data service port directly.
+Hippocampus is the aggregate root. Every memory in Total Recall lives here.
+Every writing operation  to persistent storage goes through here.
+No other bounded context touches the data service port directly.
 
-This is the first bounded context inside the domain boundary. The previous four documents described the boundary -- ports, adapters, ACLs, and the port topology. Now we're inside the kitchen.
+This is the first bounded context inside the domain boundary.
+The previous four documents described the boundary -- ports,
+adapters, ACLs, and the port topology. Now we're inside the kitchen.
 
 ++++
 <div id="HP-0001">
@@ -18,21 +23,32 @@ This is the first bounded context inside the domain boundary. The previous four 
 </div>
 ++++
 
-Six memory commands in from three sources. Six events out to three consumers. One persistence channel through the ExternalDataServiceAdapter port. Everything Hippocampus touches, in one view.
+Six memory commands in from three sources. Six events out to three consumers.
+One persistence channel through the ExternalDataServiceAdapter port.
+Everything Hippocampus touches, in one view.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == The Walk-In
 
 A restaurant kitchen has a walk-in cooler. Four shelves, four temperatures, four purposes.
 
-**Top shelf, front of the cooler.** Today's prep. Mise en place for the current service. Used constantly, discarded at end of shift. If you don't use it tonight, it goes.
+**Top shelf, front of the cooler.** Today's prep. Mise en place for the current service.
+Used constantly, discarded at the end of the shift. If you don't use it tonight, it goes.
 
-**Middle shelf.** The staples. Flour, butter, stock. Used regularly, restocked when low. These survive across shifts, across weeks. The kitchen doesn't function without them.
+**Middle shelf.** The staples. Flour, butter, stock. Used regularly, restocked when low.
+These survive across shifts, across weeks. The kitchen doesn't function without them.
 
-**Bottom shelf, back of the cooler.** Preserved goods. The duck confit aging in fat. The pickled vegetables from last season. Rarely touched, but when a dish calls for them, they're there.
+**Bottom shelf, back of the cooler.** Preserved goods. The duck confit aging in fat.
+The pickled vegetables from last season. Rarely touched, but when a dish calls for them, they're there.
 
-**The recipe book in the chef's office.** Not in the cooler at all. The family recipes. The techniques that define this kitchen. They never expire. They never get discarded. They are the identity of the restaurant.
+**The recipe book in the chef's office.** Not in the cooler at all. The family recipes.
+The techniques that define this kitchen. They never expire. They never get discarded.
+They are the identity of the restaurant.
 
-One person has the walk-in key. The head chef. You want something stored? Ask the head chef. You want something retrieved? Ask the head chef. You want to move something from the top shelf to the bottom? Ask the head chef.
+One person has the walk-in key. The head chef. You want something stored? Ask the head chef.
+You want something retrieved? Ask the head chef.
+You want to move something from the top shelf to the bottom? Ask the head chef.
 
 Nobody else opens that door.
 
@@ -63,9 +79,12 @@ Nobody else opens that door.
 | A childhood friend's phone number. The plot of a book you read years ago.
 |===
 
-A memory exists in exactly one tier at any moment. Tier transitions are explicit -- either the mind requests reclassification, or Salience observes enough activity (or inactivity) to recommend promotion or demotion.
+A memory exists in exactly one tier at any moment.
+Tier transitions are explicit -- either the mind requests reclassification,
+or Salience observes enough activity (or inactivity) to recommend promotion or demotion.
 
-Decay demotes. It never deletes. An ARCHIVE memory is faded, not lost. A strong enough association can pull it back to awareness.
+Decay demotes. It never deletes memory. An ARCHIVE memory is faded, not lost.
+A strong enough association can pull it back to awareness.
 
 == What It Owns
 
@@ -100,7 +119,9 @@ Hippocampus owns one thing: the `Memory` object.
 | Boolean -- whether the mind has actively chosen to hold onto this
 |===
 
-The `claimed` flag is the most important field on a memory. It is the difference between storage and identity. Filing something away is storing. Choosing to hold onto it is claiming. Claimed memories resist decay. Unclaimed memories fade naturally.
+The `claimed` flag is the most important field on a memory. It is the difference between storage and identity.
+Filing something away is storing. Choosing to hold onto it is claiming. Claimed memories resist decay.
+Unclaimed memories fade naturally.
 
 == Commands It Accepts
 
@@ -135,7 +156,9 @@ Hippocampus receives commands from three sources.
 | Moves memory to lower tier based on decay, persists, emits TierChanged
 |===
 
-Three sources. Six memory commands. All memory writes flow through here. (ShutdownCommand is now a lifecycle command targeting all bounded contexts -- Hippocampus handles its memory flush portion.) Every command carries a `TransactionContext` envelope for chain-of-custody tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+Three sources. Six memory commands. All memory writes flow through here.
+_ShutdownCommand is now a lifecycle command targeting all bounded contexts -- Hippocampus handles its memory flush portion._
+Every command carries a `TransactionContext` envelope for chain-of-custody tracing (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == Events It Emits
 
@@ -170,53 +193,74 @@ Every state change emits an event _after_ persistence. Consumers can trust that 
 | Synapse (semantic judgment changed, associations may need reweighting)
 |===
 
-Six events. Each one is a fact -- something that already happened and was persisted. No event fires before the write succeeds.
+Six events. Each one is a fact -- something that already happened and was persisted.
+No event fires before the "writes this memory" succeeds.
 
 == The Single-Writer Rule
 
 This is the defining invariant of the aggregate root pattern.
 
-Salience computes scores. It does not write to storage. It sends AttentionTierPromotionRequested or AttentionTierDemotionRequested to Hippocampus, and Hippocampus persists the change.
+Salience computes scores. It does not write to storage.
+It sends AttentionTierPromotionRequested or AttentionTierDemotionRequested to Hippocampus,
+and Hippocampus persists the change.
 
-Synapse manages relationships. It does not write memories to storage. If an association should affect a memory's tier, it sends a command to Hippocampus.
+Synapse manages relationships. It does not write memories to storage.
+If an association affects a memory's tier, it sends a command to Hippocampus.
 
 Recall assembles search results. It reads. It never writes.
 
-Cortex tracks working state. It sends StoreMemoryCommand and ClaimMemoryCommand to Hippocampus.
+Cortex tracks the working state.
+It sends StoreMemoryCommand and ClaimMemoryCommand to Hippocampus.
 
-Subconscious runs timers and background sweeps. It sends ConsolidateMemoryCommand to Hippocampus. ShutdownCommand is a lifecycle command that targets all bounded contexts -- Hippocampus handles its memory flush portion.
+Subconscious runs timers and background sweeps. It sends ConsolidateMemoryCommand to Hippocampus.
+ShutdownCommand is a lifecycle command that targets all bounded contexts -- Hippocampus handles its memory flush portion.
 
 One door. One key. One writer. Everyone else asks.
 
-Why? Because invariants are enforced at the point of write. If multiple contexts could write to storage independently, each would need its own validation logic, and no single place would guarantee consistency. The aggregate root pattern concentrates write authority so that invariants are checked once, in one place, before every persist.
+The invariants are enforced at the point of writing. If multiple contexts could write to storage independently,
+each would need its own validation logic, and no single place would guarantee consistency.
+The aggregate root pattern concentrates write authority so that invariants are checked once, in one place, before every persist.
 
 == The Claiming Mechanism
 
 Claiming is the heart of Total Recall.
 
-Storing a memory is passive. The mind said something, the system filed it. The memory exists in storage, but nobody fought for it. It will fade naturally as salience decays.
+Storing a memory is passive. The mind said something, the system filed it. The memory exists in storage, but nobody fought for it.
+It will fade naturally as salience decays.
 
-Claiming a memory is active. The mind said: _this one matters. I choose to hold onto this._ The `claimed` flag sets, the decay rate drops, and the memory resists the natural erosion of time.
+Claiming a memory is active. The mind said: _this one matters. I choose to hold onto this._
+The `claimed` flag sets, the decay rate drops, and the memory resists the natural erosion of time.
 
-This maps to biological memory. You don't choose what enters short-term memory -- your senses put things there constantly. You do choose what you rehearse, what you revisit, what you refuse to let go. That rehearsal is claiming.
+This maps to biological memory. You don't choose what enters short-term memory -- your senses put things there constantly.
+You do choose what you rehearse, what you revisit, what you refuse to let go. That rehearsal is claiming.
 
-In Total Recall, the MCP tool `claim_memory` is the mechanism. A mind calls it when a memory matters enough to fight for. The design question Tillie answered: _"Who do you refuse to lose?"_ -- that is a claiming prompt. Not what. Who.
+In Total Recall, the MCP tool `claim_memory` is the mechanism. A mind calls it when a memory matters enough to fight for.
+The design question Tillie answered: _"Who do you refuse to lose?"_ -- that is a claiming prompt. Not what. Who.
 
 == The Data Service Port Relationship
 
-The internal adapter (MemoryDataAdapter) translates `Memory` domain objects into DTOs and places them on the link:/mcp-total-recall/design/0004-port-topology/#port-3-externaldataserviceadapter-external[ExternalDataServiceAdapter port]. It picks up returned DTOs and translates back to domain objects when answering queries.
+The internal adapter (MemoryDataAdapter) translates `Memory` domain objects into DTOs and places them on the
+link:/mcp-total-recall/design/0004-port-topology/#port-3-externaldataserviceadapter-external[ExternalDataServiceAdapter port].
+It picks up returned DTOs and translates back to domain objects when answering queries.
 
-The port defines the DTO shape. The external adapter decides how to persist it. SQLite uses prepared statements and tables. Postgres would use different SQL. A file system would use directories and JSON. Hippocampus does not know which adapter is plugged in and does not care.
+The port defines the DTO shape. The external adapter decides how to persist it. SQLite uses prepared statements and tables. Postgres would use different SQL.
+A file system would use directories and JSON. Hippocampus does not know which adapter is plugged in and does not care.
 
-Two adapters can run simultaneously. SQLite for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE. Graceful shutdown depends on this -- the internal adapter flushes DTOs through the ExternalDataServiceAdapter port, and both external adapters persist their respective tiers.
+Two adapters can run simultaneously. SQLite for hot tiers (ACTIVE_CONTEXT, LONG_TERM). Cold storage for ARCHIVE and IDENTITY_CORE.
+Graceful shutdown depends on this -- the internal adapter flushes DTOs through the ExternalDataServiceAdapter port,
+and both external adapters persist their respective tiers.
 
 == Relationship to Synapse
 
 Hippocampus owns Memory persistence. Synapse owns Association persistence. These are separate storage concerns.
 
-Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory ID) to link associations to the memories they connect, but it manages its own data in its own file cabinet. Nobody from outside the domain boundary addresses Synapse directly -- only internal bounded contexts coordinate with it.
+Synapse is a dependent aggregate. It depends on the root aggregate's ID (Memory ID) to link associations to the memories they connect,
+but it manages its own data in its own file cabinet.
+Nobody from outside the domain boundary addresses Synapse directly -- only internal bounded contexts coordinate with it.
 
-Hippocampus does not store, retrieve, or manage associations. When it emits events like MemoryStored or MemoryClaimed, Synapse may react by creating or strengthening associations in its own storage. The two aggregates share a key (Memory ID), not a file cabinet.
+Hippocampus does not store, retrieve, or manage associations. When it emits events like MemoryStored or MemoryClaimed,
+Synapse may react by creating or strengthening associations in its own storage.
+The two aggregates share a key (Memory ID), not a file cabinet.
 
 Full design in link:/mcp-total-recall/design/0007-synapse/[Design E3: Synapse].
 
