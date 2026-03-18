@@ -24,7 +24,7 @@ Last updated: 2026-03-16 by Claude (with Vadim)
 ~~0011-transaction-context.adoc~~ -- DONE. Reviewed and pushed.
 
 Architecture pages:
-- architecture-messages.adoc -- we fixed TransactionContext and "who do you refuse to lose" but never did a full review
+- ~~architecture-messages.adoc~~ -- DONE. Reviewed and pushed.
 - architecture-contexts.adoc -- we added the table and fixed links but never checked the full body text
 
 Blog posts:
