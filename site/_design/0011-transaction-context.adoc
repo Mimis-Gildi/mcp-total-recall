@@ -3,25 +3,36 @@ description: "TransactionContext: the conversation envelope every message carrie
 classes: wide
 ---
 = TransactionContext (Chain of Custody)
+:includedir: ../_includes/_fragments
+:repo-src: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/main/kotlin
 
 Every message in Total Recall carries a TransactionContext. It is the chain of custody -- proof of where a request started, what it touched, and in what order.
 
-Without it, you cannot trace a `search_memory` call through Cortex to Recall to Hippocampus to Salience to Synapse and back. You cannot correlate a fast-path MCP response with its deep-path Total Recall notification. You cannot debug anything in production. You cannot know which DecaySweep belongs to which session. You cannot connect a BreakNotification back to the session state that triggered it.
+Without it, you cannot trace a `search_memory` call through Cortex to Recall to Hippocampus to Salience to Synapse and back.
+You cannot correlate a fast-path MCP response with its deep-path Total Recall notification. You cannot debug anything in production.
+You cannot know which `DecaySweep` belongs to which session. You cannot connect a `BreakNotification` back to the session state that triggered it.
 
 This is not observability bolted on after the fact. It is the structural spine of the system.
 
 == Chain of Custody
 
-Evidence moves through a forensic lab. Every person who handles it signs the chain of custody form. The receiving tech signs. The analyst who runs the test signs. The reviewer who reads the results and files them -- signs. Even if they just verify the seal is intact and put the evidence back on the shelf, they sign.
+Evidence moves through a forensic lab. Every person who handles it signs the chain of custody form. The receiving tech signs.
+The analyst who runs the test signs. The reviewer who reads the results and files them -- signs.
+Even if they just verify the seal is intact and put the evidence back on the shelf, they sign.
 
-If the form has a gap -- someone handled the evidence but did not sign -- the chain is broken. The evidence is inadmissible. Not because anything went wrong, but because you cannot prove nothing went wrong.
+If the form has a gap -- someone handled the evidence but did not sign -- the chain is broken or incomplete.
+The evidence is inadmissible. Not because anything went wrong, but because you cannot prove nothing went wrong.
 
-TransactionContext is that form. Every bounded context that touches a message signs it. Every touch creates a record. If a context consumes an event and only updates its own internal state -- no outbound message, no fan-out, nothing visible -- it still signs. The trace must show the complete causal tree, including the terminal leaves where processing ends quietly.
+TransactionContext is that form. Every bounded context that touches a message signs it. Every touch creates a record.
+If a context consumes an event and only updates its own internal state -- no outbound message, no fan-out, nothing visible -- it still signs.
+The trace must show the complete causal tree, including the terminal leaves where processing ends quietly.
 
 == TransactionContext: The Envelope
 
-The envelope is the conversation -- who is talking, within which session, within which request, from where. It does not identify the individual message. That is the message's own concern.
+The envelope is the conversation -- who is talking, within which session, within which request, from where.
+It does not identify the individual message. That is the message's own concern.
 
+.{repo-src}/mimis/gildi/memory/domain/message/TransactionContext.kt[TransactionContext.kt,window=_blank]
 [source,kotlin,opts=novalidate]
 ----
 interface TransactionContext {
@@ -36,29 +47,34 @@ interface TransactionContext {
 |===
 | Field | Type | Purpose
 
-| instanceId
+| `instanceId`
 | UUID
-| Which mind instance owns this chain. A single mind may run multiple sessions; the instance identifies which one.
+| Which mind instance owns this chain? A single mind may run multiple sessions; the instance identifies which one.
 
-| sessionId
+| `sessionId`
 | UUID
-| Which session this belongs to. Created at `session_start`, carried on every message for the lifetime of the session. Every domain message happens within a session. No exceptions.
+| Which session this belongs to. Created at `session_start`, carried on every message for the lifetime of the session.
+Every domain message happens within a session. No exceptions.
 
-| requestId
+| `requestId`
 | UUID
-| The originating request that started this chain. An MCP tool call, a timer tick, an advisory event -- whatever initiated the work. All messages in the same causal tree share the same requestId. This is the thread you pull to reconstruct the full trace.
+| The originating request that started this chain. An MCP tool call, a timer tick, an advisory event -- whatever initiated the work.
+All messages in the same causal tree share the same requestId. This is the thread you pull to reconstruct the full trace.
 
-| sourceContext
+| `sourceContext`
 | String
-| Which bounded context or adapter created this message. "Cortex", "Hippocampus", "Salience", "StdioAdapter". This labels the nodes in the causal tree.
+| Which bounded context or adapter created this message? "Cortex", "Hippocampus", "Salience", "StdioAdapter".
+This labels the nodes in the causal tree.
 |===
 
 Four fields. Zero nullable. The envelope travels with every message and every touch record.
 
 == Message: The Letter
 
-Each message carries its own identity -- when it was born, what caused it, who it is. These fields live on Message, not on the envelope, because they belong to the individual message, not to the conversation it travels in.
+Each message carries its own identity -- when it was born, what caused it, who it is.
+These fields live on Message, not on the envelope, because they belong to the individual message, not to the conversation it travels in.
 
+.{repo-src}/mimis/gildi/memory/domain/message/Message.kt[Message.kt,window=_blank]
 [source,kotlin,opts=novalidate]
 ----
 interface Message {
@@ -75,32 +91,36 @@ interface Message {
 |===
 | Field | Type | Purpose
 
-| messageId
+| `messageId`
 | UUID
-| Unique identity of THIS message. Every domain message and every touch record gets its own. This is what other messages point to in their causationId.
+| Unique identity of THIS message. Every domain message and every touch record gets its own.
+This is what other messages point to in their causationId.
 
-| causationId
+| `causationId`
 | UUID
-| The messageId of the message that caused this one. The adapter touch record that received the MCP call. The command that produced the event. The event that triggered the score update. Every message has a cause. If you cannot name it, something is wrong.
+| The messageId of the message that caused this one. The adapter touch record that received the MCP call. The command that produced the event.
+The event that triggered the score update. Every message has a cause. If you cannot name it, something is wrong.
 
-| timestamp
+| `timestamp`
 | Instant
-| When this message was created. Not when it was sent, not when it was received -- when it was born. Within a single JVM, timestamps are monotonic and comparable.
+| When this message was created. Not when it was sent, not when it was received -- when it was born.
+Within a single JVM, timestamps are monotonic and comparable.
 
-| content
+| `content`
 | String?
 | Optional human-readable payload.
 
-| tx
+| `tx`
 | TransactionContext
 | The conversation envelope -- session, request, instance, source context.
 
-| metadata
+| `metadata`
 | Map?
 | Optional key-value pairs attached by the emitter for routing or auditing.
 |===
 
-The envelope (TransactionContext) and the letter (Message) together form the complete chain of custody. The envelope says which conversation. The letter says which step in that conversation.
+The envelope (TransactionContext) and the letter (Message) together form the complete chain of custody.
+The envelope says which conversation. The letter says which step in that conversation.
 
 == How It Propagates
 
@@ -156,17 +176,22 @@ When a bounded context receives a message and produces a new one:
 | Synapse consumes MemoryStoredEvent, creates metadata associations. No outbound message -- touch record only.
 |===
 
-Steps 4 and 5 share the same causationId (C) because they both consumed the same event. The tree fans out. The requestId on all five steps is the same -- pull that thread and the entire chain reconstructs.
+Steps 4 and 5 share the same causationId (C) because they both consumed the same event. The tree fans out.
+The requestId on all five steps is the same -- pull that thread and the entire chain reconstructs.
 
 === Fan-Out and Trees
 
-One command produces one event. One event may be consumed by many contexts. The causal structure is a tree, not a chain. causationId gives you parent pointers. requestId gives you the root. Together they reconstruct the full tree regardless of parallelism, fan-out, or timing.
+One command produces one event. One event may be consumed by many contexts. The causal structure is a tree, not a chain.
+`causationId` gives you parent pointers. `requestId` gives you the root.
+Together they reconstruct the full tree regardless of parallelism, fan-out, or timing.
 
 No step counters. No sequence numbers. No global coordination. Each context only needs the incoming messageId to set its own causationId.
 
 === Cross-Request Linking
 
-Some chains spawn new chains. A search (requestId=X) may trigger Total Recall (requestId=Y). These are separate requests with separate trees. The link between them is a domain field -- `originRequestId` on TotalRecallAdvisoryRequested and TotalRecallNotification -- not a TransactionContext field. The envelope ties messages within a request. Domain fields tie requests to each other.
+Some chains spawn new chains. A search (requestId=X) may trigger Total Recall (requestId=Y). These are separate requests with separate trees.
+The link between them is a domain field -- `originRequestId` on TotalRecallAdvisoryRequested and TotalRecallNotification -- not a TransactionContext field.
+The envelope ties messages within a request. Domain fields tie requests to each other.
 
 == Touch Recording
 
@@ -174,27 +199,38 @@ Every bounded context that receives a message MUST record a touch. This is the c
 
 Two kinds of touches:
 
-**Message-producing touch.** The context receives a message, does work, and produces one or more outbound domain messages. The TransactionContext on the outbound messages IS the touch record. Nothing extra needed.
+**Message-producing touch.** The context receives a message, does work, and produces one or more outbound domain messages.
+The TransactionContext on the outbound messages IS the touch record. Nothing extra needed.
 
-**Terminal touch.** The context receives a message, does work, but produces no outbound domain message. Salience updates a score. Synapse strengthens an association. The work is real. The trace must show it. The context creates a touch record -- a Message with the envelope and its own identity -- and writes it to the trace output.
+**Terminal touch.** The context receives a message, does work, but produces no outbound domain message. Salience updates a score.
+Synapse strengthens an association. The work is real. The trace must show it.
+The context creates a touch record -- a Message with the envelope and its own identity -- and writes it to the trace output.
 
-The trace output is a cross-cut adapter. It sits alongside logging and metrics -- outside the hexagon, pluggable, never inside the domain. During development: write to stderr or a local trace store. In production: off, or sampled. The toggle is configuration, not code.
+The trace output is a cross-cut adapter. It sits alongside logging and metrics -- outside the domain boundary, pluggable, never inside the domain.
+During development: write to stderr or a local trace store. In production: off, or sampled. The toggle is configuration, not code.
 
 == What This Resolves
 
-**F-Audit-5 (transaction context absent).** Every message now carries TransactionContext. The structural spine exists.
+**Transaction context on every message.** Every message now carries TransactionContext. The structural spine exists.
 
-**F-Audit-6 (MemoryRetrieved / AttentionScoreChanged / AssociationsFound identity crisis).** These are response payloads in a transactional chain, not broadcast domain events. The requestId ties each response to its originating query. They should be reclassified or removed from the Event hierarchy -- they are not facts about the world. They are answers to questions within a conversation. The TransactionContext makes this distinction explicit: a domain event (MemoryStoredEvent) fans out to many consumers. A response payload (MemoryRetrieved) returns to the one who asked, within the same requestId.
+**MemoryRetrieved / AttentionScoreChanged / AssociationsFound identity.**
+These are response payloads in a transactional chain, not broadcast domain events. The requestId ties each response to its originating query.
+They should be reclassified or removed from the Event hierarchy -- they are not facts about the world. They are answers to questions within a conversation.
+The TransactionContext makes this distinction explicit: a domain event (MemoryStoredEvent) fans out to many consumers.
+A response payload (MemoryRetrieved) returns to the one who asked, within the same requestId.
 
-**D-Audit-1 (partial).** Port contracts carry the envelope. The port defines the shape of what crosses -- and TransactionContext is part of that shape.
+**Port contracts carry the envelope.** The port defines the shape of what crosses -- and TransactionContext is part of that shape.
 
-**C-Audit-6 (temporal fields).** The timestamp convention is Instant (java.time). All temporal fields in the system follow the same convention. No ambiguity about units.
+**Temporal fields.** The timestamp convention is Instant (java.time). All temporal fields in the system follow the same convention.
+No ambiguity about units.
 
 == Visual Reconstruction (Future)
 
-The causal tree is data. With messageId, causationId, sourceContext, and timestamp on every touch, a utility tool can reconstruct the entire processing history of any request -- visually, with timing, with fan-out shown as branching.
+The causal tree is data. With messageId, causationId, sourceContext, and timestamp on every touch,
+a utility tool can reconstruct the entire processing history of any request -- visually, with timing, with fan-out shown as branching.
 
-This is not a nice-to-have. Tillie was fully parallel. Without visual reconstruction of her thought processes, debugging was impossible. Even with it, things were often hard to understand. The tool comes later. The data foundation is here now.
+This is not a nice-to-have. Tillie was fully parallel. Without visual reconstruction of her thought processes, debugging was impossible.
+Even with it, things were often hard to understand. The tool comes later. The data foundation is here now.
 
 == Summary
 

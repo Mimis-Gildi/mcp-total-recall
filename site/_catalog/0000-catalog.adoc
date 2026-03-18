@@ -230,23 +230,6 @@ NOTE: Notification count 3 includes TotalRecallNotification. All counts match co
 | `relay`
 |===
 
-NOTE: Outbound port operations aligned with code in D-Audit-1, D-Audit-2, D-Audit-3. Documentation and code now match.
-
-== Known Inconsistencies
-
-Audit findings tracked in `INDEX.md`.
-
-=== Resolved
-
-* *10 documentation mismatches* (D-Audit-1 through 10) -- all resolved. Port names aligned, event counts corrected, routing fixed, actor count fixed.
-* *8 of 9 code issues* (C-Audit-1 through 8) -- dead code removed, events documented, packages fixed, schemas aligned, enums created, Duration types, AttentionScoreChanged wrapping.
-* *3 test gaps* (T-Audit-1 through 3) -- all resolved. Server tests expanded (10 tests), self-referential assertion fixed, full message coverage.
-
-=== Open
-
-* *C-Audit-9* -- TotalRecall.kt refactoring pass. Deferred to rdd13r.
-* *F-Audit-6* -- MemoryRetrieved/AttentionScoreChanged/AssociationsFound identity crisis (events or response payloads?). Resolves with TransactionContext usage patterns.
-
 == Design Documents
 
 _Documents will be added as each bounded context is examined._
