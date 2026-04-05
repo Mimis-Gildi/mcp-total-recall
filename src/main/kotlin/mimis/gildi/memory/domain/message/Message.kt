@@ -15,7 +15,7 @@ import java.util.UUID
  * @property causationId the messageId of the message that caused this one -- self-referencing for root causes.
  * @property timestamp when this message was created.
  * @property content optional human-readable payload.
- * @property tx chain of custody -- session, request, causation, source context.
+ * @property tx chain of custody -- instance, session, request, source context.
  * @property metadata optional key-value pairs attached by the emitter for routing or auditing.
  */
 interface Message {

@@ -146,7 +146,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Hippocampus
 | Aggregate root. CRUD for memories across four tiers. Claiming.
-| `Memory.kt`, `Tier.kt`, `MemoryPort`
+| `Memory.kt`, `Tier.kt`, `MemoryPort`, `MemoryDraft`
 | Interfaces defined
 
 | Synapse
