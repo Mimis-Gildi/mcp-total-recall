@@ -84,7 +84,7 @@ jobs:
 
       - name: Set up Gradle
         if: steps.env.outputs.is-self-hosted == 'false'
-        uses: gradle/actions/setup-gradle@v5.0.2
+        uses: gradle/actions/setup-gradle@v6.1.0
         timeout-minutes: 5
 
 
@@ -103,7 +103,7 @@ jobs:
 
 
       - name: Publish GitHub Release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         timeout-minutes: 5
         with:
           tag: ${{ steps.version-info.outputs.tag }}
