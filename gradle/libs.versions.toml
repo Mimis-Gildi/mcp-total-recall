@@ -3,7 +3,7 @@
 kotlin = "2.3.10"
 
 # MCP
-mcp = "0.8.4"
+mcp = "0.11.0"
 coroutines = "1.10.2"
 
 # Testing
