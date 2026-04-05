@@ -1,0 +1,15 @@
+name: Welcome
+run-name: "Greet a user on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
+
+on:
+  workflow_dispatch:
+  issues:
+    types:
+      - opened
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  greeting:
+    uses: Mimis-Gildi/fluffle/.github/workflows/new-user-greeting.yml@main
