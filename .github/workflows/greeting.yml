@@ -6,10 +6,16 @@ on:
   issues:
     types:
       - opened
+      - assigned
+      - labeled
   pull_request:
     types:
       - opened
+      - assigned
+      - labeled
 
 jobs:
   greeting:
     uses: Mimis-Gildi/fluffle/.github/workflows/new-user-greeting.yml@main
+    with:
+      test_run: 'true'
