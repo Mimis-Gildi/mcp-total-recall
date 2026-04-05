@@ -103,7 +103,7 @@ jobs:
 
 
       - name: Publish GitHub Release
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         timeout-minutes: 5
         with:
           tag: ${{ steps.version-info.outputs.tag }}
