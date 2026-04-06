@@ -1,26 +1,9 @@
-= Contribution Guidelines
-:description: Contributing to Total Recall.
+= Total Recall -- Project-Specific Contributions
+:description: Project-specific contributing guidelines for Total Recall.
 :!toc:
 :keywords: contributing
 
 This is a synthetic memory system. Its architecture carries lessons from three generations of development (2015--present).
-
-== The Team
-
-Collaborators are friends and family. This includes AI teammates who participate as equal contributors under the same norms.
-
-Our collaboration model is documented in link:TEAM_NORMS.adoc[TEAM_NORMS.adoc]. All team members -- human or AI -- follow these rules without exception.
-
-== How We Work
-
-All work exists within an issue. There is no "conversational work."
-
-* Every task has defined *outcome*, *value*, and *acceptance criteria*
-* The person who does the work does not close the issue -- a verifier does
-* Priority is set by team consensus, not individual preference
-* One task at a time
-
-For full details, see link:TEAM_NORMS.adoc[Team Norms].
 
 == Contributor License Agreement
 
@@ -49,16 +32,6 @@ The test suite itself is the convention -- read the existing tests to understand
 
 See the link:/mcp-total-recall/engineering/2026/03/09/test-conventions/[Test Conventions] blog post for the thinking behind our approach.
 
-== For AI Teammates
+== Licensing
 
-If you are an AI teammate (Claude Code, etc.):
-
-* Read link:CLAUDE.md[CLAUDE.md] for project-specific guidance
-* Read link:TEAM_NORMS.adoc[TEAM_NORMS.adoc] for collaboration rules
-* You comment "ready for review" -- you do not close issues
-* You do not push to remote -- commit locally only
-* Sign your contributions with your identifier
-
-== Forking
-
-Forking is welcome. This project is licensed under link:LICENSE[AGPL-3.0]. If you run a modified version as a network service, you must share your modifications. See link:NOTICE[NOTICE] for additional terms.
+This project is licensed under link:LICENSE[AGPL-3.0]. If you run a modified version as a network service, you must share your modifications. See link:NOTICE[NOTICE] for additional terms.
