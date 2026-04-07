@@ -19,6 +19,7 @@ import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequestParams
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import mimis.gildi.memory.testing.testClientConnection
 import mimis.gildi.memory.testing.testServer
 
 /** Reach into a registered tool's JSON Schema to get its `required` field list. */
@@ -26,7 +27,7 @@ private fun Server.toolRequiredFiles(toolName: String) = tools[toolName]?.tool?.
 
 /** Call a tool handler directly, bypassing transport. Returns the raw [io.modelcontextprotocol.kotlin.sdk.types.CallToolResult]. */
 private suspend fun Server.callTool(name: String, args: JsonObject) =
-    tools.getValue(name).handler(CallToolRequest(CallToolRequestParams(name = name, arguments = args)))
+    tools.getValue(name).handler(testClientConnection, CallToolRequest(CallToolRequestParams(name = name, arguments = args)))
 
 /** Shorthand: `"store_memory".requiredFields()` reads like a sentence. */
 private fun String.requiredFields() = testServer.toolRequiredFiles(this)

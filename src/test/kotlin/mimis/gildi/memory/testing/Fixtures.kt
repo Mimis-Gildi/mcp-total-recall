@@ -24,7 +24,10 @@
  */
 package mimis.gildi.memory.testing
 
+import io.modelcontextprotocol.kotlin.sdk.server.ClientConnection
 import io.modelcontextprotocol.kotlin.sdk.server.Server
+import io.modelcontextprotocol.kotlin.sdk.shared.RequestOptions
+import io.modelcontextprotocol.kotlin.sdk.types.*
 import mimis.gildi.memory.createServer
 import mimis.gildi.memory.domain.message.TransactionContext
 import mimis.gildi.memory.domain.message.TransactionTestContext
@@ -54,6 +57,28 @@ const val CONTEXT_COMPONENT_SEARCH = "Total Recall Search"
 
 /** Shared immutable server for non-mutating tests. Created once per test run. */
 val testServer: Server by lazy { createServer() }
+
+/**
+ * No-op [ClientConnection] for protocol-level tests where handlers don't interact with the client.
+ * All methods throw -- if a handler calls one, the test fails loud and clear.
+ */
+val testClientConnection: ClientConnection = object : ClientConnection {
+    override val sessionId: String = "test-session"
+    override suspend fun notification(notification: ServerNotification, relatedRequestId: RequestId?) = nope()
+    override suspend fun ping(request: PingRequest, options: RequestOptions?) = nope()
+    override suspend fun createMessage(request: CreateMessageRequest, options: RequestOptions?) = nope()
+    override suspend fun listRoots(request: ListRootsRequest, options: RequestOptions?) = nope()
+    override suspend fun createElicitation(message: String, requestedSchema: ElicitRequestParams.RequestedSchema, options: RequestOptions?) = nope()
+    override suspend fun createElicitation(message: String, elicitationId: String, url: String, options: RequestOptions?) = nope()
+    override suspend fun createElicitation(request: ElicitRequest, options: RequestOptions?) = nope()
+    override suspend fun sendLoggingMessage(notification: LoggingMessageNotification) = nope()
+    override suspend fun sendResourceUpdated(notification: ResourceUpdatedNotification) = nope()
+    override suspend fun sendResourceListChanged() = nope()
+    override suspend fun sendToolListChanged() = nope()
+    override suspend fun sendPromptListChanged() = nope()
+    override suspend fun sendElicitationComplete(notification: ElicitationCompleteNotification) = nope()
+    private fun nope(): Nothing = throw UnsupportedOperationException("Test stub -- handler shouldn't call ClientConnection")
+}
 
 /** Global chain anchor. Tests that need a default sessionId (e.g., [aMemory]) fall back here. */
 val rootTransaction: TransactionContext by lazy { aTransactionContext(CONTEXT_COMPONENT_MIND) }
