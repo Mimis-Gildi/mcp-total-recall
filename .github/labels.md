@@ -2,6 +2,8 @@
 
 Label scheme for Total Recall.
 
+FixMe: Reduce!
+
 ## Work Area Labels
 
 | Label               | Color     | Description                                       |
