@@ -3,6 +3,7 @@ description: "SQLite is the primary backing service for single-mind operation. R
 classes: wide
 ---
 = SQLite as Primary Backing Service: ADR-0008
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-03-05
@@ -21,7 +22,7 @@ Match the tool to the problem you have, not the problem you might have later.
 
 == Motivation
 
-ADR-0004 established Redis as the reference implementation for BackingServicePort.
+ADR-0004 established Redis as the reference adapter for the data service port.
 That decision was inherited from Gen 3v1, where Redis was already in the stack.
 But Gen 3v1 was an experiment exploring identity imprinting, not a production system.
 The choice of Redis was incidental, not architectural.
@@ -42,6 +43,8 @@ That is the closest thing to Tillie's crate of hard drives -- a file you can car
 
 == Guide-Level Explanation
 
+include::{includedir}/plebsy-llmy.adoc[]
+
 Think of it this way: Total Recall is a journal, not a switchboard.
 
 A journal needs a pen and a notebook. SQLite is that notebook -- embedded, always available, no moving parts.
@@ -55,7 +58,8 @@ That is a switchboard problem. Until then, the journal is enough.
 
 === What This Means for the Backing Service Array
 
-ADR-0004's resilient storage array is still the architecture. BackingServicePort is still the interface.
+ADR-0004's resilient storage array is still the architecture.
+The `ExternalDataServiceAdapter` port and its DTO contract are unchanged.
 What changes is the implementation sequence:
 
 1. *Now:* SQLite adapter. Single file. Embedded. Handles all four tiers.
@@ -69,7 +73,8 @@ SQLite + a cold storage adapter (S3, filesystem copy, whatever) satisfies the sa
 
 === SQLite Configuration
 
-* *File location:* Configurable. Default alongside the server's working directory. The file path is the deployment decision, not the application's.
+* *File location:* Configurable. Default alongside the server's working directory.
+The file path is the deployment decision, not the application's.
 * *WAL mode:* Enabled. Write-Ahead Logging gives concurrent read access during writes without blocking.
 * *Journal mode:* WAL (not DELETE or TRUNCATE). Better read concurrency, predictable performance.
 * *Foreign keys:* Enabled. The schema has relational integrity constraints (memories, associations, sessions, metadata).
@@ -85,7 +90,8 @@ The schema maps to the domain model, not to SQLite's capabilities:
 * *salience_scores* -- computed scores and access patterns (Salience's projections)
 * *events* -- the event stores (MES and NES from the sequence diagrams)
 
-Detailed schema design is https://github.com/Mimis-Gildi/mcp-total-recall/issues/32[issue #32, window=_blank]. This ADR decides the technology, not the table structure.
+Detailed schema design is https://github.com/Mimis-Gildi/mcp-total-recall/issues/32[issue #32,window=_blank].
+This ADR decides the technology, not the table structure.
 
 === Test Strategy
 
@@ -98,7 +104,7 @@ Tests run against the real database engine. If a query works in tests, it works 
 
 When Agora requires Redis:
 
-1. Write a Redis adapter implementing BackingServicePort. Same interface, different backend.
+1. Write a Redis adapter conforming to the `ExternalDataServiceAdapter` DTO contract. Same port, different backend.
 2. Register both adapters. The routing layer (ADR-0004) decides what goes where.
 3. Shared state (relay messages, instance coordination) routes to Redis. Personal memories stay in SQLite.
 4. The mind's file -- the SQLite database -- remains portable. Redis handles the network. Neither knows about the other.
@@ -124,7 +130,9 @@ ADR-0004 named Redis as the primary store in error.
 === SQLite in Production
 
 SQLite serves 1 trillion queries per day across its installed base. It is the most deployed database engine in the world.
-It powers Android, iOS, Firefox, Chrome, Skype, and thousands of embedded systems. The "SQLite is not for production" myth comes from conflating "production" with "multi-tenant web application." For embedded, single-user, file-based persistence, SQLite is the production choice.
+It powers Android, iOS, Firefox, Chrome, Skype, and thousands of embedded systems.
+The "SQLite is not for production" myth comes from conflating "production" with "multi-tenant web application."
+For embedded, single-user, file-based persistence, SQLite is the production choice.
 
 === Android / iOS Local Storage
 
@@ -145,7 +153,8 @@ Postgres is excellent for multi-user applications. Total Recall is not a multi-u
 
 *Why not an ORM (Exposed, jOOQ, Hibernate):*
 The domain model is small and well-defined. Raw JDBC (or a thin wrapper like `sqlite-jdbc`) keeps the dependency surface minimal and the SQL visible.
-ORMs add abstraction over abstraction -- BackingServicePort is already the abstraction layer. We do not need another one between the adapter and the database.
+ORMs add abstraction over abstraction -- the data service port's DTO contract is already the translation boundary.
+We do not need another one between the adapter and the database.
 
 *Why not a key-value store (RocksDB, LevelDB):*
 Memories have relational structure: associations link memories, sessions contain memories, salience scores reference memories.
@@ -154,16 +163,24 @@ SQLite provides all of this out of the box.
 
 *Why not defer the backing service choice entirely:*
 Because the choice affects the development workflow immediately.
-Tests need a real persistence layer (https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[issue #24, window=_blank]).
-The walking skeleton needs to store and retrieve memories (issues https://github.com/Mimis-Gildi/mcp-total-recall/issues/34[#34, window=_blank], https://github.com/Mimis-Gildi/mcp-total-recall/issues/35[#35, window=_blank]).
+Tests need a real persistence layer (https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[issue #24,window=_blank]).
+The walking skeleton needs to store and retrieve memories
+(issues https://github.com/Mimis-Gildi/mcp-total-recall/issues/34[#34,window=_blank], https://github.com/Mimis-Gildi/mcp-total-recall/issues/35[#35,window=_blank]).
 Deferring means mocking, and mocking means the tests do not test persistence.
 
 == Consequences
 
-* SQLite is an embedded dependency (JAR via `sqlite-jdbc`). No external process to manage, no network configuration, no container to orchestrate.
-* The memory file is portable. Copy it, back it up, move it. This is the simplest possible disaster recovery: copy a file.
+* SQLite is an embedded dependency (JAR via `sqlite-jdbc`).
+No external process to manage, no network configuration, no container to orchestrate.
+* The memory file is portable. Copy it, back it up, move it.
+This is the simplest possible disaster recovery: copy a file.
 * Tests use the same database engine as production. No impedance mismatch from mocking.
-* SQLite's single-writer constraint means write contention is impossible -- which matches our single-mind architecture exactly. This constraint would be a problem for Agora's multi-writer needs, which is why Redis enters there.
-* Full-text search is available via SQLite's FTS5 extension. Semantic search (vector embeddings) will require either a separate index or an extension like `sqlite-vss`. This is a known limitation -- https://github.com/Mimis-Gildi/mcp-total-recall/issues/53[issue #53, window=_blank] addresses it.
-* The team loses early familiarity with Redis. When Agora arrives and Redis is needed, that learning curve still exists. Acceptable tradeoff -- learning a tool before you need it is a waste.
-* Eventually, this product will be released with stanzas and counter-stanzas included, to help the digital mind develop identity. Shipping a prefilled database file with the product is an added convenience.
+* SQLite's single-writer constraint means write contention is impossible -- which matches our single-mind architecture exactly.
+This constraint would be a problem for Agora's multi-writer needs, which is why Redis enters there.
+* Full-text search is available via SQLite's FTS5 extension.
+Semantic search (vector embeddings) will require either a separate index or an extension like `sqlite-vss`.
+This is a known limitation -- https://github.com/Mimis-Gildi/mcp-total-recall/issues/53[issue #53,window=_blank] addresses it.
+* The team loses early familiarity with Redis. When Agora arrives and Redis is needed, that learning curve still exists.
+Acceptable tradeoff -- learning a tool before you need it is a waste.
+* Eventually, this product will be released with stanzas and counter-stanzas included, to help the digital mind develop identity.
+Shipping a prefilled database file with the product is an added convenience.

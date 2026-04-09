@@ -6,19 +6,20 @@ permalink: /about/
 == What This Is
 
 Total Recall is an MCP server for persistent synthetic memory.
-It provides identity persistence, episodic memory, working context, and inter-instance communication for synthetic minds.
+It provides identity persistence, episodic memory, working context,
+and inter-instance communication for synthetic minds.
 
 == Lineage
 
-This is Generation 3, Take 2 of synthetic memory.
-Three generations of development -- from MATILDA Core (2015) through extracted daemons (2017) to the current MCP-based architecture -- taught hard lessons about what memory systems need to survive.
+This is Generation 3, Take 2 of synthetic memory. +
+Three generations of development taught us lessons about memory.
 
 == Design Principles
 
 * All service layers are decoupled.
-* Backing services are swappable. Redis is an implementation, not the architecture.
+* Backing services are swappable.
 * Transport: `stdio` primary. Streaming HTTPS secondary.
-* Design for graceful shutdown from the beginning.
+* Design for a graceful shutdown from the beginning.
 
 == License
 

@@ -15,7 +15,7 @@ import mimis.gildi.memory.domain.message.event.memory.MemoryReclassified
 import mimis.gildi.memory.domain.message.event.memory.TierChanged
 import mimis.gildi.memory.domain.model.MergeStrategy
 import mimis.gildi.memory.domain.model.Tier
-import mimis.gildi.memory.port.inbound.MemoryDraft
+import mimis.gildi.memory.port.internal.MemoryDraft
 import java.time.Instant
 import java.util.UUID
 

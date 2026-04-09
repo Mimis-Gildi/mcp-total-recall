@@ -1,0 +1,279 @@
+---
+description: "Every port in Total Recall: what crosses each one, which adapters plug in, and how the ACLs assemble."
+classes: wide
+---
+= Port Topology
+:includedir: ../_includes/_fragments
+
+Total Recall has five ports. Two serve domain conversations (internal), three serve infrastructure conversations (external).
+
+Each port is a link:/mcp-total-recall/design/0001-what-is-a-port/[Passive Structure] defining the DTO shape of what crosses.
+Each port has one or more link:/mcp-total-recall/design/0002-what-is-an-adapter/[adapters] -- Active Structures that plug in and do the work.
+Together, each port and its adapters form an link:/mcp-total-recall/design/0003-what-is-an-acl/[ACL] -- the full translation path.
+
+This document names every port.
+
+include::{includedir}/plebsy-llmy.adoc[]
+
+== The Restaurant, One Last Time
+
+A restaurant has boundaries too. The front door faces the street -- customers come in. The kitchen window faces the alley -- deliveries arrive.
+The counter faces both the dining room and the kitchen. The service door faces the parking lot -- staff comes and goes.
+
+Each boundary has a different purpose, a different contract, a different set of adapters working it.
+The front door has a host. The kitchen window has a receiving clerk. The counter has waitresses and cooks.
+The service door has a lock and a key.
+
+Total Recall is the same. Each port serves a different conversation topic. Different DTOs cross.
+Different adapters work through designated ports on each side.
+
+== Port 1: MemoryPort (Internal)
+
+The main entrance. This is where minds interact with their memories.
+
+**What crosses (DTO shapes):**
+
+[cols="1,3",options="header"]
+|===
+| DTO | Shape
+
+| Store request
+| content, metadata, suggested tier, session ID
+
+| Search request
+| query text, filters, max results, include associations flag, session ID
+
+| Claim request
+| memory ID, session ID
+
+| Associate request
+| two memory IDs, association type, strength, direction
+
+| Reclassify request
+| memory ID, new tier, new metadata, reason
+
+| Reflect request
+| criteria (staleness, time span, weak associations), scope
+|===
+
+Six DTO shapes. Each is an order slip with a different format. The port defines all six shapes. The adapters on both sides conform.
+
+**External adapters (that place DTOs on the counter from the outside):**
+
+- *stdio Transport* -- the primary adapter. Speaks MCP JSON-RPC. Implemented.
+- *Streaming HTTPS* -- future. Speaks HTTP. Same DTO shapes, different external language.
+- *Human UI* -- future. Speaks form fields, clicks, selections. Same DTO shapes, different external language.
+
+**Internal adapter (who picks up DTOs from the counter toward the domain):**
+
+The domain command/query handler. Translates port DTOs into `StoreMemoryCommand`, `SearchQuery`,
+`ClaimMemoryCommand`, `AssociateCommand`, `ReclassifyMemoryCommand`, `ReflectQuery`.
+Dispatches to the appropriate bounded context.
+
+== Port 2: LifecyclePort (Internal)
+
+The staff entrance. This is where session events arrive -- a mind connects, disconnects, or changes state.
+
+**What crosses (DTO shapes):**
+
+[cols="1,3",options="header"]
+|===
+| DTO | Shape
+
+| Session start
+| instance ID, mind type, resumption data
+
+| Session end
+| instance ID, reason (explicit, timeout, crash)
+
+| State transition
+| instance ID, old state, new state, context
+|===
+
+Three DTO shapes. Lifecycle is simpler than memory -- fewer things cross, but each one matters.
+A missed session end means the Subconscious never triggers the audit prompt.
+
+**External adapters:**
+
+- *Claude Code Hooks* -- primary. Detects `session_start`, `session_end`, `tool_call` events from the hook system.
+Implemented (partially -- hooks exist, adapter is stub).
+- *Human UI* -- future. Detects login/logout, idle timeout, focus changes.
+
+**Internal adapter:**
+
+Cortex handler. Translates lifecycle DTOs into session state. Loads identity and last session on start.
+Triggers Subconscious on end.
+
+== Port 3: ExternalDataServiceAdapter (External)
+
+The kitchen loading dock. This is where the domain sends memories to be persisted and retrieves them back.
+
+**What crosses (DTO shapes):**
+
+[cols="1,3",options="header"]
+|===
+| DTO | Shape
+
+| Data Service DTO (persist)
+| ID, content, metadata, tier, salience score, timestamps
+
+| Data Service DTO (returned)
+| same shape, populated by the external adapter
+
+| Query DTO
+| query text, filters, max results
+
+| Query result DTO
+| list of Data Service DTOs matching the query
+|===
+
+The port defines the Data Service DTO shape. The external adapter decides how to store it. SQLite uses prepared statements and tables.
+Postgres would use different SQL. A file system would use directories and JSON files. The domain does not know and does not care.
+
+**External adapters:**
+
+- *SQLite Driver* -- primary adapter (ADR-0008). In-memory for tests, file-backed for production.
+- *Cold Storage Adapter* -- future. For ARCHIVE tier memories that need cheaper, slower persistence.
+
+Both can run simultaneously. Graceful shutdown depends on this -- the internal adapter flushes DTOs through the port,
+and both external adapters persist their respective tiers.
+
+**Internal adapter:**
+
+MemoryDataAdapter. The domain-facing translator. Takes `Memory` domain objects from Hippocampus, translates them to the port's Data Service DTO shape.
+Picks up returned DTOs and translates back to domain objects.
+
+== Port 4: NotificationPort (External)
+
+The PA system. This is where the domain talks back to the mind -- not in response to a request, but proactively. "You've been in task mode for 90 minutes."
+"Is the session ending -- who do you refuse to lose?"
+
+**What crosses (DTO shapes):**
+
+[cols="1,3",options="header"]
+|===
+| DTO | Shape
+
+| Break notification
+| minutes in task mode, suggestion
+
+| Session audit prompt
+| session duration, memories stored this session, prompt text
+
+| Total Recall notification
+| recalled memories, depth reached, origin request ID
+|===
+
+Three DTO shapes today. More will come as the Subconscious's behavior is specified (context drift warnings, memory capacity alerts).
+
+**External adapters:**
+
+- *MCP Notification Adapter* -- for Claude. Uses MCP server-initiated notifications. Implemented (stub).
+- *UI Notification Adapter* -- future. For human minds. Push notifications, toast messages, whatever the UI provides.
+
+**Internal adapter:**
+
+The Subconscious. It decides when to notify based on timers, thresholds, and session state.
+It translates domain state into notification DTOs and places them on the port.
+It does not know whether the mind receiving the notification is Claude or a human.
+
+== Port 5: RelayPort (External)
+
+The mail room. This is where one instance of Total Recall communicates with another -- through Agora,
+the inter-instance message bus.
+
+**What crosses (DTO shapes):**
+
+[cols="1,3",options="header"]
+|===
+| DTO | Shape
+
+| Relay message
+| target instance ID, payload, message type
+|===
+
+One DTO shape for now. The payload is opaque to the port -- the port cares about the envelope (who it goes to), not the letter inside.
+
+**External adapter:**
+
+- *Agora Adapter* -- future. Agora is a separate MCP server that the mind also connects to directly.
+The relay adapter speaks Agora's protocol to pass messages between Total Recall instances.
+
+**Internal adapter:**
+
+Not yet designed. The domain handler for relay messages will be specified when Agora's design is done.
+
+This is the only port where both sides are future. The port contract exists in the codebase (`RelayPort.kt`),
+but neither adapter exists yet.
+
+== Cross-Cuts
+
+Three concerns attach to the boundary without going through ports.
+They are not ports -- they are infrastructure worn by the system.
+
+[cols="1,2,2",options="header"]
+|===
+| Concern | Current State | Constraint
+
+| Logging
+| Implemented. Programmatic logback. stderr only.
+| stdout IS the MCP channel. All logging must go to stderr when stdio transport is active.
+
+| Metrics
+| Future.
+| Pluggable. Not baked into domain.
+
+| Health Check
+| Future.
+| Liveness and readiness probes for container orchestration.
+|===
+
+Cross-cuts attach as adapters but never live inside the domain. The core is testable without them.
+
+== Port Topology Summary
+
+Five ports. Two internal, three external. Thirteen DTO shapes crossing today.
+Multiple adapters per port, each replaceable, each conforming to the port's contract.
+
+[cols="1,1,1,1,1",options="header"]
+|===
+| # | Port | Topic | DTOs Crossing | External Adapters
+
+| 1
+| MemoryPort
+| Memory operations
+| 6 shapes
+| stdio, HTTPS (future), Human UI (future)
+
+| 2
+| LifecyclePort
+| Session management
+| 3 shapes
+| Claude Code Hooks, Human UI (future)
+
+| 3
+| ExternalDataServiceAdapter
+| Data persistence
+| 4 shapes
+| SQLite Driver, Cold Storage (future)
+
+| 4
+| NotificationPort
+| Mind alerts
+| 3 shapes
+| MCP Notifications, UI Notifications (future)
+
+| 5
+| RelayPort
+| Inter-instance messaging
+| 1 shape
+| Agora (future)
+|===
+
+The diagram link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001] shows this visually.
+
+'''
+
+*Previous: link:/mcp-total-recall/design/0003-what-is-an-acl/[What is an ACL?]* -- the full assembly: Adapter + Port + Adapter.
+
+*Next: the bounded contexts that live inside the domain boundary, starting with link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus] -- the aggregate root.*

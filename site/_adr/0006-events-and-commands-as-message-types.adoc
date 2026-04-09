@@ -3,6 +3,7 @@ description: "All inter-context communication uses typed messages: Commands chan
 classes: wide
 ---
 = Events and Commands as Message Types: ADR-0006
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -10,8 +11,9 @@ classes: wide
 
 == Summary
 
-All communication between bounded contexts uses typed messages implemented as Kotlin type hierarchies (sealed interfaces with sealed sub-hierarchies). Commands change state (one producer, one consumer).
-Queries request information (one producer, one consumer, must be answered). Events carry facts (one producer, many consumers).
+All communication between bounded contexts uses typed messages implemented as Kotlin type hierarchies (sealed interfaces with sealed sub-hierarchies).
+Commands change state (one producer, one consumer).
+Queries requesting information from (one producer, one consumer, must be answered). Events carry facts (one producer, many consumers).
 Notifications reach the connected mind. No context calls another's methods directly. No shared mutable state.
 
 == Governing Dynamic
@@ -32,8 +34,11 @@ A method call `store(content, tier, metadata)` is the same operation hidden insi
 When something goes wrong, the message is traceable. The method call requires a debugger.
 
 Kotlin sealed hierarchies make this type-safe at compile time.
-The compiler enforces exhaustive handling -- if a new message variant is added, every `when` expression that matches on the hierarchy must handle it or fail to compile.
+The compiler enforces exhaustive handling -- if a new message variant is added,
+every `when` expression that matches on the hierarchy must handle it or fail to compile.
 No message can be silently ignored.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Guide-Level Explanation
 
@@ -48,13 +53,16 @@ It carries a question -- information is needed. Queries must be answered. They d
 *Events* are facts. "A memory was stored." "A tier changed." "An salience score was calculated." An event has one producer and any number of consumers.
 It carries what happened -- not what should happen. Events are never rejected because they describe the past.
 
-*Notifications* reach the connected mind. "You've been in task mode for 90 minutes." "Session ending -- what do you refuse to lose?"
+*Notifications* reach the connected mind. "You've been in task mode for 90 minutes." "Session ending -- who do you refuse to lose?"
 Notifications flow outward through the Notification Port. The mind can act on them or ignore them.
 
 The separation matters. Commands and Queries flow inward (toward the domain) -- Commands change state, Queries read it. This is CQRS at the message level.
 Events flow between contexts. Notifications flow outward (toward the mind). Each direction has different semantics and different failure modes.
 
-Command and Event are implemented as Kotlin `sealed interface` hierarchies. Query is a regular `interface` with sealed sub-hierarchies (currently `RecallQuery`). Notification is a regular `interface` with three sealed sub-hierarchies (`WellnessNotification`, `AuditNotification`, `RecallNotification`). Each variant is a data class with a typed payload.
+All four root types -- Command, Query, Event, Notification -- are plain Kotlin `interface` types extending `Message`.
+The sealing happens at the sub-hierarchy level: `sealed interface MemoryCommand : Command`, `sealed interface RecallQuery : Query`, etc.
+This gives exhaustive matching within each sub-hierarchy while keeping the roots open for new sub-hierarchies.
+Each variant is a data class with a typed payload.
 The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
 == Reference-Level Explanation
@@ -64,7 +72,7 @@ The compiler guarantees exhaustive matching on the sealed sub-hierarchies.
 
 [source,kotlin,opts=novalidate]
 ----
-sealed interface Command
+interface Command : Message
 sealed interface MemoryCommand : Command
 data class StoreMemoryCommand(...) : MemoryCommand
 data class ClaimMemoryCommand(...) : MemoryCommand
@@ -83,7 +91,7 @@ sealed interface RecallQuery : Query
 data class SearchQuery(...) : RecallQuery
 data class ReflectQuery(...) : RecallQuery
 
-sealed interface Event
+interface Event : Message
 data class MemoryStored(...) : Event
 data class MemoryAccessed(...) : Event
 // ... 17 total variants
@@ -100,18 +108,19 @@ data class TotalRecallNotification(...) : RecallNotification
 
 Package: `mimis.gildi.memory.domain.message`.
 
-Every variant carries a `TransactionContext` as its first field -- a six-field chain of custody envelope (sessionId, requestId, messageId, causationId, timestamp, sourceContext). See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
+Every variant carries a `TransactionContext` envelope (four fields: instanceId, sessionId, requestId, sourceContext)
+and its own message identity (messageId, causationId, timestamp) on the `Message` interface.
+See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
 
 === Why Sealed, Not Open
 
-Sealed hierarchies are closed -- no external code can add new variants. This is deliberate:
+The sub-hierarchies are sealed -- no external code can add new variants within a sub-hierarchy. This is deliberate:
 
-* The compiler enforces exhaustive `when` expressions. Adding a new variant to any hierarchy forces every handler to be updated.
-* The message catalog is the system's contract. If anyone can add message types, the contract is undefined.
-* Runtime surprises are eliminated. A handler for `Command` knows it will only ever see the defined variants.
+* The compiler enforces exhaustive `when` expressions on sealed sub-hierarchies. Adding a new variant to `MemoryCommand` forces every handler matching on `MemoryCommand` to be updated.
+* The message catalog is the system's contract. If anyone can add variants within a sub-hierarchy, the contract is undefined.
+* Runtime surprises are eliminated. A handler for `MemoryCommand` knows it will only ever see the defined variants.
 
-An open hierarchy (interface or abstract class) would allow external modules to add message types.
-This is appropriate for plugin systems. It is wrong for a domain where every message is a named, documented contract.
+The root types (Command, Query, Event, Notification) are plain interfaces -- new sub-hierarchies can be added as the domain grows. But within each sub-hierarchy, the set is closed. This balances extensibility at the category level with safety at the variant level.
 
 === Command Semantics
 
@@ -129,7 +138,8 @@ Example flow: `StoreMemoryCommand` (Cortex -> Hippocampus) produces `MemoryStore
 * Must be answered -- a query without a response is a bug.
 * Does not change state.
 
-Example flow: `SearchQuery` (Cortex -> Recall) returns matching memories ranked by salience. `ReflectQuery` (Cortex -> Recall) returns candidates for retrospection.
+Example flow: `SearchQuery` (Cortex -> Recall) returns matching memories ranked by salience.
+`ReflectQuery` (Cortex -> Recall) returns candidates for retrospection.
 
 === Event Semantics
 
@@ -149,21 +159,23 @@ Example flow: `MemoryStored` (produced by Hippocampus) triggers initial score ca
 
 === Why Notifications Are a _Separate Hierarchy_
 
-Commands, Queries, and Events are established CQRS/DDD patterns with extensive literature. Notifications are *unique* to Total Recall -- the mind-facing outbound message.
+Commands, Queries, and Events are established CQRS/DDD patterns with extensive literature.
+Notifications are *unique* to Total Recall -- the mind-facing outbound message.
 This section explains why they do not extend any of the other three.
 
 *Notifications vs Events:*
 
 * _Shared:_ Both carry facts. Both cannot be rejected. Both are system-initiated -- nobody asks for them.
 * _Events add:_ Fan-out to many internal consumers. May trigger further Commands. Describe the past only.
-* _Notifications add:_ Single outbound delivery channel (Notification Port). Can carry prompts that look forward -- "Session ending -- what do you refuse to lose?" is prescriptive, not descriptive.
-* _Notifications remove:_ No domain side-effects. No internal fan-out.
+* _Notifications add:_ Single outbound delivery channel (Notification Port).
+Can carry prompts that look forward -- "Session ending -- who do you refuse to lose?" is prescriptive, not descriptive.
+* _Notifications remove:_ No domain side effects. No internal fan-out.
 
 *Notifications vs Commands:*
 
 * _Shared:_ Both target a single receiver. Both can be ignored.
 * _Commands add:_ Flow inward. Change domain state. Produce Events on success. Get a formal response (accepted, rejected, ignored).
-* _Notifications add:_ Flow outward. Cross the hexagonal boundary toward the mind.
+* _Notifications add:_ Flow outward. Cross the domain boundary toward the mind.
 * _Notifications remove:_ No state change. No Events produced. No formal response -- the domain never learns whether the mind acted.
 
 *Notifications vs Queries:*
@@ -173,17 +185,24 @@ This section explains why they do not extend any of the other three.
 * _Notifications add:_ Flow outward. Unsolicited -- the system decides when to inform, not the recipient.
 * _Notifications remove:_ No response expected. No request triggers them.
 
-The hybrid nature is telling: Notifications carry information like Query responses but are initiated by the system like Events. They inform without being asked. No existing hierarchy accommodates both traits.
+The hybrid nature is telling: Notifications carry information like Query responses but are initiated by the system like Events.
+They inform without being asked. No existing hierarchy accommodates both traits.
 
-Notifications are the only message type that crosses the hexagonal boundary outward. This directional uniqueness alone justifies a separate hierarchy -- routing logic can distinguish inbound messages (Commands, Queries) from internal messages (Events) from outbound messages (Notifications) at the type level.
+Notifications are the only message type that crosses the domain boundary outward.
+This directional uniqueness alone justifies a separate hierarchy -- routing logic can distinguish inbound messages
+(Commands, Queries) from internal messages (Events) from outbound messages (Notifications) at the type level.
 
 === Message Catalog Counts
 
-* *Commands:* 7 variants across 4 sub-hierarchies -- *MemoryCommand:* StoreMemoryCommand, ClaimMemoryCommand, ReclassifyMemoryCommand, ConsolidateMemoryCommand; *AssociationCommand:* AssociateCommand; *AttentionCommand:* DecaySweep; *LifecycleCommand:* ShutdownCommand
+* *Commands:* 7 variants across 4 sub-hierarchies -- *MemoryCommand:* StoreMemoryCommand, ClaimMemoryCommand,
+ReclassifyMemoryCommand, ConsolidateMemoryCommand; *AssociationCommand:* AssociateCommand; *AttentionCommand:* DecaySweep; *LifecycleCommand:* ShutdownCommand
 * *Queries:* 1 sub-hierarchy (RecallQuery) with 2 variants (SearchQuery, ReflectQuery)
-* *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested, AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
-MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished, TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
-* *Notifications:* 3 sub-hierarchies (WellnessNotification, AuditNotification, RecallNotification) with 1 variant each (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
+* *Events:* 17 variants (MemoryStored, MemoryAccessed, MemoryClaimed, MemoryRetrieved, TierChanged, AttentionTierPromotionRequested,
+AttentionTierDemotionRequested, AttentionScoreChanged, AssociationsFound,
+MemoryReclassified, TotalRecallAdvisoryRequested, TotalRecallAdvisoryPublished,
+TotalRecallAdvisoryTerminated, SessionStarted, SessionEnded, StateTransitioned, ModeChanged)
+* *Notifications:* 3 sub-hierarchies (WellnessNotification, AuditNotification, RecallNotification)
+with 1 variant each (BreakNotification, SessionAuditPrompt, TotalRecallNotification)
 
 Full payload details are documented on the link:/mcp-total-recall/architecture/messages/[Message Catalog] architecture page.
 
@@ -191,51 +210,67 @@ Full payload details are documented on the link:/mcp-total-recall/architecture/m
 
 === Akka / Actor Model (Hewitt, 1973)
 
-Actors communicate exclusively through messages. No shared state. Each actor processes messages sequentially. This is the theoretical foundation.
-Total Recall's bounded contexts are actors, and their messages are the commands, queries, events, and notifications defined here.
-Vadim's prior work with Akka-Kotlin Actor model architectures (call center bots, 2022) directly informs this choice.
+Actors communicate exclusively through messages. No shared state.
+Each actor processes messages sequentially. This is the theoretical foundation.
+Total Recall's bounded contexts are actors, and their messages are the commands,
+queries, events, and notifications defined here.
+Vadim's prior work with Akka-Kotlin Actor model architectures (call-center bots, 2022) directly informs this choice.
 
 === Domain-Driven Design (Evans, 2003)
 
-Domain events as a pattern for inter-aggregate communication. "Something happened that domain experts care about." Evans' domain events map directly to our Event hierarchy.
-Our Commands and Queries extend the pattern to cover the request side -- writes and reads respectively. Notifications extend it outward to the connected mind.
+Domain events as a pattern for inter-aggregate communication. "Something happened that domain experts care about."
+Evans' domain events map directly to our Event hierarchy.
+Our Commands and Queries extend the pattern to cover the request side -- writes and reads respectively.
+Notifications extend it outward to the connected mind.
 
 === CQRS (Young, 2010)
 
 Command Query Responsibility Segregation formalizes the separation of commands (writes) and queries (reads).
-Total Recall follows this directly: Commands and Queries are separate sealed hierarchies. Commands change state and produce Events.
-Queries read state and return results. They never mix -- a message that reads and writes would violate the segregation that makes the system predictable.
+Total Recall follows this directly: Commands and Queries are separate sealed hierarchies.
+Commands change state and produce Events.
+Queries read state and return results.
+They never mix -- a message that reads and writes would violate the segregation that makes the system predictable.
 
 === Kotlin Sealed Classes
 
-Kotlin's sealed hierarchies were designed for exactly this use case -- representing restricted class hierarchies where the type is known at compile time.
+Kotlin's sealed hierarchies were designed for exactly this use case -- representing
+restricted class hierarchies where the type is known at compile time.
 The `when` exhaustiveness check is the language-level mechanism that enforces contract completeness.
 
 == Rationale and Alternatives
 
-*Why not direct method calls between contexts:* Faster to implement. But creates compile-time coupling, hides interactions, and makes testing require full context mocks.
+*Why not direct method calls between contexts:* Faster to implement.
+But creates compile-time coupling, hides interactions, and makes testing require full context mocks.
 Messages make every interaction visible, testable, and documented.
 
-*Why not a generic message bus with string-typed messages:* Maximum decoupling -- contexts don't even share message type definitions. But no compile-time safety.
-A typo in a message name is a runtime error. A missing handler is a silent bug. Type safety matters more than decoupling for a system this size.
+*Why not a generic message bus with string-typed messages:*
+Maximum decoupling -- contexts don't even share message type definitions. But no compile-time safety.
+A typo in a message name is a runtime error. A missing handler is a silent bug.
+Type safety matters more than decoupling for a system this size.
 
 *Why not Protocol Buffers or Avro for message definitions:* Adds code generation, serialization overhead, and schema management tooling.
 Justified for cross-service communication. Unnecessary within a single JVM process where Kotlin types provide the same guarantees with zero overhead.
 
 *Why sealed and not open hierarchies:* Open hierarchies allow extension without modifying the base.
-Useful for plugins. But the message catalog is a closed contract -- every message is named, documented, and exhaustively handled.
-Opening the hierarchy would allow unnamed messages that bypass the catalog.
+Useful for plugins. But the message catalog is a closed contract -- every message is named,
+documented, and exhaustively handled. Opening the hierarchy would allow unnamed messages that bypass the catalog.
 
-*Why four hierarchies (Command, Query, Event, Notification) and not one:* Different semantics require different handling.
+*Why four hierarchies (Command, Query, Event, Notification,) and not one:* Different semantics require different handling.
 Commands *_want to_* change state and may be accepted, rejected, or ignored.
-Queries read state and *must* be answered. Events have many consumers and are never rejected -- merely *state facts*. Notifications _leave_ the domain.
+Queries read state and *must* be answered. Events have many consumers and are never rejected -- merely *state facts*.
+Notifications _leave_ the domain.
 Collapsing them into fewer hierarchies would lose these semantic distinctions -- and collapsing Commands and Queries would violate CQRS.
 
 == Consequences
 
 * Every interaction between contexts is visible in the message catalog. No hidden dependencies.
-* The compiler enforces exhaustive handling. Adding a new message variant requires updating every handler. Missing a handler is a compile error, not a runtime bug.
-* Message-based communication adds indirection compared to direct method calls. Each interaction requires constructing a message object and routing it. For current scale, the overhead is negligible.
-* The message catalog is the system's API documentation. The architecture page and the code agree because they describe the same sealed hierarchies.
-* Testing is straightforward. To test a context, send it messages and verify the messages it produces. No mocking of other contexts needed.
-* The sealed hierarchy cannot be extended without modifying the source. This is a feature for contract integrity and a constraint for extensibility. If external plugins ever need to define custom messages, this decision would need to be revisited.
+* The compiler enforces exhaustive handling. Adding a new message variant requires updating every handler.
+Missing a handler is a compiler error, not a runtime bug.
+* Message-based communication adds indirection compared to direct method calls.
+Each interaction requires constructing a message object and routing it. For current scale, the overhead is negligible.
+* The message catalog is the system's API documentation.
+The architecture page and the code agree because they describe the same sealed hierarchies.
+* Testing is straightforward. To test a context, send it messages and verify the messages it produces.
+No mocking of other contexts is needed.
+* Sealed sub-hierarchies cannot be extended without modifying the source.
+This is a feature for contract integrity within each sub-hierarchy. New sub-hierarchies can be added to the open root types without modifying existing code.

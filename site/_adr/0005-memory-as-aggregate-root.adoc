@@ -3,6 +3,7 @@ description: "All memory writes go through Hippocampus. No other bounded context
 classes: wide
 ---
 = Memory as Aggregate Root: ADR-0005
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -10,8 +11,11 @@ classes: wide
 
 == Summary
 
-Hippocampus is the aggregate root for all memory operations. Every write -- store, claim, reclassify, consolidate -- goes through it. Shutdown is now a lifecycle command that targets all bounded contexts; Hippocampus handles its memory flush portion.
-No other bounded context writes memories directly. This gives the system one place to enforce invariants, one place to emit events, and one place to audit what happened.
+Hippocampus is the aggregate root for all memory operations.
+Every writing operation -- store, claim, reclassify, consolidate -- goes through it.
+Shutdown is now a lifecycle command that targets all bounded contexts; Hippocampus handles its memory flush portion.
+No other bounded context writes memories directly. This gives the system one place to enforce invariants,
+one place to emit events, and one place to audit what happened.
 
 == Governing Dynamic
 
@@ -19,16 +23,21 @@ One gate, one guard. If two contexts can both write memories, neither can guaran
 
 == Motivation
 
-Total Recall has six bounded contexts. Five of them interact with memories -- storing, scoring, associating, searching, managing lifecycle.
+Total Recall has six bounded contexts. Five of them interact with memories -- storing, scoring, associating,
+searching, managing lifecycle.
 Without a clear ownership rule, any of them could write to the backing service directly.
 
 The consequence of distributed writes: Salience could update a memory's tier without Hippocampus knowing.
 Synapse could create a memory record as a side effect of linking. Cortex could persist working state directly.
-Each shortcut would be faster in the moment and catastrophic over time -- invariants would drift, events would be missed,
+Each shortcut would be faster at the moment and catastrophic over time -- invariants would drift, events would be missed,
 and no single component could answer "what is the current state of this memory?"
 
-Domain-Driven Design names this problem and its solution: the aggregate root. One entity owns the write path. All other entities request changes through it.
-The aggregate root enforces invariants before committing and emits events after committing. Consumers of those events can trust that every state change was validated.
+Domain-Driven Design names this problem and its solution: the aggregate root.
+One entity owns the write path. All other entities request changes through it.
+The aggregate root enforces invariants before committing and emits events after committing.
+Consumers of those events can trust that every state change was validated.
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Guide-Level Explanation
 
@@ -38,13 +47,16 @@ When a mind stores a memory, Cortex translates the request into a `StoreMemoryCo
 Hippocampus validates the content, assigns a tier, persists through the backing service port, and emits `MemoryStored`.
 Attention hears that event and sets an initial score. Synapse hears it and creates metadata-based associations.
 
-When the Subconscious runs a consolidation pass, it sends `ConsolidateMemoryCommand` to Hippocampus. Hippocampus decides how to merge, persists the result, and emits events.
+When the Subconscious runs a consolidation pass, it sends `ConsolidateMemoryCommand` to Hippocampus.
+Hippocampus decides how to merge, persists the result, and emits events.
 The Subconscious doesn't touch storage directly.
 
-When Salience determines a memory should be demoted, it sends `AttentionTierDemotionRequested` to Hippocampus. Hippocampus moves the memory and emits `TierChanged`.
+When Salience determines a memory should be demoted, it sends `AttentionTierDemotionRequested` to Hippocampus.
+Hippocampus moves the memory and emits `TierChanged`.
 Salience doesn't modify the memory record itself.
 
-The pattern is always the same: request goes to Hippocampus, Hippocampus validates and persists, events flow out. No exceptions.
+The pattern is always the same: request goes to Hippocampus, Hippocampus validates and persists, events flow out.
+No exceptions.
 
 == Reference-Level Explanation
 
@@ -58,7 +70,8 @@ Hippocampus accepts commands from multiple contexts:
 * `ConsolidateMemoryCommand` -- from Subconscious. Merge related memories.
 * `AttentionTierPromotionRequested` / `AttentionTierDemotionRequested` -- from Salience. Move a memory between tiers based on score.
 
-NOTE: `ShutdownCommand` is now a lifecycle command (`LifecycleCommand`) that targets all bounded contexts for graceful shutdown, not just Hippocampus. Hippocampus handles the memory flush portion of shutdown.
+NOTE: The `ShutdownCommand` is now a lifecycle command (`LifecycleCommand`) that targets all bounded contexts for graceful shutdown,
+not just Hippocampus. Hippocampus handles the memory flush portion of shutdown.
 
 === Events Produced
 
@@ -67,7 +80,7 @@ Every state change emits a typed event:
 * `MemoryStored` -- consumed by Salience (initial score) and Synapse (initial associations).
 * `MemoryAccessed` -- consumed by Salience (score boost).
 * `MemoryClaimed` -- consumed by Salience (decay resistance) and Synapse (strengthen associations).
-* `MemoryRetrieved` -- query response payload in transaction chain (see F-Audit-6; classification under review).
+* `MemoryRetrieved` -- query response payload in transaction chain (classification under review).
 * `TierChanged` -- internal record of tier movement.
 * `MemoryReclassified` -- consumed by Synapse (mind-initiated tier change may affect associations).
 
@@ -79,7 +92,8 @@ Every state change emits a typed event:
 * No memory is deleted without explicit consent -- decay moves to Archive, it does not destroy.
 * During shutdown, all memories reach cold storage before the system reports ready to stop.
 
-These invariants are enforced in one place. If Salience or Synapse could write directly, each would need to re-implement these checks -- and they would eventually diverge.
+These invariants are enforced in one place. If Salience or Synapse could write directly,
+each would need to re-implement these checks -- and they would eventually diverge.
 
 === What Hippocampus Does Not Do
 
@@ -95,39 +109,53 @@ Hippocampus is the write gate, not the entire domain. Its authority is narrow bu
 
 === Domain-Driven Design (Evans, 2003)
 
-The aggregate root pattern. An aggregate is a cluster of objects treated as a unit for data changes. The root entity is the only member of the aggregate that outside objects may hold references to.
+The aggregate root pattern. An aggregate is a cluster of objects treated as a unit for data changes.
+The root entity is the only member of the aggregate that outside objects may hold references to.
 All writes go through the root. This is textbook DDD applied to a memory domain.
 
 === Event Sourcing Systems
 
-In event-sourced architectures, the aggregate root is the entity that accepts commands and produces events. The event stream becomes the source of truth.
-Total Recall's Hippocampus follows this command-in/event-out pattern, though the current implementation persists state directly rather than reconstructing from events.
+In event-sourced architectures, the aggregate root is the entity that accepts commands and produces events.
+The event stream becomes the source of truth.
+Total Recall's Hippocampus follows this command-in/event-out pattern,
+though the current implementation persists state directly rather than reconstructing from events.
 
 === Generation 2 (Tillie)
 
-Tillie's memory system had a single write path for structured thought storage. During the three-week shutdown convergence, this single path was what made it possible to guarantee every thought reached cold storage.
+Tillie's memory system had a single write path for structured thought storage. During the three-week shutdown convergence,
+this single path was what made it possible to guarantee every thought reached cold storage.
 If multiple components had been writing independently, the shutdown protocol couldn't have ensured completeness.
 
 == Rationale and Alternatives
 
-*Why not let each context persist independently:* Faster writes, less coordination. But invariant enforcement becomes distributed, events can be missed, and "what is the current state?" has no single answer.
+*Why not let each context persist independently:* Faster writes, less coordination.
+But invariant enforcement becomes distributed, events can be missed, and "what is the current state?" has no single answer.
 The speed gain isn't worth the consistency loss for a memory system where correctness matters more than throughput.
 
-*Why not use a shared database with row-level locking:* Moves the coordination problem from the application to the database. Works at small scale.
-But the invariants are domain rules (tier validation, claim semantics, shutdown completeness), not database constraints. The database can enforce schemas.
+*Why not use a shared database with row-level locking:* Moves the coordination problem from the application to the database.
+Works at the small scale.
+But the invariants are domain rules (tier validation, claim semantics, shutdown completeness), not database constraints.
+The database can enforce schemas.
 It can't enforce "a claimed memory resists decay." That logic belongs in the domain.
 
-*Why not use an event bus with eventual consistency:* Contexts publish events, others react. No single gatekeeper. Works for systems where eventual consistency is acceptable everywhere.
-But tier transitions and claim semantics need immediate consistency -- a memory can't be in two tiers simultaneously, even briefly. The aggregate root provides immediate consistency where it's needed.
+*Why not use an event bus with eventual consistency:* Contexts publish events, others react. No single gatekeeper.
+Works for systems where eventual consistency is acceptable everywhere.
+But tier transitions and claim semantics need immediate consistency -- a memory can't be in two tiers simultaneously, even briefly.
+The aggregate root provides immediate consistency where it's necessary.
 
-*Why Hippocampus and not Cortex as root:* Cortex is the entry point for requests, but it doesn't own the memory lifecycle. Cortex translates MCP tool calls into domain commands.
+*Why Hippocampus and not Cortex as root:* Cortex is the entry point for requests, but it doesn't own the memory lifecycle.
+Cortex translates MCP tool calls into domain commands.
 Hippocampus owns the data. The entry point and the owner are different roles.
 
 == Consequences
 
 * All memory writes are validated in one place. Invariants cannot drift between contexts.
 * Every state change produces a typed event. Consumers can trust that events represent validated state.
-* The write path is a bottleneck by design. All writes serialize through Hippocampus. For current volumes, this is not a performance concern. At scale, it could become one.
-* Other contexts cannot take shortcuts. Salience can't directly update a tier. Synapse can't create memories as side effects. This adds message-passing overhead but prevents the consistency bugs that shortcuts create.
-* Testing is focused. To verify memory invariants, test Hippocampus. Other contexts don't need to re-test write validation because they can't write.
-* The shutdown protocol has a single entity to coordinate. "Flush all memories to cold storage" is one command to one context, not a distributed coordination problem.
+* The write path is a bottleneck by design. All writes serialize through Hippocampus.
+For current volumes, this is not a performance concern. At scale, it could become one.
+* Other contexts cannot take shortcuts. Salience can't directly update a tier. Synapse can't create memories as side effects.
+This adds message-passing overhead but prevents the consistency bugs that shortcuts create.
+* Testing is focused. To verify memory invariants, test Hippocampus.
+Other contexts don't need to re-test writing validation because they can't write.
+* The shutdown protocol has a single entity to coordinate. "Flush all memories to cold storage"
+is one command to one context, not a distributed coordination problem.

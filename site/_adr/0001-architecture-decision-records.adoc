@@ -3,6 +3,7 @@ description: "Record architectural decisions in Rust RFC style, adapted for gene
 classes: wide
 ---
 = Architecture Decision Records: ADR-0001
+:includedir: ../_includes/_fragments
 
 * *Status:* Accepted
 * *Date:* 2026-02-28
@@ -12,9 +13,11 @@ classes: wide
 
 Record architectural decisions in the Rust RFC style, adapted for a project whose decisions are earned across generations of experimentation and production.
 
+include::{includedir}/plebsy-llmy.adoc[]
+
 == Governing Dynamic
 
-Architecture is a *story*! Architects are storytellers. A story well told is retold by everybody.
+Architecture is a *story*! Architects are storytellers. Everybody retells a story well told.
 
 == Motivation
 

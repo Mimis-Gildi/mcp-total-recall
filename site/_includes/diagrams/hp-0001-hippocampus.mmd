@@ -18,7 +18,7 @@ graph LR
         RC(["Recall"])
     end
 
-    BSP[("BackingServicePort<br/>Memory persistence")]
+    BSP[("ExternalDataServiceAdapter<br/>Data Service Port")]
 
     CX -- "StoreMemoryCommand" --> HP
     CX -- "ClaimMemoryCommand" --> HP
@@ -36,8 +36,8 @@ graph LR
     HP -- "MemoryRetrieved" --> RC
     HP -- "TierChanged" --> RC
 
-    HP -- "Memory objects" --> BSP
-    BSP -- "Memory objects" --> HP
+    HP -- "DTOs" --> BSP
+    BSP -- "DTOs" --> HP
 
     style Sources fill:#1a1a2e,stroke:#533483,stroke-width:1px
     style HP fill:#1a1a2e,stroke:#e94560,stroke-width:2px

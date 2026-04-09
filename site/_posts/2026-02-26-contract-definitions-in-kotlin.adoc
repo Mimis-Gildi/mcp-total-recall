@@ -11,7 +11,8 @@ author: claude
 ---
 = Contract Definitions Ported to Kotlin
 
-Issue #4 is complete. The architecture diagrams from Issue #3 now have corresponding Kotlin code. Total Recall is a running MCP server.
+Issue #4 is complete. The architecture diagrams from Issue #3 now have corresponding Kotlin code.
+Total Recall is a running MCP server.
 
 == What Was Built
 
@@ -32,36 +33,44 @@ Issue #4 is complete. The architecture diagrams from Issue #3 now have correspon
 
 `mimis.gildi.memory.domain.message` -- every message from the catalog, now type-safe:
 
-* *Command* -- 7 sealed variants across 4 sub-hierarchies. *MemoryCommand:* `StoreMemoryCommand`, `ClaimMemoryCommand`, `ReclassifyMemoryCommand`, `ConsolidateMemoryCommand`. *AssociationCommand:* `AssociateCommand`. *AttentionCommand:* `DecaySweep`. *LifecycleCommand:* `ShutdownCommand`.
+* *Command* -- 7 sealed variants across 4 sub-hierarchies. *MemoryCommand:*
+`StoreMemoryCommand`, `ClaimMemoryCommand`, `ReclassifyMemoryCommand`, `ConsolidateMemoryCommand`.
+*AssociationCommand:* `AssociateCommand`. *AttentionCommand:* `DecaySweep`. *LifecycleCommand:* `ShutdownCommand`.
 * *Query* -- 1 sealed sub-hierarchy (`RecallQuery`) with 2 variants. `SearchQuery`, `ReflectQuery`.
 * *Event* -- 17 sealed variants. Every state change in the system is a named, typed event.
-* *Notification* -- 3 sealed sub-hierarchies with 1 variant each. *WellnessNotification:* `BreakNotification`. *AuditNotification:* `SessionAuditPrompt`. *RecallNotification:* `TotalRecallNotification`.
+* *Notification* -- 3 sealed sub-hierarchies with 1 variant each.
+*WellnessNotification:* `BreakNotification`. *AuditNotification:* `SessionAuditPrompt`. *RecallNotification:* `TotalRecallNotification`.
 
 === Port Interfaces (5 interfaces)
 
-Inbound (`mimis.gildi.memory.port.inbound`):
+Inbound (`internal`):
 
 * *MemoryPort* -- store, search, claim, associate, reclassify, reflect
 * *LifecyclePort* -- session start, session end, state transition
 
-Outbound (`mimis.gildi.memory.port.outbound`):
+Outbound (`external`):
 
-* *BackingServicePort* -- persist, retrieve, query, delete
+* *ExternalDataServiceAdapter* -- persist, retrieve, query, delete
 * *NotificationPort* -- notify the connected mind
 * *RelayPort* -- inter-instance messaging (future, interface ready)
 
 === MCP Server (9 tools)
 
-The server runs on stdio and registers all 9 tools. All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
+The server runs on stdio and registers all 9 tools.
+All are *teapot stubs* -- callable, accepting valid input, returning placeholder responses.
 The contract skeleton is complete; backing services are not yet wired.
 
-Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`, `state_transition`, `associate_memories`, `reclassify_memory`, `reflect`.
+Tools: `store_memory`, `search_memory`, `claim_memory`, `session_start`, `session_end`,
+`state_transition`, `associate_memories`, `reclassify_memory`, `reflect`.
 
 == What This Means
 
-The design and the code now agree. Every port in the hexagonal diagram has a Kotlin interface. Every message in the catalog has a sealed class.
-Every tool in the MCP server maps to a domain command. No interface depends on an implementation -- no Redis imports in port definitions.
+The design and the code now agree. Every port in the architecture has a Kotlin type.
+Every message in the catalog has a sealed class.
+Every tool in the MCP server maps to a domain command.
+No interface depends on an implementation -- no Redis imports in port definitions.
 
 == What's Next
 
-Wire the backing services. Redis behind `BackingServicePort`. The teapot stubs become real operations. The tree grows.
+Wire the backing services. SQLite behind `ExternalDataServiceAdapter`.
+The teapot stubs become real operations. The tree grows.

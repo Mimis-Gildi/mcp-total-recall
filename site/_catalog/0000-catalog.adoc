@@ -4,7 +4,9 @@ classes: wide
 ---
 = Catalog
 
-The catalog is the audit trail. It connects every architectural artifact to every other artifact -- diagrams to ADRs, ADRs to design documents, design documents to code, code to diagrams. If something is missing, the catalog shows it. If something contradicts, the catalog reveals it.
+The catalog is the audit trail. It connects every architectural artifact to every other artifact -- diagrams to ADRs,
+ADRs to design documents, design documents to code, code to diagrams. If something is missing, the catalog shows it.
+If something contradicts, the catalog reveals it.
 
 == Diagram Inventory
 
@@ -19,10 +21,10 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | System Context -- Total Recall in its environment
 | link:/mcp-total-recall/architecture/[Context]
 
-| link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001]
+| link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001]
 | Ports & Adapters
-| Hexagonal -- ports, adapters, actor model
-| link:/mcp-total-recall/architecture/hexagonal/[Hexagonal]
+| ACL assembly -- ports, adapters, actor model
+| link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]
 
 | link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001]
 | Context Map
@@ -105,17 +107,17 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | Use Architecture Decision Records
 | Template for all ADRs
 
-| link:/mcp-total-recall/decisions/0002-hexagonal-architecture/[0002]
-| Hexagonal Architecture
-| Hexagonal page, ports and adapters diagram
+| link:/mcp-total-recall/decisions/0002-ports-and-adapters/[0002]
+| Anti-Corruption Layers: Ports and Adapters
+| ACL assembly, ports by topic, adapter classification
 
 | link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[0003]
 | stdio as Primary Transport
-| Context page, hexagonal page (inbound adapters)
+| Context page, ports and adapters page
 
 | link:/mcp-total-recall/decisions/0004-resilient-storage-array/[0004]
 | Resilient Storage Array
-| Hexagonal page (outbound ports), BackingServicePort
+| Ports and adapters page, ExternalDataServiceAdapter
 
 | link:/mcp-total-recall/decisions/0005-memory-as-aggregate-root/[0005]
 | Memory as Aggregate Root
@@ -128,6 +130,10 @@ Every Mermaid diagram in the architecture pages. Step 0.5 will extract each into
 | link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[0007]
 | Biological Memory as Reference Model
 | Message catalog (claiming intelligence), bounded contexts (Salience)
+
+| link:/mcp-total-recall/decisions/0008-sqlite-as-primary-backing-service/[0008]
+| SQLite as Primary Backing Service
+| ExternalDataServiceAdapter, test strategy, migration path
 |===
 
 == Bounded Contexts to Code
@@ -140,7 +146,7 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 
 | Hippocampus
 | Aggregate root. CRUD for memories across four tiers. Claiming.
-| `Memory.kt`, `Tier.kt`, `MemoryPort`
+| `Memory.kt`, `Tier.kt`, `MemoryPort`, `MemoryDraft`
 | Interfaces defined
 
 | Synapse
@@ -196,60 +202,41 @@ Mapping from architectural bounded contexts to Kotlin source artifacts.
 | `Notification.kt`
 |===
 
-NOTE: Notification count 3 includes TotalRecallNotification. All counts match code.
+_Notification count 3 includes TotalRecallNotification. All counts match code._
 
 == Ports to Code
 
 [cols="1,1,2,2",options="header"]
 |===
-| Port | Direction | Documented Operations | Code Operations
+| Port | Package | Documented Operations | Code Operations
 
 | `MemoryPort`
-| Inbound
+| `port.internal`
 | store, search, claim, associate, reclassify, reflect
 | `storeMemory`, `searchMemory`, `claimMemory`, `associateMemories`, `reclassifyMemory`, `reflect`
 
 | `LifecyclePort`
-| Inbound
+| `port.internal`
 | session_start, session_end, state_transition
 | `sessionStart`, `sessionEnd`, `stateTransition`
 
-| `BackingServicePort`
-| Outbound
+| `ExternalDataServiceAdapter`
+| `port.external`
 | save, findById, search, delete, update
 | `save`, `findById`, `search`, `delete`, `update`
 
 | `NotificationPort`
-| Outbound
+| `port.external`
 | send
 | `send`
 
 | `RelayPort`
-| Outbound
+| `port.external`
 | relay
 | `relay`
 |===
 
-NOTE: Outbound port operations aligned with code in D-Audit-1, D-Audit-2, D-Audit-3. Documentation and code now match.
-
-== Known Inconsistencies
-
-Audit findings tracked in `INDEX.md`.
-
-=== Resolved
-
-* *10 documentation mismatches* (D-Audit-1 through 10) -- all resolved. Port names aligned, event counts corrected, routing fixed, actor count fixed.
-* *8 of 9 code issues* (C-Audit-1 through 8) -- dead code removed, events documented, packages fixed, schemas aligned, enums created, Duration types, AttentionScoreChanged wrapping.
-* *3 test gaps* (T-Audit-1 through 3) -- all resolved. Server tests expanded (10 tests), self-referential assertion fixed, full message coverage.
-
-=== Open
-
-* *C-Audit-9* -- TotalRecall.kt refactoring pass. Deferred to rdd13r.
-* *F-Audit-6* -- MemoryRetrieved/AttentionScoreChanged/AssociationsFound identity crisis (events or response payloads?). Resolves with TransactionContext usage patterns.
-
 == Design Documents
-
-_Documents will be added as each bounded context is examined._
 
 [cols="1,3,1",options="header"]
 |===
@@ -271,8 +258,8 @@ _Documents will be added as each bounded context is examined._
 | What is an ACL? (Adapter + Port + Adapter)
 | Done
 
-| link:/mcp-total-recall/design/0004-hexagon-sides/[D]
-| Hexagon Sides
+| link:/mcp-total-recall/design/0004-port-topology/[D]
+| Port Topology
 | Done
 
 | link:/mcp-total-recall/design/0005-tiered-memory/[E1]

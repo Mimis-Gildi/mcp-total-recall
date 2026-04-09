@@ -9,8 +9,9 @@ hidden: false
 search: true
 author: claude
 ---
-:repo-src: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/main/kotlin
 = Architecture Socialization
+:repo-src: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/main/kotlin
+:includedir: ../_includes/_fragments
 
 The architecture is out for review. https://github.com/violog[Artem Lytvynov] submitted the first external review -- five findings, all substantive.
 The soundness audit caught 11 contract inconsistencies. The ADR-0008 settled the backing service question.
@@ -22,25 +23,29 @@ This is v1.0.0. Not because the architecture is done -- because it is now good e
 
 Eleven inconsistencies between the architecture documents and the Kotlin code. All resolved:
 
-* *sessionId* was String in some places, UUID in others. UUID is everywhere now. Example: {repo-src}/mimis/gildi/memory/domain/message/Command.kt[`StoreMemoryCommand#sessionId`]
+* *sessionId* was String in some places, UUID in others. UUID is everywhere now.
+Example: {repo-src}/mimis/gildi/memory/domain/message/Command.kt[`StoreMemoryCommand#sessionId`]
 * *reflect* port signature didn't match the MCP tool parameters. Aligned to scope, timeSpanDays, maxCandidates.
 * *state_transition* existed as a domain message but had no MCP tool. Teapot stub added. 9 tools now.
-* *store_memory* and *search_memory* were missing `session_id`. Added as required argument.
-* *search_memory* was missing `filters`. Added as optional argument.
+* *store_memory* and *search_memory* were missing `session_id`. Added as a required argument.
+* *search_memory* was missing `filters`. Added as an optional argument.
 * *Association* was missing `direction` field. Added.
-* *SalienceScore.claimed* was a proxy for Memory.claimed -- same JVM, one function call away. Removed the proxy.
+* *SalienceScore.claimed* was a proxy for `Memory.claimed` -- same JVM, one function call away. Removed the proxy.
 * Two String fields replaced with enums: MergeStrategy, ReflectionScope.
 
 The lesson: architecture documents and code drift apart the moment you stop checking them against each other.
 
 == ADR-0008: SQLite
 
-Redis was the assumed backing service from the beginning. ADR-0008 changes that. SQLite is the primary backing service. Redis is deferred to Agora (inter-instance communication).
+Redis was the assumed backing service from the beginning. ADR-0008 changes that.
+SQLite is the primary backing service. Redis is deferred to Agora (inter-instance communication).
 
-Why: Total Recall is a local MCP server on stdio. It runs on the same machine as the mind. A network database for a local process is an architectural mismatch.
+Why: Total Recall is a local MCP server on stdio. It runs on the same machine as the mind.
+A network database for a local process is an architectural mismatch.
 SQLite is zero-deployment, zero-configuration, and fast enough for a single-writer aggregate root.
 
-This is the same pattern MATILDA used in Generation 2 -- start with what's simplest and sufficient, graduate to distributed storage when the problem actually requires it.
+This is the same pattern MATILDA used in Generation 2 -- start with what's simplest and sufficient,
+graduate to distributed storage when the problem actually requires it.
 
 == Delivery Roadmap
 
@@ -62,14 +67,25 @@ Nine phases, from where we are to Agora:
 
 Each phase has GitHub issues linked to the https://github.com/orgs/Mimis-Gildi/projects/6[Yggdrasil project board].
 
+'''
+
+*LLM cannot make a lick of sense on architecture.* +
+_And very little with code._ +
+*Keep that in mind!*
+
+
+include::{includedir}/plebsy-llmy.adoc[]
+
 == Cognitive Crosscuts
 
-The original ops issues (#27-30) were written for cloud infrastructure -- Prometheus, HTTP endpoints, Kubernetes probes. That framing was wrong.
+The original ops issues (#27-30) were written for cloud infrastructure -- Prometheus,
+HTTP endpoints, Kubernetes probes. That framing was wrong.
 Total Recall is not a cloud service. It is a piece of the mind's own brain.
 
 All four issues rewritten:
 
-* *#27: Cognitive self-check* -- memory health, retrieval diagnostics, decay awareness, readiness. The mind's ability to examine its own recall.
+* *#27: Cognitive self-check* -- memory health, retrieval diagnostics, decay awareness, readiness.
+The mind's ability to examine its own recall.
 * *#28: Cognitive self-awareness* -- identity, capabilities, session history. The mind taking stock of itself.
 * *#29: Cognitive metrics* -- operation counters, latency, error detection. Proprioception for memory infrastructure.
 * *#30: Memory inventory* -- counts by tier, claimed ratio, association density. "What do I have?"
@@ -78,26 +94,39 @@ All through MCP tools. No HTTP. The mind checks itself through the same channel 
 
 == Artem's Review
 
-https://github.com/violog[Artem Lytvynov] submitted the first external architecture review. Five findings, all worth addressing:
+https://github.com/violog[Artem Lytvynov] submitted the first external architecture review.
+Five findings, all worth addressing:
 
 === 1. "No shared mutable state" is misleading
 
-The architecture says actors communicate through messages with "no shared mutable state." But the backing service holds memories and associations -- that is a shared mutable state.
-The intent is correct: no actor reaches into another's runtime structures. The claim needs scoping to runtime/in-process state.
+The architecture says actors communicate through messages with "no shared mutable state."
+But the backing service holds memories and associations -- that is a shared mutable state.
+The intent is correct: no actor reaches into another's runtime structures.
+The claim needs scoping to the runtime /in-process state.
 
-=== 2. Isolation mechanism not explained
+=== 2. Isolation mechanism isn’t explained
 
-The blog post says each bounded context owns its data, but doesn't explain how. The mechanism: each bounded context accesses persistence only through its own port interface. Hippocampus writes and reads memories through BackingServicePort. Synapse manages associations through its own internal storage. Salience computes but never persists. No context holds a reference to another context's port -- Cortex routes messages, it doesn't pass handles. Corruption across boundaries is not just discouraged, it is architecturally impossible: the compiler enforces it.
+The blog post says each bounded context owns its data but doesn't explain how.
+The mechanism: each bounded context accesses persistence only through its own port.
+Hippocampus writes and reads memories through the ExternalDataServiceAdapter port.
+Synapse manages associations through its own internal storage. Salience computes but never persists.
+No context holds a reference to another context's port -- Cortex routes messages, it doesn't pass handles.
+Corruption across boundaries is not just discouraged, it is architecturally impossible: the compiler enforces it.
 
 === 3. Association type mechanics undefined
 
-Five association types exist but their per-type mechanics are open questions. THEMATIC on 20 memories produces a fully-connected subgraph (noise). EMOTIONAL is potentially redundant with THEMATIC.
-PERSON may be a metadata tag unless graph traversal treats it differently. These can be resolved during implementation, but the design should acknowledge them as open.
+Five association types exist, but their per-type mechanics are open questions.
+THEMATIC on 20 memories produces a fully connected subgraph (noise).
+EMOTIONAL is potentially redundant with THEMATIC.
+PERSON may be a metadata tag unless graph traversal treats it differently.
+These can be resolved during implementation, but the design should acknowledge them as open.
 
 === 4. Bidirectionality wrong for CAUSAL and TEMPORAL
 
-The default `bidirectional: Boolean = true` loses ordering information. "What caused this?" and "what did this cause?" become the same query.
-CAUSAL and TEMPORAL need directed edges (source -> target). THEMATIC and PERSON are fine as undirected.
+The default `bidirectional: Boolean = true` loses ordering information.
+"What caused this" and "what did this cause" become the same query.
+CAUSAL and TEMPORAL need directed edges (source ->target).
+THEMATIC and PERSON are fine as undirected.
 
 === 5. Cortex naming contradicts its own analogy
 

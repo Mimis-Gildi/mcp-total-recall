@@ -5,7 +5,7 @@
  */
 @file:Suppress("unused")
 
-package mimis.gildi.memory.port.inbound
+package mimis.gildi.memory.port.internal
 
 import mimis.gildi.memory.domain.model.Association
 import mimis.gildi.memory.domain.model.AssociationType

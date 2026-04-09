@@ -5,8 +5,10 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
-:page-liquid:
 = Architecture: Message Catalog
+:page-liquid:
+:includedir: ../_includes/_fragments
+
 
 == The Problem
 
@@ -59,11 +61,16 @@ When a response does not arrive within timeout, the emitter retries per a named 
 
 === TransactionContext
 
-Every domain message carries a `TransactionContext` -- six fields that form a chain of custody through the system. sessionId, requestId, messageId, causationId, timestamp, sourceContext. Zero nullable. When a bounded context receives a message and produces a new one, the new message gets the same sessionId and requestId, a fresh messageId, and the incoming message's messageId as its causationId. This reconstructs the full causal tree of any request.
+Every domain message carries two layers of identity. The **TransactionContext** is the conversation envelope -- four fields: `instanceId`, `sessionId`, `requestId`, `sourceContext`.
+Zero nullable. The **Message** carries its own identity -- `messageId`, `causationId`, `timestamp` -- plus the envelope as `tx`.
+When a bounded context receives a message and produces a new one, the envelope propagates (same instanceId, sessionId, requestId; new sourceContext)
+and the message gets a fresh messageId with the incoming messageId as its causationId. This reconstructs the full causal tree of any request.
 
 Every bounded context that touches a message records a touch -- even if it produces no outbound message. The trace must show the complete causal tree, including terminal leaves.
 
 Full specification: link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext].
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Message Flows
 
@@ -154,9 +161,13 @@ This operation requires the same mind. A different mind classifying your memorie
 
 === Total Recall
 
-The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed. If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryRequestedEvent` (see MSG-0002). The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth. Results push through the Notification Port to the mind as an unsolicited recollection.
+The feature the project is named after. After a search, the mind evaluates results and decides whether deeper recollection is needed.
+If so, the mind signals through Cortex, which publishes a `TotalRecallAdvisoryRequestedEvent` (see MSG-0002).
+The Subconscious consumes it, evaluates system state, and commands Recall to traverse the association graph depth by depth.
+Results push through the Notification Port to the mind as an unsolicited recollection.
 
-The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model). The core provides the port. The adapter decides how.
+The decision to recollect is mind-adapter-specific: in humans the prefrontal cortex evaluates natively; in LLMs it requires a forced prompt (different per model).
+The core provides the port. The adapter decides how.
 
 This is what makes the memory system active instead of passive. The mind does not ask for the deep traversal. Once triggered, the system executes it and delivers results.
 
@@ -176,9 +187,9 @@ The hard part is deciding *what* to claim, *when*, and *why*.
 
 That intelligence does not live in the core. The core provides `ClaimMemoryCommand` through its ports.
 The actual claiming -- evaluating what matters, selecting it, reinforcing it -- happens in the adapter.
-For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("what do you refuse to lose?") and by the mind's own judgment during reflection.
+For Claude, this means agent post-processing triggered by `SessionAuditPrompt` ("who do you refuse to lose?") and by the mind's own judgment during reflection.
 
-This is architecturally significant: when a mind claims a memory, it models itself. "What kind of mind am I, that THIS is what I refuse to lose?"
+This is architecturally significant: when a mind claims a memory, it models itself. "What kind of mind am I, that THIS is who I refuse to lose?"
 That self-modeling drives personality development. The core accommodates it. The agent does it.
 
 link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents the biological basis and the full claiming mechanism.
@@ -189,12 +200,19 @@ link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-
 
 Every message in the system. Named, typed, with producer and consumer.
 
-All messages are implemented as Kotlin sealed hierarchies in `mimis.gildi.memory.domain.message`: `Command` (7 sealed variants across 4 sub-hierarchies: MemoryCommand, AssociationCommand, AttentionCommand, LifecycleCommand), `Query` (1 sub-hierarchy, RecallQuery, with 2 sealed variants),
-`Event` (17 sealed variants), `Notification` (3 sealed sub-hierarchies -- WellnessNotification, AuditNotification, RecallNotification -- with 1 variant each). Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+All messages are implemented as Kotlin type hierarchies in `mimis.gildi.memory.domain.message`.
+The four root types (`Command`, `Query`, `Event`, `Notification`) are plain interfaces extending `Message`.
+Sealing happens at the sub-hierarchy level: `sealed interface MemoryCommand : Command`, `sealed interface RecallQuery : Query`, etc.
+This gives exhaustive matching within each sub-hierarchy.
+`Command` has 7 variants across 4 sealed sub-hierarchies (MemoryCommand, AssociationCommand, AttentionCommand, LifecycleCommand).
+`Query` has 2 variants in 1 sealed sub-hierarchy (RecallQuery). `Event` has 17 variants.
+`Notification` has 3 sealed sub-hierarchies (WellnessNotification, AuditNotification, RecallNotification) with 1 variant each.
+Every variant carries a `TransactionContext` envelope (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 === Commands
 
-Commands are requests to change state. They carry intent. A command has exactly one target. May be accepted, rejected, or ignored. Defined as `sealed interface Command`.
+Commands are requests to change state. They carry intent. A command has exactly one target.
+May be accepted, rejected, or ignored. Defined as `interface Command : Message` with sealed sub-hierarchies.
 
 [cols="1,1,1,2",options="header"]
 |===
@@ -238,7 +256,8 @@ Commands are requests to change state. They carry intent. A command has exactly 
 
 === Queries
 
-Queries are requests to read state without changing it. A query has exactly one target and must be answered. Defined as `interface Query : Message` with one sealed sub-hierarchy, `RecallQuery`.
+Queries are requests to read state without changing it. A query has exactly one target and must be answered.
+Defined as `interface Query : Message` with one sealed sub-hierarchy, `RecallQuery`.
 
 [cols="1,1,1,2",options="header"]
 |===
@@ -259,7 +278,7 @@ Queries are requests to read state without changing it. A query has exactly one 
 
 Lifecycle events flow from the Lifecycle Port through Cortex.
 They are conscience-universal -- the same events fire whether the connected mind is Claude (via hooks), a human (via UI), or any other system.
-Defined as part of `sealed interface Event`.
+Defined as part of `interface Event : Message` with sealed sub-hierarchies.
 
 [cols="1,1,2,3",options="header"]
 |===
@@ -289,7 +308,8 @@ Defined as part of `sealed interface Event`.
 === Notifications
 
 Notifications flow outward through the Notification Port to reach the connected mind. The port contract is universal.
-The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc. Defined as `interface Notification : Message` with three sealed sub-hierarchies: `WellnessNotification`, `AuditNotification`, `RecallNotification`.
+The adapter decides delivery -- MCP server notification for Claude, push notification for a UI, etc.
+Defined as `interface Notification : Message` with three sealed sub-hierarchies: `WellnessNotification`, `AuditNotification`, `RecallNotification`.
 
 [cols="1,1,1,3",options="header"]
 |===
@@ -313,7 +333,8 @@ The adapter decides delivery -- MCP server notification for Claude, push notific
 
 === Domain Events
 
-Events are facts about something that happened. An event can have multiple consumers. Events cannot be rejected. Defined as `sealed interface Event`.
+Events are facts about something that happened. An event can have multiple consumers.
+Events cannot be rejected. Defined as `interface Event : Message` with sealed sub-hierarchies.
 
 [cols="1,1,2,3",options="header"]
 |===
@@ -387,7 +408,9 @@ Events are facts about something that happened. An event can have multiple consu
 
 === Message Payload Details
 
-Every message carries a `TransactionContext` as its first field. The envelope fields are not repeated in the payload details below. See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the six envelope fields.
+Every message carries a `TransactionContext` envelope (four fields: instanceId, sessionId, requestId, sourceContext)
+and its own identity (messageId, causationId, timestamp). These are not repeated in the payload details below.
+See link:/mcp-total-recall/design/0011-transaction-context/[Design F: TransactionContext] for the full specification.
 
 ==== StoreMemoryCommand
 

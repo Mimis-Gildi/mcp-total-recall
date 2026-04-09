@@ -3,7 +3,7 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-package mimis.gildi.memory.port.outbound
+package mimis.gildi.memory.port.external
 
 /**
  * Outbound port for inter-instance relay via Agora.

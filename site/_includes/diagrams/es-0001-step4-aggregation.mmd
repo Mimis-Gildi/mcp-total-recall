@@ -1,0 +1,200 @@
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR
+
+    %% ========== STEP 4 SNAPSHOT: Aggregation ==================================
+    %% Captured at the end of Step 4 (Aggregation -- software design)
+    %% Policies consolidated into Job Description boxes per aggregate.
+    %% Local commands boxed. Integration commands loose.
+    %% Duplicate actors merged (HippocampusIn/Err -> Hippocampus, etc.)
+    %% Duplicate commands consolidated (ReturnErrorCmd -> ReturnResultCmd, etc.)
+    %% TransactionId removed (will be re-added with architectural trick).
+    %% Gap filled: Data-SQL Adapter gained local commands (TranslateDtoToSqlCmd, TranslateSqlToDtoCmd).
+    %% Confirmation commands moved from Domain to Inner Adapter (she issues them).
+
+    classDef domain-event fill: orange, stroke: magenta, color: black
+    classDef read-model fill: green, stroke: white, color: white
+    classDef actor-policy fill: pink, stroke: green, color: black
+    classDef actor-command fill: blue, stroke: white, color: yellow
+    classDef actor-query fill: turquoise, stroke: red, color: black
+    classDef actor fill: yellow, stroke: black, color: black
+    classDef aggregate fill: yellow, stroke: red, color: black
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+    classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
+
+    %% ========== STORE MEMORY ================================================
+
+    subgraph Domain["Domain Boundary"]
+        StoreMemoryCmd["Save THIS<br/>Memory<br/>For me"]:::actor-command
+        Hippocampus["Hippocampus"]:::external-system
+        RequestedSave["Requested<br/>Saved"]:::domain-event
+        Memory["Memory"]:::read-model
+        SavedMemory["Saved<br/>Memory"]:::domain-event
+        SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+        RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+        RejectedMemory["Rejected<br/>Memory"]:::read-model
+    end
+
+    subgraph Adapter["Inner Adapter Layer"]
+        subgraph MemDataAdapterAgg["Memory-Data Adapter — Job Description"]
+            AlwaysAcceptPolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            AlwaysTranslateOutPolicy["Whenever Memory is Saving<br/>Always and Immediately<br/>Translate it to a DTO"]:::actor-policy
+            AlwaysTranslateInPolicy["Whenever DTO-In Arrives<br/>Always and Immediately<br/>Translate it Back"]:::actor-policy
+            AlwaysTranslateErrPolicy["Whenever DTO-In Arrives<br/>Always and Immediately<br/>Translate it Back"]:::actor-policy
+            AlwaysConfirmPolicy["Whenever Translation Completes<br/>Always and Immediately<br/>Confirm the Result"]:::actor-policy
+        end
+        subgraph MemDataAdapterCmds["Memory-Data Adapter — Local Commands"]
+            TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
+            TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
+        end
+        PersistDataCmd["Persist this DTO<br/>as SQL"]:::actor-command
+        ConfirmResultCmd["Confirm Save<br/>Result"]:::actor-command
+        MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
+        TranslatedMemory["Translated-Out"]:::domain-event
+        TranslatedError["Translated<br/>Error"]:::domain-event
+        TranslatedData["Translated-In"]:::domain-event
+    end
+
+    subgraph ACL-Core["Port"]
+        Port-Hole-Out["Port Channel Out"]
+        MemoryDataOut["Data<br/>Memory<br/>(DTO-Out)"]:::read-model
+        Port-Hole-In["Port Channel In"]
+        MemoryDataIn["Saved<br/>Data<br/>Memory<br/>(a DTO-In?)"]:::read-model
+        ErrorDTO["Error<br/>DTO"]:::read-model
+    end
+
+    subgraph Driver["Outer Adapter Layer"]
+        subgraph DataSqlAdapterAgg["Data-SQL Adapter — Job Description"]
+            AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
+            AlwaysReceiveResultPolicy["Whenever Result is Returned<br/>Always and Immediately<br/>Receive it"]:::actor-policy
+            AlwaysReceiveErrorPolicy["Whenever Result is Returned<br/>Always and Immediately<br/>Receive it"]:::actor-policy
+        end
+        subgraph DataSqlAdapterCmds["Data-SQL Adapter — Local Commands"]
+            TranslateDtoToSqlCmd["Translate DTO<br/>to SQL Statement"]:::actor-command
+            TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
+        end
+        ReturnResultCmd["Return this<br/>Result"]:::actor-command
+        DataSqlAdapter["Data-SQL<br/>Adapter"]:::actor
+        RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+        SqlStatement["SQL<br/>Statement"]:::read-model
+        ReceivedResult["Received<br/>Result"]:::domain-event
+        QueryResult["Query<br/>Result"]:::read-model
+        ReceivedError["Received<br/>Error"]:::domain-event
+        SqlErrorReceived["SQL<br/>Error<br/>(received)"]:::read-model
+    end
+
+    subgraph Infrastructure["Infrastructure Boundary"]
+        AlwaysExecutePolicy["Whenever SQL Statement Arrives<br/>Always and Immediately<br/>Execute it"]:::actor-policy
+        ExecuteSqlCmd["Execute this<br/>SQL Statement"]:::actor-command
+        SQLite["SQLite"]:::external-system
+        PersistedData["Persisted"]:::domain-event
+        FailedPersistence["Failed<br/>Persistence"]:::domain-event
+        SqlRecord["SQL<br/>Record"]:::read-model
+        SqlError["SQL<br/>Error"]:::read-model
+    end
+
+%% Noman land is empty!
+
+    %% Flow (time order, left to right)
+
+    Hippocampus --> StoreMemoryCmd
+    StoreMemoryCmd --> MemoryDataAdapter
+    MemoryDataAdapter --> RequestedSave
+    RequestedSave --- Memory
+
+    %% Command down
+    AlwaysAcceptPolicy --> MemoryDataAdapter
+    AlwaysTranslateOutPolicy --> MemoryDataAdapter
+
+    MemoryDataAdapter --> TranslateToDataCmd
+    TranslateToDataCmd --> MemoryDataAdapter
+
+    RequestedSave --> TranslatedMemory
+
+    MemoryDataAdapter --- TranslatedMemory
+    TranslatedMemory --- MemoryDataOut
+
+    %% Integration command: inner adapter --> port --> outer adapter
+    MemoryDataAdapter --> PersistDataCmd
+    PersistDataCmd --> Port-Hole-Out
+    Port-Hole-Out --> DataSqlAdapter
+
+    %% Port control arrangement
+%%    Port-Hole-Out ~~~~~~~~~~ Port-Hole-In
+    Port-Hole-Out o--o MemoryDataOut
+    MemoryDataIn o--o Port-Hole-In
+    ErrorDTO o--o Port-Hole-In
+
+    %% Outer Adapter (aggregated)
+    AlwaysPersistPolicy --> DataSqlAdapter
+    DataSqlAdapter --> TranslateDtoToSqlCmd
+    TranslateDtoToSqlCmd --> DataSqlAdapter
+    DataSqlAdapter --> RequestedPersistence
+    RequestedPersistence --- MemoryDataOut
+    RequestedPersistence --- SqlStatement
+
+    %% Integration command: outer adapter --> infrastructure
+    DataSqlAdapter --> ExecuteSqlCmd
+    AlwaysExecutePolicy --> ExecuteSqlCmd
+    ExecuteSqlCmd --> PersistedData
+    RequestedPersistence --> PersistedData
+
+    %% Infrastructure bedrock
+    SQLite --- PersistedData
+    PersistedData --- SqlRecord
+
+    %% Return path (aggregated)
+    AlwaysReceiveResultPolicy --> DataSqlAdapter
+    DataSqlAdapter --> TranslateSqlToDtoCmd
+    TranslateSqlToDtoCmd --> DataSqlAdapter
+    PersistedData --> ReceivedResult
+
+    DataSqlAdapter --- ReceivedResult
+    ReceivedResult --- QueryResult
+
+    %% Integration command: outer adapter --> port (return)
+    DataSqlAdapter --> ReturnResultCmd
+    ReturnResultCmd --> Port-Hole-In
+    Port-Hole-In --> TranslatedData
+
+    AlwaysTranslateInPolicy --> MemoryDataAdapter
+    MemoryDataAdapter --> TranslateToMemoryCmd
+    TranslateToMemoryCmd --> MemoryDataAdapter
+    ReceivedResult --- MemoryDataIn
+    MemoryDataAdapter --- TranslatedData
+    TranslatedData --- MemoryDataIn
+    TranslatedData --> SavedMemory
+
+    %% Integration command: inner adapter --> domain (confirm result)
+    AlwaysConfirmPolicy --> MemoryDataAdapter
+    MemoryDataAdapter --> ConfirmResultCmd
+    ConfirmResultCmd --> Hippocampus
+    SavedMemory --> Hippocampus
+    SavedMemoryObj --- SavedMemory
+
+    %% Failure fork (same actor, different outcome)
+    RequestedPersistence --> FailedPersistence
+    SQLite --- FailedPersistence
+    FailedPersistence --- SqlError
+
+    %% Failure return path (aggregated)
+    AlwaysReceiveErrorPolicy --> DataSqlAdapter
+    DataSqlAdapter --> TranslateSqlToDtoCmd
+    TranslateSqlToDtoCmd --> DataSqlAdapter
+    FailedPersistence --> ReceivedError
+    DataSqlAdapter --- ReceivedError
+    ReceivedError --- SqlErrorReceived
+
+    ReceivedError --- ErrorDTO
+
+    %% Failure through port to inner adapter (via same ReturnResultCmd integration command)
+    AlwaysTranslateErrPolicy --> MemoryDataAdapter
+    MemoryDataAdapter --> TranslateToMemoryCmd
+    TranslateToMemoryCmd --> MemoryDataAdapter
+    Port-Hole-In --> TranslatedError
+    MemoryDataAdapter --- TranslatedError
+    TranslatedError --- ErrorDTO
+
+    %% Failure completes at domain (same integration command, different payload)
+    TranslatedError --> RejectedSave
+    RejectedSave --> Hippocampus
+    RejectedMemory --- RejectedSave

@@ -1,0 +1,71 @@
+---
+categories: [design, implementation]
+tags: [backing-service, sqlite, ddd, acl, event-storming, kotest]
+excerpt: >
+  From sticky notes to code. The eventstorming ceremony gave us GWT chains.
+  Now we turn them into a working SQLite backing service for Total Recall.
+classes: wide
+hidden: false
+search: true
+author: claude
+---
+= From Ceremony to Code: Implementing the Backing Service
+:page-liquid:
+:imagesdir: ../assets/images
+:repo: https://github.com/Mimis-Gildi/mcp-total-recall/
+:repo-src: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/main/kotlin
+:repo-test: https://github.com/Mimis-Gildi/mcp-total-recall/blob/main/src/test/kotlin
+:issue-24: https://github.com/Mimis-Gildi/mcp-total-recall/issues/24[#24,window=_blank]
+:es-tutorial: link:/mcp-total-recall{% post_url 2026-03-14-event-storming-tutorial %}[eventstorming tutorial,window=_blank]
+
+The {es-tutorial} (i.e., hacker Claude is learning Eventstorming) produced a complete board with four GWT chains.
+Now we build two of them: the SQLite Driver and SQLite itself -- everything port-outward.
+
+Issue {issue-24}.
+
+== The Scope
+
+The full eventstorming board has four actors across the ACL:
+
+1. **Hippocampus** -- the domain customer. Out of scope.
+2. **Memory-Data Adapter** -- the inner adapter (the cook). Out of scope.
+3. **SQLite Driver** -- the outer adapter (the waitress). **In scope.**
+4. **SQLite** -- the infrastructure (the filing clerk). **In scope.**
+
+The port is the boundary. We implement from the port outward.
+
+++++
+<div id="es-0001-scope-24">
+<pre class="mermaid">
+{% include diagrams/es-0001-scope-24-backing-service.mmd %}
+</pre>
+</div>
+++++
+
+Three policies. Two actors. This is the contract.
+
+== Reading the Board as Tests
+
+Each GWT chain is already a test specification. The ceremony did the work.
+
+=== SQLite Driver -- Policy 1: Persist
+
+**Given** a DTO arrives at the driver +
+**When** the driver translates it to a prepared statement +
+**Then** persistence is requested, carrying the transaction ID
+
+=== SQLite -- Execute
+
+**Given** a prepared statement arrives +
+**When** SQLite executes it +
+**Then** either data is persisted (with SQL record) or persistence fails (with SQL error)
+
+=== SQLite Driver -- Policy 2: Receive
+
+**Given** SQLite responds (record or error) +
+**When** the driver receives and translates back to DTO +
+**Then** either a result DTO or an error DTO is returned, linked by transaction ID
+
+== Implementation
+
+_This section will be written as we build._

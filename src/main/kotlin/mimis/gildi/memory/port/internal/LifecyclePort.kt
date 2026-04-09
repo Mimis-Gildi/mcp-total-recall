@@ -3,7 +3,7 @@
  * Copyright (C) 2025-2026 Mimis-Gildi
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-package mimis.gildi.memory.port.inbound
+package mimis.gildi.memory.port.internal
 
 import mimis.gildi.memory.domain.model.SessionEndCause
 import mimis.gildi.memory.domain.model.WorkingMode

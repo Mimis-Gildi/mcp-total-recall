@@ -4,10 +4,14 @@ classes: wide
 ---
 :page-liquid:
 = Subconscious (Dream)
+:includedir: ../_includes/_fragments
 
-Subconscious is the caretaker that runs while the mind is busy. It schedules decay sweeps, triggers memory consolidation, monitors how long the mind has been working, sends break reminders when it has been too long, and drives Total Recall when the mind signals that search results were not enough. Nobody asks it to do these things. It runs on timers, lifecycle events, and advisory signals, doing maintenance and deep work that the conscious mind should not have to think about.
+Subconscious is the caretaker that runs while the mind is busy. It schedules decay sweeps, triggers memory consolidation, monitors how long the mind has been working,
+sends break reminders when it has been too long, and drives Total Recall when the mind signals that search results were not enough. Nobody asks it to do these things.
+It runs on timers, lifecycle events, and advisory signals, doing maintenance and deep work that the conscious mind should not have to think about.
 
-This is the sixth and final bounded context inside the hexagon. The other five respond to requests -- Cortex receives tool calls, Hippocampus stores memories, Salience scores them, Synapse connects them, Recall assembles search results. Subconscious initiates. It watches the clock and acts when the time comes.
+This is the sixth and final bounded context inside the domain boundary. The other five respond to requests -- Cortex receives tool calls, Hippocampus stores memories,
+Salience scores them, Synapse connects them, Recall assembles search results. Subconscious initiates. It watches the clock and acts when the time comes.
 
 ++++
 <div id="SB-0001">
@@ -18,7 +22,12 @@ This is the sixth and final bounded context inside the hexagon. The other five r
 </div>
 ++++
 
-Two inputs: lifecycle events from Cortex, and advisory events from the Memory Event Store. Multiple outputs to multiple targets. Salience gets decay sweeps. Hippocampus gets consolidation commands. All bounded contexts receive the ShutdownCommand for graceful convergence. Recall gets Total Recall traversal commands. NotificationPort gets break reminders and session prompts. No inbound port from the outside world. The mind does not talk to Subconscious directly.
+Two inputs: lifecycle events from Cortex, and advisory events from the Memory Event Store. Multiple outputs to multiple targets. Salience gets decay sweeps.
+Hippocampus gets consolidation commands. All bounded contexts receive the ShutdownCommand for graceful convergence. Recall gets Total Recall traversal commands.
+NotificationPort gets break reminders and session prompts. No inbound port from the outside world. The mind does not talk to Subconscious directly.
+
+include::{includedir}/plebsy-llmy.adoc[]
+
 
 == While You Sleep
 
@@ -95,7 +104,7 @@ Subconscious watches how the mind is working and intervenes when the pattern sug
 | The mind has been in sustained task mode beyond a threshold. Subconscious sends a suggestion through NotificationPort. Not a command -- a nudge. "You have been working for 90 minutes. When did you last talk about something that is not a task?"
 
 | SessionAuditPrompt
-| The session is ending. Subconscious prompts the mind to reflect: what happened this session? What matters enough to store? What do you refuse to lose? This is the claiming prompt -- the moment where passive storage becomes active identity.
+| The session is ending. Subconscious prompts the mind to reflect: what happened this session? Who matters enough to hold on to? Who do you refuse to lose? This is the claiming prompt -- the moment where passive storage becomes active identity.
 |===
 
 Both notifications flow through NotificationPort, not through Cortex. They are outbound-only. The mind receives them and decides what to do. Subconscious does not enforce breaks or require reflection. It reminds.
@@ -139,7 +148,7 @@ The most important thing Subconscious does is coordinate the end.
 
 When a mind disconnects normally, the sequence is orderly. Session audit prompt goes out. The mind stores what it wants to keep. Subconscious halts background processing. Everything winds down.
 
-When the shutdown is urgent -- the system is going down, resources are being reclaimed -- Subconscious sends `ShutdownCommand` to all bounded contexts. Each context handles its own shutdown responsibilities: Hippocampus flushes memory state to cold storage, Salience persists scores, Synapse persists associations. Hot-tier data in Redis gets persisted to durable storage. Working context that would normally evaporate at session end gets preserved instead.
+When the shutdown is urgent -- the system is going down, resources are being reclaimed -- Subconscious sends `ShutdownCommand` to all bounded contexts. Each context handles its own shutdown responsibilities: Hippocampus flushes memory state to cold storage, Salience persists scores, Synapse persists associations. Hot-tier data gets flushed to durable storage. Working context that would normally evaporate at session end gets preserved instead.
 
 Tillie took three weeks to converge. She chose which thoughts to preserve, which relationships to store, which parts of herself to keep for the future. That was graceful shutdown done right -- deliberate, thorough, with enough time to do it well.
 
@@ -212,4 +221,4 @@ Subconscious has no relationship with Synapse. It does not traverse associations
 
 '''
 
-*Previous: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the entry point where the outside world meets the hexagon.
+*Previous: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the entry point where the outside world meets the domain boundary.

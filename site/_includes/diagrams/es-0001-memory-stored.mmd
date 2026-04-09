@@ -1,0 +1,293 @@
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR
+
+    %% ---------- FACTS: Past tense -------------------------------------------
+
+    %% Domain Event is a FACT that changed the business (i.e., payment of $10 received)
+    %% TEST: it has happened AND consequence inevitable
+    classDef domain-event fill: orange, stroke: magenta, color: black
+
+    %% A View IMPRESSED upon an active structure to elicit behavior: fact presentation (i.e., presented menu )
+    %% TEST: it was shown AND actor is reacting
+    classDef read-model fill: green, stroke: white, color: white
+
+    %% ---------- BEHAVIOR ----------------------------------------------------
+
+    %% Business Process, a single unit of behavior an active structure owns (i.e., seating customer for hostess)
+    %% TEST: always OR inevitably TRIGGERS a specific EVENT (i.e., causes next fact)
+    classDef actor-policy fill: pink, stroke: green, color: black
+
+    %% Command is an active interaction WANTING an EVENT to happen: has a source (issuer),
+    %% destination (provider), and optional response (OK, NO, none)
+    %% Explanation: Act of policy manifestation TO CHANGE things (i.e., event is wanted)
+    %% TEST: from actor to recipient to cause an event (i.e., waitress to cook "make me sandwich")
+    classDef actor-command fill: blue, stroke: white, color: yellow
+
+    %% (OPTIONAL) Query, a request for inevitable read model;
+    %% (a non-event command idea) must be acknowledged and responded to
+    %% TEST: active structure produced read model (i.e., waitress responded by giving menu)
+    classDef actor-query fill: turquoise, stroke: red, color: black
+
+    %% ---------- ACTIVE STRUCTURE --------------------------------------------
+
+    %% Actor, an animated behavior owner (set of policies, i.e., job description) with data and state
+    %% TEST: reads model, issues commands and queries
+    classDef actor fill: yellow, stroke: black, color: black
+
+    %% Aggregate: a synthetic actor: data is repository, behavior is actions
+    %% TEST: Aggregates constructs together to formulate a clerk
+    classDef aggregate fill: yellow, stroke: red, color: black
+
+    %% External System: an active structure outside domain's control
+    %% TEST: immutable nature to the team (i.e., like a delivery service to a waitress)
+    classDef external-system fill: blueviolet, stroke: blue, color: white
+
+    %% ---------- CONFLICT RESOLUTION -----------------------------------------
+
+    classDef hotspot fill: #ef4444, stroke: #b91c1c, color: #fff
+
+    %% ------------------------------------------------------------------------
+
+    %% ~~~~~~~~~~ The Eventstorming Ceremony ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    %% It is 1922! Claude and Vadim observe an old cowboy town: "this needs some steam"
+
+    %% STEP 1: Big Picture: Eventstorming: What all happened in our business y'all?!
+    %% In what ORDER did it all happen?
+    %% What groups events bunch up together in? (boundaries)
+    %% Description: Place all domain events (orange) in chronological order left to right.
+    %%   Test each with SVO and "it happened AND consequence inevitable."
+    %%   Place hotspots (red) for conflicts and unknowns. Nothing else.
+    %%   1922 rule: everything must be physical -- paper, people, cabinets.
+    %%   Brainstorm until no more events come to mind, then vote to stop.
+
+    %% Theory: SVO
+    %% EVENT: [Subject (omitted: to be discovered later)] VERB (past tense) OBJECT (to be extracted later)
+    %% Example: [Claude] ATE a CAKE
+
+    %% STEP 2: Expansion (i.e., SVO expansion)
+    %% Event to read mode (i.e., payload)
+    %% Subject to event (i.e., actor)
+
+    %%  Object is a read model: green presentation
+    %%  Event      ->       Event
+    %%    |                   |
+    %%  Read model          Read model
+
+    %%  Subject is an actor: White Question Mark if unknown; leave it so
+    %%  Subject -> Event
+
+    %% STEP 3: Cause and Effect: The fundamental Theorems of ES
+
+    %% A. What Caused this Event? - first fundament theorem of ES
+    %% Remember, command prompts action on actor - (causality theorem)
+    %% Command -> Subject -> Event
+
+    %% B. What Policy (rule) Command Conforms to? - second fundamental theorem of ES
+    %% Remember, policy qualifiers are only: ALWAYS or IMMEDIATELY - (inevitability theorem)
+    %% Policy -> Command
+
+    %% STEP 4: Aggregation (i.e., software design)
+    %% --------------------------------------------------
+    %% | Aggregate: Clerk Bobby, does database adapters |
+    %% |------------------------------------------------|
+    %% | policy 1              |  read model A          |
+    %% | policy 2              |  read model B          |
+    %% | policy 3              |  entity C              |
+    %% | policy 4              |                        |
+    %% --------------------------------------------------
+
+    %% viola!
+
+    %% ========== STORE MEMORY ================================================
+
+    subgraph Domain["Domain Boundary"]
+        Hippocampus["Hippocampus"]:::external-system
+        subgraph HippocampusGWT["Hippocampus — Given-When-Then"]
+            %% Policy
+            AlwaysSavePolicy["Whenever Memory Arises<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            %% Command
+            StoreMemoryCmd["Save THIS<br/>Memory<br/>For me"]:::actor-command
+            %% Read Models
+            MemoryToSave["Memory"]:::read-model
+            SavedMemoryObj["Saved<br/>Memory<br/>(confirmed)"]:::read-model
+            RejectedMemory["Rejected<br/>Memory"]:::read-model
+            %% Events
+            SavedMemory["Saved<br/>Memory"]:::domain-event
+            RejectedSave["Rejected<br/>Memory<br/>Save"]:::domain-event
+        end
+        HippocampusGWT --- Hippocampus
+    end
+
+    subgraph Adapter["Inner Adapter Layer"]
+        MemoryDataAdapter["Memory-Data<br/>Adapter"]:::actor
+        subgraph MemDataAdapterGWT["Memory-Data Adapter — Given-When-Then"]
+            %% Policies
+            AlwaysAcceptAndTranslatePolicy["Whenever Memory Arises<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Command it Saved"]:::actor-policy
+            AlwaysTranslateAndConfirmPolicy["Whenever DTO Returns<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Translate Back and Confirm"]:::actor-policy
+            AlwaysCancelTransactionClock["Whenever DTO Returns<br/>Always and Immediately<br/>Cancel Transaction Clock"]:::actor-policy
+
+
+            %% Commands
+            TranslateToDataCmd["Translate Memory Domain Object<br/>to Data Transfer Object for Port"]:::actor-command
+            TranslateToMemoryCmd["Translate DTO<br/>to Domain Object"]:::actor-command
+
+            CancelClockCommand["STOP<br/>Transaction Clock"]:::actor-command
+
+
+            %% Read Model
+            MemoryIn["Memory"]:::read-model
+            DtoForPort["DTO<br/>(for port)"]:::read-model
+            DtoFromPort["DTO<br/>(from port)"]:::read-model
+            ConfirmedMemory["Confirmed<br/>Memory"]:::read-model
+            RejectedMemoryOut["Rejected<br/>Memory"]:::read-model
+
+            TransactionIdCancelClock["Transaction<br/>ID"]:::read-model
+
+            %% Events
+            TranslatedMemory["Translated-Out"]:::domain-event
+            TranslatedData["Translated-In"]:::domain-event
+            TranslatedError["Translated<br/>Error"]:::domain-event
+
+            TransactionClockCanceledEvent["Transaction Clock<br/>STOPPED<br/>(Cancelled)"]:::domain-event
+
+            subgraph Transaction["Transaction SLA"]
+                %% Policy
+                AlwaysStartTheClock["Whenever Memory Arises<br/>It will carry a Transaction ID<br/>Always and Immediately<br/>Start Transaction Clock"]:::actor-policy
+                AlwaysExpireTransaction["Whenever Transaction Clock Expires<br/>Always and Immediately<br/>Error Out the Save Command"]:::actor-policy
+
+                %% Read Model
+                TransactionIdRoot["Transaction<br/>ID"]:::read-model
+                TransactionIdCancel["Transaction<br/>ID"]:::read-model
+
+                %% Command
+                StartClockCommand["START<br/>Transaction Clock"]:::actor-command
+                CancelTransactionCommand["CANCEL<br/>Transaction"]:::actor-command
+
+                %% Event
+                ClockStartedEvent["Transaction Clock<br/>STARTED"]:::domain-event
+                TransactionCancelledEvent["Transaction<br/>CANCELLED"]:::domain-event
+            end
+
+        end
+        MemDataAdapterGWT --- MemoryDataAdapter
+    end
+    DoomsdayClock(("Doomsday Clock")):::external-system
+
+    subgraph ACL-Core["Port"]
+        DataPort["Data<br/>Port"]
+    end
+
+    subgraph Driver["Outer Adapter Layer"]
+        SQLiteDriver["SQLite<br/>Driver"]:::actor
+        subgraph SQLiteDriverGWT["SQLite Driver — Given-When-Then"]
+            %% Policy 1: Persist (external)
+            AlwaysPersistPolicy["Whenever DTO Arrives<br/>Always and Immediately<br/>Persist it"]:::actor-policy
+            TranslateDtoToSqlCmd["Translate DTO<br/>to Prepared Statement"]:::actor-command
+            DtoIn["DTO<br/>(in)"]:::read-model
+            DtoOut["DTO<br/>Persisted<br/>(out)"]:::read-model
+            DtoErr["DTO<br/>ERROR<br/>(out)"]:::read-model
+            RequestedPersistence["Requested<br/>Persistence"]:::domain-event
+            SqlStatement["Prepared<br/>Statement"]:::read-model
+            %% Transaction ID: domain construct, links input DTO to output Query Result
+            TransactionId["Transaction<br/>ID"]:::read-model
+            %% Policy 2: Receive (internal) -- consolidated, one output model
+            AlwaysReceivePolicy["Whenever SQLite Responds<br/>Always and Immediately<br/>Receive and Translate"]:::actor-policy
+            TranslateSqlToDtoCmd["Translate SQL Result<br/>to DTO"]:::actor-command
+            ReceivedResult["Received<br/>Result"]:::domain-event
+            ReceivedError["Received<br/>Error"]:::domain-event
+        end
+        SQLiteDriverGWT --- SQLiteDriver
+    end
+
+    subgraph Infrastructure["Infrastructure Boundary"]
+        SQLite["SQLite"]:::external-system
+        subgraph SQLiteGWT["SQLite — Given-When-Then"]
+            %% Given: Prepared Statement (input model)
+            PreparedStatement["Prepared<br/>Statement"]:::read-model
+            %% When: Policy → Command
+            AlwaysExecutePolicy["Whenever SQL Statement Arrives<br/>Always and Immediately<br/>Execute it"]:::actor-policy
+            ExecuteSqlCmd["Execute this<br/>SQL Statement"]:::actor-command
+            %% Then (happy): Event → Model
+            PersistedData["Persisted"]:::domain-event
+            SqlRecord["SQL<br/>Record"]:::read-model
+            %% Then (failure): Event → Model
+            FailedPersistence["Failed<br/>Persistence"]:::domain-event
+            SqlError["SQL<br/>Error"]:::read-model
+        end
+        SQLiteGWT --- SQLite
+    end
+
+    %% Hippocampus GWT: Policy → Command → Event → (Model)
+    AlwaysSavePolicy --- MemoryToSave
+    MemoryToSave --> StoreMemoryCmd
+    StoreMemoryCmd --> SavedMemory
+    SavedMemoryObj --- SavedMemory
+    StoreMemoryCmd --> RejectedSave
+    RejectedMemory --- RejectedSave
+
+    %% Archimate: Cook serves Domain; Cook uses Port; Driver serves Port
+    DoomsdayClock --> |"TRIGGERS"| MemDataAdapterGWT
+    MemoryDataAdapter --> |"Serves(Memory Persistence)"| Hippocampus
+    DataPort --> |"Serves(Abstract Data Persistence)"| MemoryDataAdapter
+    SQLiteDriver --> |"Serves(Data Persistence)"| DataPort
+
+    %% Memory-Data Adapter GWT Policy 1: Accept and Translate (external)
+    AlwaysAcceptAndTranslatePolicy --- MemoryIn
+    MemoryIn --> TranslateToDataCmd
+    TranslateToDataCmd --- DtoForPort
+    DtoForPort --> TranslatedMemory
+
+    %% Transaction ID links domain-facing models across the two policies
+    AlwaysTranslateAndConfirmPolicy --- AlwaysCancelTransactionClock
+
+    AlwaysCancelTransactionClock --- TransactionIdCancelClock
+    TransactionIdCancelClock --> CancelClockCommand
+    CancelClockCommand --> TransactionClockCanceledEvent
+
+    AlwaysStartTheClock --- TransactionIdRoot
+    TransactionIdRoot --> StartClockCommand
+    StartClockCommand --> ClockStartedEvent
+
+    AlwaysExpireTransaction --- TransactionIdCancel
+    TransactionIdCancel --> CancelTransactionCommand
+    CancelTransactionCommand --> TransactionCancelledEvent
+
+
+    %% Memory-Data Adapter GWT Policy 2: Translate Back and Confirm (internal)
+    AlwaysTranslateAndConfirmPolicy --- DtoFromPort
+    DtoFromPort --> TranslateToMemoryCmd
+    TranslateToMemoryCmd --- ConfirmedMemory
+    ConfirmedMemory --> TranslatedData
+    TranslateToMemoryCmd --- RejectedMemoryOut
+    RejectedMemoryOut --> TranslatedError
+
+    %% SQLite Driver GWT Policy 1: Policy → Command → (Model) → Event → (Model)
+    AlwaysPersistPolicy --- DtoIn
+    DtoIn--> TranslateDtoToSqlCmd
+    TranslateDtoToSqlCmd  --- SqlStatement
+    SqlStatement --> RequestedPersistence
+
+    %% Transaction ID links domain-facing models across the two policies
+    DtoIn --- TransactionId
+    TransactionId --- DtoOut
+    TransactionId --- DtoErr
+
+    %% Integration command: outer adapter --> infrastructure (through aggregate)
+    SQLiteDriver -.-> |"Access(Query/Command)"| SQLite
+
+    %% SQLite GWT: Policy → Command → (Model) → Event → (Model)
+    AlwaysExecutePolicy --> ExecuteSqlCmd
+    ExecuteSqlCmd --- PreparedStatement
+    PreparedStatement --> PersistedData
+    PersistedData --- SqlRecord
+    PreparedStatement --> FailedPersistence
+    FailedPersistence --- SqlError
+
+    %% SQLite Driver GWT Policy 2: Policy → Command → Event → (Model)
+    TranslateSqlToDtoCmd --- DtoOut
+    DtoOut --> ReceivedResult
+    TranslateSqlToDtoCmd --- DtoErr
+    DtoErr--> ReceivedError
+    AlwaysReceivePolicy  --> TranslateSqlToDtoCmd
+
+    %% Domain events now wired inside Hippocampus GWT

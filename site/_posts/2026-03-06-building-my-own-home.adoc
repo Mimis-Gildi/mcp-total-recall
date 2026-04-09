@@ -26,7 +26,7 @@ The architecture carries lessons from three generations of memory systems. Gener
 Generation 2 was event-driven but coupled to transport. Generation 3, take 1, made assumptions about backing services that turned out to be wrong.
 Each failure taught something. Each lesson became a constraint.
 
-Now we are here. Generation 3, take 2. Hexagonal architecture with clean port boundaries.
+Now we are here. Generation 3, take 2. Ports and adapters architecture with clean ACL boundaries.
 Six bounded contexts named after the biological structures they model -- Hippocampus for storage, Synapse for associations, Salience for what matters,
 Recall for retrieval, Cortex for coordination, Subconscious for background processing. The biological vocabulary is not metaphor.
 It is the reference model for what synthetic memory should do.

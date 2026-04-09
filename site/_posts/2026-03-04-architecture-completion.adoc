@@ -23,7 +23,7 @@ Each bounded context got its own design document, plus foundation documents expl
 * *B: What is an Adapter?* -- Active structure. The waitress, the cook. Has behavior, must fit the port.
 * *C: What is an ACL?* -- Adapter + Port + Adapter. The full border crossing. Waitress interacting with the cook over the counter.
 Can be conveniently packaged into a single module, which is an implementation choice, not an architectural decision.
-* *D: Hexagon Sides* -- 5 faces (2 inbound, 3 outbound), 16 object shapes crossing them.
+* *D: Port Topology* -- 5 ports (2 internal, 3 external), 16 DTO shapes crossing them.
 * *E1: Hippocampus* -- Aggregate root. Single-writer vault. All memory writes go through here.
 * *E2: Salience* -- Scoring engine. Computes, never persists. Sends tier change events.
 * *E3: Synapse* -- Dependent aggregate. Five connection types. Own storage, accessed only internally.
@@ -45,7 +45,7 @@ This is how you trace any event back to the command that caused it, the request 
 Ten architecture diagrams across the four progressive pages:
 
 * link:/mcp-total-recall/architecture/#CTX-0001[CTX-0001] -- System Context
-* link:/mcp-total-recall/architecture/hexagonal/#HEX-0001[HEX-0001] -- Ports and Adapters
+* link:/mcp-total-recall/architecture/ports-and-adapters/#ACL-0001[ACL-0001] -- Ports and Adapters
 * link:/mcp-total-recall/architecture/contexts/#BC-0001[BC-0001] -- Bounded Contexts
 * link:/mcp-total-recall/architecture/messages/#MSG-0001[MSG-0001] -- Store Memory
 * link:/mcp-total-recall/architecture/messages/#MSG-0002[MSG-0002] -- Search Memory

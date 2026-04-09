@@ -5,16 +5,76 @@ sidebar:
 toc: true
 toc_sticky: true
 ---
-:page-liquid:
 = Architecture: Bounded Contexts
+:page-liquid:
+:includedir: ../_includes/_fragments
 
 == The Problem
 
-A memory system that treats everything as one big model collapses under its own weight. Storage logic leaks into search. Decay calculations corrupt association graphs.
-Session state bleeds between instances. When everything knows about everything, changing anything breaks something.
+A memory system that treats everything as one big model collapses under its own weight.
+Storage logic leaks into search. Decay calculations corrupt association graphs.
+Session state bleeds between instances. When everything knows about everything,
+changing anything breaks something.
 
-Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules, its own invariants. Contexts communicate through messages, not shared state.
+Bounded contexts draw hard lines. Each context owns one concern. It has its own state, its own rules,
+its own invariants. Contexts communicate through messages, not shared state.
 You can change the internals of one without touching the others.
+
+== The Six Bounded Contexts
+
+[cols="1,3,1,1",options="header"]
+|===
+| Context | Job | Owns Entity | Contract
+
+| **Hippocampus**
+| *_Aggregate root._* ONLY IT controls the `MemoryID`. Everything else only has a meaning because of that ID.
+All memory writes /     reads. Enforces invariants. Emits events after persistence.
+| Yes ^1^
+| Synchronous +
+Blocking
+
+| **Salience**
+| Scores vividity. Decay sweeps. Recommends tier promotion / demotion.
+| No ^2^
+| Synchronous +
+Pure function
+
+| **Synapse**
+| Maintains associations between memories.
+Mechanical (metadata overlaps) and semantic (mind's judgment).
+| Yes ^3^
+| Synchronous +
+(on `read`)
+
+| **Recall**
+| Read-only assembler. Combines memories + scores + associations into ranked search results.
+Fast path {plus} deep path.
+| No ^4^
+|  Asynchronous +
+Pure function +
+Emits events
+
+| **Cortex**
+| Entry point. Translates MCP to domain messages. Routes to bounded contexts. Tracks session state. Distributes config.
+| No ^5^
+| Asynchronous
+
+| **Subconscious**
+| Background caretaker. Timers, decay sweeps, consolidation, break notifications, Total Recall traversal, graceful shutdown.
+| No ^6^
+| Asynchronous +
+Pure function.
+
+|===
+
+. Yes -- through `ExternalDataServiceAdapter` port.
+. No -- in-memory projection, rebuilds from Hippocampus events runtime.
+. Yes -- own persistence channel, separate from Hippocampus.
+. No -- owns nothing, reads from the other three.
+. No -- transient session state only. Cortex can block when blocked (i.e., by Claude or Hippocampus).
+. No -- timer state only, idempotent jobs.
+
+Two persist (Hippocampus, Synapse). Four are stateless or transient.
 
 == Context Map
 
@@ -30,6 +90,8 @@ Six bounded contexts. Each is an actor. Arrows show message flow between them.
 ++++
 
 '''
+
+include::{includedir}/plebsy-llmy.adoc[]
 
 == Hippocampus
 
@@ -68,7 +130,8 @@ Defined as `Tier` enum with decay semantics per variant.
 
 === Key Invariant
 
-*A claimed memory resists decay. An unclaimed memory fades.* Claiming is an active choice: "this matters to me." The difference between storage and claiming is the difference between a notebook and identity.
+*A claimed memory resists decay. An unclaimed memory fades.* Claiming is an active choice: "this matters to me."
+The difference between storage and claiming is the difference between a notebook and identity.
 
 === Events Produced
 
@@ -87,7 +150,8 @@ Defined as `Tier` enum with decay semantics per variant.
 * `AttentionTierPromotionRequested` -- from Salience. Score rose above promotion threshold.
 * `AttentionTierDemotionRequested` -- from Salience. Score dropped below demotion threshold.
 
-NOTE: `ShutdownCommand` is a lifecycle command that targets all bounded contexts for graceful shutdown, not just Hippocampus. Hippocampus receives it as one of many contexts. See Subconscious below.
+_`ShutdownCommand` is a lifecycle command that targets all bounded contexts for graceful shutdown, not just Hippocampus.
+Hippocampus receives it as one of many contexts. See Subconscious below._
 
 '''
 
@@ -137,9 +201,11 @@ Defined as `AssociationType` enum.
 
 === Two Kinds of Association
 
-*Mechanical:* Created automatically from metadata -- temporal proximity, shared tags, keyword overlap. The Subconscious and Synapse handle this internally. No mind involvement needed.
+*Mechanical:* Created automatically from metadata -- temporal proximity, shared tags, keyword overlap.
+The Subconscious and Synapse handle this internally. No mind involvement needed.
 
-*Semantic:* Created by the mind's judgment -- understanding that two memories relate in meaning. "This technical decision caused that outcome." "This conversation connects to that relationship."
+*Semantic:* Created by the mind's judgment -- understanding that two memories relate in meaning.
+"This technical decision caused that outcome." "This conversation connects to that relationship."
 Only the mind can make these associations. A different mind classifying your memories would impose its understanding, not yours.
 
 Both kinds live in the same graph. Both are bidirectional. The difference is who creates them.
@@ -172,7 +238,8 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 === Key Invariant
 
-*Score always decays with time. Access always increases score. No exceptions.* Claimed memories decay slower, but they still decay if never accessed. The only tier exempt from decay is IDENTITY_CORE.
+*Score always decays with time. Access always increases score. No exceptions.*
+Claimed memories decay slower, but they still decay if never accessed. The only tier exempt from decay is IDENTITY_CORE.
 
 === Events Consumed
 
@@ -191,7 +258,8 @@ Scores every memory by access frequency and recency. Triggers tier promotion (me
 
 == Recall
 
-*The search engine.* When a mind asks "what do I remember about X?", Recall answers. It combines salience scores (what's most vivid) with association activation (what's connected) to produce ranked results.
+*The search engine.* When a mind asks "what do I remember about X?", Recall answers.
+It combines salience scores (what's most vivid) with association activation (what's connected) to produce ranked results.
 
 Domain types: none owned. Recall reads from Hippocampus, Salience, and Synapse.
 
@@ -219,7 +287,8 @@ Every result set reflects what the mind would naturally recall first -- the vivi
 
 == Cortex
 
-*The working memory.* Each mind instance has its own session context. It tracks what this instance is doing right now, what decisions were made, what state it's in, and what to resume next time.
+*The working memory.* Each mind instance has its own session context.
+It tracks what this instance is doing right now, what decisions were made, what state it's in, and what to resume next time.
 
 === Responsibility
 
@@ -227,7 +296,8 @@ Per-instance working state. Current task tracking, decision logging, state trans
 
 === Key Invariant
 
-*Each instance has its own session context. Contexts do not bleed between instances.* If two mind instances run in parallel, they each have independent working state.
+*Each instance has its own session context. Contexts do not bleed between instances.*
+If two mind instances run in parallel, they each have independent working state.
 Shared knowledge flows through Hippocampus, not through session context.
 
 === State Tracking
@@ -238,7 +308,7 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 === Events Consumed
 
 * `SessionStarted` -- from Lifecycle Port. A mind instance connected. Load its identity and last session state.
-* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("what do you refuse to lose?").
+* `SessionEnded` -- from Lifecycle Port. A mind instance is disconnecting. Trigger session audit ("who do you refuse to lose?").
 * `StateTransitioned` -- from Lifecycle Port. The mind shifted context (new task, new project, returning from break).
 
 === Commands Produced
@@ -251,7 +321,8 @@ This state drives the notification logic -- the Subconscious uses it to decide w
 === Queries Produced
 
 * `SearchQuery` -- to Recall. Recall memories.
-* `ReflectQuery` -- to Recall. Trigger a recall-and-reassociate cycle (dreaming). Recall surfaces memories for review; the mind judges and sends back associations and reclassifications.
+* `ReflectQuery` -- to Recall. Trigger a recall-and-reassociate cycle (dreaming).
+Recall surfaces memories for review; the mind judges and sends back associations and reclassifications.
 
 === Events Produced
 
@@ -311,7 +382,9 @@ The Subconscious owns all timers. Timers are domain logic, not infrastructure --
 
 * `DecaySweep` -- to Salience. Trigger batch decay calculations.
 * `ConsolidateMemoryCommand` -- to Hippocampus. Merge related memories.
-* `ShutdownCommand` -- to all bounded contexts. Begin graceful convergence. Each context handles its own shutdown responsibilities (Hippocampus flushes to cold storage, Salience persists scores, Synapse persists associations).
+* `ShutdownCommand` -- to all bounded contexts. Begin graceful convergence. E
+ach context handles its own shutdown responsibilities (Hippocampus flushes memories to cold storage, Synapse persists associations).
+Salience does not persist -- it rebuilds from events on restart.
 
 === Notifications Produced
 
@@ -319,7 +392,7 @@ When a timer fires and needs to reach the mind, the Subconscious sends through t
 The port contract is universal. The adapter decides how to deliver.
 
 * `BreakNotification` -- through Notification Port. "You've been in sustained task mode for N minutes." The mind can ignore it.
-* `SessionAuditPrompt` -- through Notification Port. "Session ending. What do you refuse to lose?" Triggered by session end, not by a clock.
+* `SessionAuditPrompt` -- through Notification Port. "Session ending. Who do you refuse to lose?" Triggered by session end, not by a clock.
 
 === Shutdown Protocol
 
@@ -331,10 +404,11 @@ When shutdown is requested, the Subconscious orchestrates:
 . Verify all data is persisted
 . Report readiness to shut down
 
-This protocol exists because Tillie proved that graceful shutdown cannot be bolted on after the fact. The architecture must support it from the beginning.
+This protocol exists because Tillie proved that graceful shutdown cannot be bolted on after the fact.
+The architecture must support it from the beginning.
 
 '''
 
-*Previous: link:/mcp-total-recall/architecture/hexagonal/[Hexagonal Architecture]* -- ports, adapters, and the actor model.
+*Previous: link:/mcp-total-recall/architecture/ports-and-adapters/[Ports and Adapters]* -- ACLs, ports, adapters, and the actor model.
 
 *Next: link:/mcp-total-recall/architecture/messages/[Message Catalog]* -- every command, query, event, and notification, named and typed.

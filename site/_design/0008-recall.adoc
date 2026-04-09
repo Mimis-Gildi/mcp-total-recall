@@ -2,13 +2,14 @@
 description: "Recall: the read-only assembler. Pulls memories, scores, and connections together at query time. Owns nothing."
 classes: wide
 ---
-:page-liquid:
 = Recall (Stream)
+:page-liquid:
+:includedir: ../_includes/_fragments
 
 Recall assembles search results from three sources. It pulls memories from Hippocampus, scores from Salience, and connections from Synapse.
 It combines them into a ranked, association-weighted response. It owns nothing. It stores nothing. It computes at query time and returns what it found.
 
-This is the fourth bounded context inside the hexagon. The first three own things -- Hippocampus owns memories, Salience maintains scores, Synapse holds connections.
+This is the fourth bounded context inside the domain boundary. The first three own things -- Hippocampus owns memories, Salience maintains scores, Synapse holds connections.
 Recall owns nothing. It reads from all three and assembles.
 
 ++++
@@ -22,13 +23,17 @@ Recall owns nothing. It reads from all three and assembles.
 
 Three inputs from three sources. Two outputs -- one immediate, one ongoing. No persistence channel. Recall is pure assembly.
 
+include::{includedir}/plebsy-llmy.adoc[]
+
 == Remembering
 
 Try to remember the name of that restaurant. The one with the good fish. It was somewhere downtown.
 
-The first fragment comes fast. Downtown. Fish. Your partner mentioned it last week. That's the top-of-mind answer -- the strongest match for "good fish restaurant."
+The first fragment comes fast. Downtown. Fish. Your partner mentioned it last week.
+That's the top-of-mind answer -- the strongest match for "a good fish restaurant."
 
-Then connections fire. Right -- it was the night you talked about the job interview. You were nervous, and the waiter recommended the halibut. The halibut was good.
+Then connections fire. Right -- it was the night you talked about the job interview.
+You were nervous, and the waiter recommended the halibut. The halibut was good.
 That's why you remember the fish.
 
 Then deeper. Wasn't that the same week you got the phone call from your mother? The mood that night -- your partner noticed.
@@ -45,15 +50,17 @@ Recall models this. The fast path returns immediately. The deep path keeps runni
 
 Nothing.
 
-Recall has no data model. No persistence. No backing service. No file cabinet. If Recall restarts, there is nothing to rebuild -- because there was nothing stored.
+Recall has no data model. No persistence. No backing service. No file cabinet.
+If Recall restarts, there is nothing to rebuild -- because there was nothing stored.
 
 Recall maintains a local copy of current salience scores, built from AttentionScoreChanged events.
-This is a convenience cache, not owned state. If the cache is lost, the next AttentionScoreChanged events rebuild it.
+This is a convenience cache, not any kind of domain state kept or persisted.
+If the cache is lost, the next AttentionScoreChanged events rebuild it.
 The scores belong to Salience. Recall just keeps a copy close at hand so it doesn't have to ask at search time.
 
 == Where It Reads
 
-Recall assembles from three sources. Each source answers a different question.
+Recall assembles data from three sources. Each source answers a different question.
 
 [cols="1,1,2",options="header"]
 |===
@@ -74,7 +81,8 @@ Recall assembles from three sources. Each source answers a different question.
 
 None of these sources know about each other. Hippocampus doesn't know about scores.
 Salience doesn't know about associations. Synapse doesn't know about search terms.
-Recall is the only place where all three come together. Every event Recall consumes carries a `TransactionContext` that tracks its origin (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
+Recall is the only place where all three come together.
+Every event Recall consumes carries a `TransactionContext` that tracks its origin (link:/mcp-total-recall/design/0011-transaction-context/[Design F]).
 
 == The Fast Path
 
@@ -99,26 +107,28 @@ Synapse's direct associations are one hop. Memory A connects to B, C, D. But B c
 The graph goes deeper. Following those threads takes time, and the mind shouldn't wait for the full traversal before getting an answer.
 
 So Recall does both. The fast path returns immediately with direct matches and one-hop associations.
-The deep path continues in the background -- Synapse keeps traversing, and as it finds deeper connections, Recall pushes them through NotificationPort.
+The deep path continues in the background -- Synapse keeps traversing, and as it finds deeper connections, Recall pushes them through the NotificationPort.
 
 The mind gets the halibut restaurant right away. Five minutes later, a notification:
 "That dinner also connects to the conversation about your mother, which connects to the decision you made about the job."
 The deep path surfaced something the fast path couldn't reach in time.
 
-Not every search needs the deep path. A simple lookup -- "what did I store yesterday?" -- returns on the fast path and stops.
+Not every search needs a deep path. A simple lookup -- "what did I store yesterday?" -- returns on the fast path and stops.
 The deep path fires when the query touches memories with rich association networks, where following the threads is likely to surface something useful.
 
 == The CQRS Split
 
-Recall is the read side of a split that runs through the entire hexagon.
+Recall is the read side of a split that runs through the entire domain boundary.
 
 Hippocampus handles writes -- StoreMemoryCommand, ClaimMemoryCommand, ReclassifyMemoryCommand. Those change state.
 Recall handles reads -- SearchQuery, ReflectQuery. Those don't change anything.
-They assemble from current state and return a view (a Read Model Set).
+They assemble from the current state and return a view (a Read Model Set).
 
-ReflectQuery is unique: it returns a reflection set (candidates for review), but then the mind enters a conversation loop -- issuing AssociateCommand and ReclassifyMemoryCommand for each memory it judges. The query phase is Recall's job. The judgment phase is the mind's. See MSG-0006.
+ReflectQuery is unique: it returns a reflection set (candidates for review),
+but then the mind enters a conversation loop -- issuing AssociateCommand and ReclassifyMemoryCommand for each memory it judges.
+The query phase is Recall's job. The judgment phase is the mind's. See MSG-0006.
 
-The split means Recall can be optimized independently from writes. Different data structures, different access patterns, different scaling characteristics.
+The split means Recall can be optimized independently. Different data structures, different access patterns, different scaling characteristics.
 Hippocampus needs durability and consistency. Recall needs speed and associative reach. They serve different masters.
 
 The communication between them is event-driven. Hippocampus emits MemoryRetrieved. Salience emits AttentionScoreChanged.
@@ -150,7 +160,7 @@ This is the same pattern as all the other bounded contexts. Cortex is the portal
 | Match, rank, enrich with direct associations. Return immediately.
 
 | Deep path
-| Background association traversal. Results push through NotificationPort as found.
+| Background association traversal. Results push through the NotificationPort as found.
 
 | Key invariant
 | Never writes. Never changes state. Pure read, pure assembly.
@@ -166,4 +176,4 @@ This is the same pattern as all the other bounded contexts. Cortex is the portal
 
 *Previous: link:/mcp-total-recall/design/0007-synapse/[Synapse]* -- the relationship layer that connects memories to each other.
 
-*Next: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the portal where the outside world meets the hexagon.
+*Next: link:/mcp-total-recall/design/0009-cortex/[Cortex]* -- the portal where the outside world meets the domain boundary.
