@@ -1,6 +1,6 @@
 [versions]
 #noinspection UnusedVersionCatalogEntry
-kotlin = "2.3.10"
+kotlin = "2.3.21"
 
 # MCP
 mcp = "0.11.0"
