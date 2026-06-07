@@ -4,6 +4,14 @@ run-name: "Introspect Runner on ${{ github.repository }} by ${{ github.actor }} 
 on:
   workflow_dispatch:
   push:
+    branches-ignore:
+      - 'renovate/**'
+      - 'dependabot/**'
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   canary:
