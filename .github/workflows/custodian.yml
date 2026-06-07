@@ -1,4 +1,4 @@
-name: Workflow Custodian
+name: Custodian
 run-name: "Pruned Old Runs on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
 
 on:
