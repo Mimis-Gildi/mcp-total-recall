@@ -1,4 +1,4 @@
-name: Label Pull Request
+name: Labeler
 run-name: "Labeled Pull Request examining content on ${{ github.actor }} with ${{ github.event_name }}"
 
 on:

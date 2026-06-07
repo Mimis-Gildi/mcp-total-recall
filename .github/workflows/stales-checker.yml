@@ -1,4 +1,4 @@
-name: "Stales Labeler"
+name: Expirer
 run-name: "Stale Labeling ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
 
 on:
