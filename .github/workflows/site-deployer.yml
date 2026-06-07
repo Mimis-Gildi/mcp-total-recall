@@ -1,10 +1,12 @@
-name: Publish Site
+name: Publisher
 run-name: "Publish on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'site/**'
   workflow_dispatch:
 
 jobs:

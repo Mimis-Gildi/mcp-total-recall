@@ -1,0 +1,40 @@
+name: Workflow Custodian
+run-name: "Pruned Old Runs on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
+
+on:
+  push:
+    branches-ignore:
+      - 'renovate/**'
+      - 'dependabot/**'
+  pull_request:
+    types:
+      - synchronize
+  workflow_dispatch:
+    inputs:
+      keep-last:
+        description: "Number of recent items to keep per workflow/key"
+        type: string
+        required: false
+        default: '1'
+      stale-minutes:
+        description: "Grace window in minutes"
+        type: string
+        required: false
+        default: '4'
+      dry-run:
+        description: "Log only, do not delete"
+        type: string
+        required: false
+        default: 'false'
+
+defaults:
+  run:
+    shell: zsh -l {0}
+
+jobs:
+  prune:
+    uses: Mimis-Gildi/fluffle/.github/workflows/actions-prune.yml@main
+    with:
+      dry-run: ${{ inputs.dry-run || 'false' }}
+      keep-last: ${{ inputs.keep-last || '2' }}
+      stale-minutes: ${{ inputs.stale-minutes || '5' }}

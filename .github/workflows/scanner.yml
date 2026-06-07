@@ -1,20 +1,21 @@
-name: Security Scan by Qodana
+name: Scanner
 run-name: "Executed Security Scan by Qodana on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
 
 on:
   push:
     branches:
       - main
-      - 9-24-jekyll-site-build-and-deploy-workflows
   workflow_dispatch:
   workflow_call:
   pull_request:
     types:
-      - opened
-      - reopened
       - closed
   schedule:
     - cron: '19 15 3 * *'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
