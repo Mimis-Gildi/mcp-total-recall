@@ -1,10 +1,9 @@
-name: Increment Version
+name: Incrementer
 run-name: "Incremented Version on ${{ github.repository }} by ${{ github.actor }} with ${{ github.event_name }} (Attempt ${{ github.run_attempt }})"
 
 on:
   push:
     branches-ignore:
-      - release
       - 'releases/**'
       - 'renovate/**'
       - 'dependabot/**'
@@ -16,6 +15,18 @@ on:
       - opened
       - reopened
   workflow_dispatch:
+
+defaults:
+  run:
+    shell: zsh -l {0}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: incrementer-${{ github.head_ref || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   increment:
