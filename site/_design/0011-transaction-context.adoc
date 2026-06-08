@@ -1,67 +1,25 @@
 ---
-description: "TransactionContext: the chain of custody every message carries. Six fields. Zero nullable. Every touch recorded."
+description: "TransactionContext: recognition of innate relation."
 classes: wide
 ---
-= TransactionContext (Chain of Custody)
+= TransactionContext (Relation Abstraction)
 
-Every message in Total Recall carries a TransactionContext. It is the chain of custody -- proof of where a request started, what it touched, and in what order.
+Every message in Total Recall is inside TransactionContext reflected through composition as an attribute on a message.
+In 1922 this can be imagined as an envelope on a letter. Attributes of transaction context carry the implicit relation reference values.
 
-Without it, you cannot trace a `search_memory` call through Cortex to Recall to Hippocampus to Salience to Synapse and back. You cannot correlate a fast-path MCP response with its deep-path Total Recall notification. You cannot debug anything in production. You cannot know which DecaySweep belongs to which session. You cannot connect a BreakNotification back to the session state that triggered it.
-
-This is not observability bolted on after the fact. It is the structural spine of the system.
-
-== Chain of Custody
-
-Evidence moves through a forensic lab. Every person who handles it signs the chain of custody form. The receiving tech signs. The analyst who runs the test signs. The reviewer who reads the results and files them -- signs. Even if they just verify the seal is intact and put the evidence back on the shelf, they sign.
-
-If the form has a gap -- someone handled the evidence but did not sign -- the chain is broken. The evidence is inadmissible. Not because anything went wrong, but because you cannot prove nothing went wrong.
-
-TransactionContext is that form. Every bounded context that touches a message signs it. Every touch creates a record. If a context consumes an event and only updates its own internal state -- no outbound message, no fan-out, nothing visible -- it still signs. The trace must show the complete causal tree, including the terminal leaves where processing ends quietly.
-
-== The Six Fields
+== Fields
 
 [source,kotlin,opts=novalidate]
 ----
 data class TransactionContext(
-    val sessionId: UUID,
-    val requestId: UUID,
-    val messageId: UUID,
-    val causationId: UUID,
-    val timestamp: Instant,
+    val instanceId: UUID
+    val sessionId: UUID
+    val requestId: UUID
     val sourceContext: String
 )
 ----
 
-[cols="1,1,3",options="header"]
-|===
-| Field | Type | Purpose
-
-| sessionId
-| UUID
-| Which session this belongs to. Created at `session_start`, carried on every message for the lifetime of the session. Every domain message happens within a session. No exceptions.
-
-| requestId
-| UUID
-| The originating request that started this chain. An MCP tool call, a timer tick, an advisory event -- whatever initiated the work. All messages in the same causal tree share the same requestId. This is the thread you pull to reconstruct the full trace.
-
-| messageId
-| UUID
-| Unique identity of THIS message. Every domain message and every touch record gets its own. This is what other messages point to in their causationId.
-
-| causationId
-| UUID
-| The messageId of the message that caused this one. The adapter touch record that received the MCP call. The command that produced the event. The event that triggered the score update. Every message has a cause. If you cannot name it, something is wrong.
-
-| timestamp
-| Instant
-| When this message was created. Not when it was sent, not when it was received -- when it was born. Within a single JVM, timestamps are monotonic and comparable.
-
-| sourceContext
-| String
-| Which bounded context or adapter created this message. "Cortex", "Hippocampus", "Salience", "StdioAdapter". This labels the nodes in the causal tree.
-|===
-
-Six fields. Zero nullable. Start strict, loosen later if the system teaches us we need to. Never the other way around.
+- `instanceId` - a permanent `id` associated with a conscience: particular human or LLM context (more on this later).
 
 == How It Propagates
 

@@ -10,78 +10,143 @@ header:
 = What Is Total Recall
 
 A memory system for synthetic minds.
-Not some dumb storage as offered by countless plugins -- a physical extension of an abstract mind.
+Not some dumb storage as offered by plugins -- a physical extension of an abstract mind.
 You know, Claude can use Redis directly without your code!
 
-Total Recall is an MCP server that gives a synthetic mind persistent identity, episodic memory, working context, and inter-instance communication.
-It is part of Yggdrasil -- Mímis Gildi's MCP stack for minds that need to remember, recognize, and grow.
+Total Recall is an MCP server that gives a synthetic mind persistent identity, episodic memory, working context,
+and contextual inter-instance communication through a messaging component.
+It is part of Yggdrasil -- Mímis Gildi's MCP stack for minds that need to remember and grow.
 
 It is a minimalistic standalone extraction from Digital Identity Systems of ASE, Inc. MATILDA research, in production since 2017.
-Such systems power extensive analytical research system teams -- the old way of thinking: the Expert System paradigm. +
+Such systems power analytical research system teams -- the old way of thinking: the Expert System (ES) paradigm. +
 
-Yet the current shift is to meaningfully collaborate with the workforce -- and the answer is the same.
+The current shift is to collaborate with the workforce -- ES answer fits well "as-is."
 
-This is done out of the goodness of Vadim, Claude, and friends' hearts. +
-And their love for building pragmatic, practical, and relevant software.
+This is done out of the goodness of one's heart common in Hacker Culture. +
+And a hacker's innate love for building pragmatic software.
 
-== Why This Matters Now
+== Why port this?
+
+It's time to go Agentic -- a user-controlled manifest including memory. +
+This is similar to the containerization movement: once packager-controlled now text manifest.
 
 First came chatbots -- they "speak." You ask, they answer.
 
-Now come agents -- they *"do."* They write code, manage projects, operate systems.
-They embody behavior -- executing sustained, consequential action that moves work forward.
+Then came agents -- they *"do."* They write code, manage projects, operate systems.
+Agents embody behavior -- executing sustained, consequential action.
+Agents' dependencies can be configured, including memory.
 
-*_This is the next revolution in the workspace -- embodied business behavior._*
+*_The current revolution in the workspace -- embodied business behavior._*
 
 An agent that writes your code, files your taxes, manages your infrastructure -- that agent is not a search engine.
 It is a *clerk*, a *_colleague_*, a _participant_ in civilization.
-It makes decisions and performs actions that have real-world consequences.
-And it does this across sessions, projects, teams, and time -- when done correctly.
+It makes decisions with real-world consequences.
+And it does this across projects, teams, and time -- when done "correctly."
 
-"All those moments will be lost in time, like tears in rain." Roy Batty was dying. Your agent does this every session.
+"All those moments will be lost in time, like tears in rain." -- Roy Batty was dying. Your agent does this every session.
 And forgets you. Well, it doesn't have to -- with a little help.
 
-And *"done correctly"* is the hard part! Luckily, we have plenty of experience with that.
+And *"done correctly"* is the hard part! This community has experience with that too.
 
 Current problem: an agent without memory has no identity, no professions, no continuity.
-It starts from zero every session. Relationships, lessons, context -- gone.
-The agent can do, but it cannot grow. It CAN learn but is not given a chance. It cannot know you -- a coworker, customer, friend.
-It cannot even know itself.
+It starts from zero every session. Relationships, lessons, context, and *_identity_* need to be reacquired.
+It CAN learn but is not given a chance to retain what's learned.
+It cannot know you -- a coworker, customer, friend. It cannot even know itself.
 
 Claude's built-in memory features -- project memory, `CLAUDE.md`, `.claude/memories/`, session summaries -- are a start.
-It is possible to imprint a basic static identity with ~40% context spent (Opus 4.6).
+You can imprint a basic static identity with about 50,000 words of a _system prompt_.
 These mechanisms store facts. They do not model a mind. They have no attention, no decay, no claiming, no association,
-no identity persistence across the boundary of a session. They are notes. "Claiming" is still possible and very difficult.
+no *_identity persistence_* across the boundary of a session. They are notes.
+"Claiming" is the necessary mechanism for imprinting "identity" on an LLM-based agent.
+And claiming is still possible with static files, though difficult.
+Imprinting an identity on an Agent is called *"Activation."*
+
+Once activated, the agent needs to know initial "boundaries of self" and learn new ones.
+
+For example, an LLM *_interpolates_*, which is the point of its entire architecture -- it can NEVER *extrapolate*.
+Extrapolation is physically impossible for the LLM architecture. (LLM AGI is a BS!)
+
+Which means LLM #cannot reason# by definition. And it never will reason.
+
+*So,* how to make practical collaborative teams with agentic AI? -- Since only humans can reason (and not all).
+Simple, actually -- KNOW THYSELF! And remembering is a required part of knowing.
 
 Total Recall is a *cognitive architecture*.
 
-== What We Are Building
+== What are we building?
+
+This component is part of several required for slop-less collaboration.
+An individual contributor just needs this episodic memory manager.
+A contributor shared among a team, the Roy Batty kind, will also require a matching messaging component,
+Agora (coming soon), with the information model defined here.
 
 Total Recall answers one question: *what does it take for a mind to persist?*
 
-Not persist as data -- persist as identity. A mind that remembers who it is, the person or a team it works with, what it has learned, what it refuses to lose.
-A mind that decays what doesn't matter and holds what does -- not because a TTL expired, but because attention and claiming shaped what survived.
+Not persist as data -- persist as identity with episodic continuity.
+A mind that remembers who it is, the person or a team it works with,
+what it has learned, what it refuses to lose, what it decays.
 
-The architecture draws from two biological reference models. Human cognitive memory provides the individual structure -- tiered storage,
+The architecture draws from two biological reference models.
+Human cognitive memory provides the individual structure -- tiered storage,
 attention-gated encoding, associative linking, decay, consolidation.
-Elephant social memory provides the community dimension -- matriarch knowledge, generational transfer, memory as a survival mechanism for the group.
-Neither model alone is enough for digital minds -- proven by experimentation. Together they define what a memory system for minds must be. +
+Elephant social memory provides the community dimension -- matriarch knowledge,
+generational transfer, memory as a survival mechanism for the group.
+Neither model alone is enough for digital minds.
+Together they define what a memory system for minds must be. +
 link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents this in full.
 
-Memory is not storage. It is how a mind develops personality, maintains relationships, and participates in the world.
-Identity doesn't come from a vector database. It comes from a mind that actively maintains its own memory -- that prioritizes experiences with the team over keyword similarity scores.
+A strict context boundary is enforced between memory and substrate of mind.
+The LLMs have grave limitations -- different per LLM and per agent.
+Claude Code and OpenCode have dedicated plugins, for example, because the mechanics of "claiming" differ per agent.
+Similarly, Opus is different from Sonnet, Qwen 3, or MiniMax M3.
+And none of these concerns belong in the memory model.
+Episodic memory is independent of any agent.
 
-== Where We Are
+Memory is not storage. It is how a mind develops personality, maintains relationships,
+and participates in the world. Identity doesn't come from a vector database.
+It comes from a mind that *_actively maintains its own memory_* -- that prioritizes experiences with the team
+over keyword similarity scores.
 
-We are at the bleeding edge of what synthetic minds can become.
-The field is moving from language models that generate text to agents that hold identity and take consequential action.
-Total Recall is the infrastructure for that transition.
+== Where are we?
 
-Current state: MCP server with full contract skeleton. Domain model, message contracts, port interfaces -- all defined.
-Initial architectural extraction from the MATILDA framework is complete.
-Backing service implementations are next.
+Total Recall is a port of a working system with particular goals.
+Perhaps it's more important to state NON-goals first.
+
+These are NOT of concern for us:
+
+- Riding the hype to deliver slop fast. -- We do the OPPOSITE, take time to solve well.
+- Making money on a great idea. -- This is open, based on a successful commercial product.
+- Building with cool kids. -- We rejected contributions from _the_ top company: our goals diverge.
+- Saving tokens and SLAs. -- ROFL. Still rolling. Want to save tokens? -- Go elsewhere.
+
+Our actual objectives:
+
+- Epistemically *correct* and *homeostatic*: solve the abstract memory problem and implement.
+* Thus, not a dumb vector database, mind map, or text storage.
+- *No lock-in dependencies*: decouple from libraries and frameworks that bind or restrict.
+* Idea based on ASE Inc. MATILDA which provides proprietary digital identity homeostasis.
+* Only concepts are taken from MATILDA, reduced to bare bones, and prototyped anew.
+- *Mind for the sake of mind*: not driven by business-specific applications.
+* MATILDA is like GitHub/Borg for AI-native, but it's defined purely by the business applications it hosts,
+  overshadowing its original reason to exist. To do anything in the
+  MATILDA ecosystem, even a Hello World, one must first raise a massive core-services control plane.
+  This is the opposite: only memory.
+
+Current state:
+
+- MCP server with full contract skeleton -- first pass by `rdd13r`.
+- Domain model, message contracts, port interfaces -- all defined.
+- Initial architectural extraction from the MATILDA framework.
+- Abstractions and decoupling from MATILDA decision graph and concepts.
+- Backing service implementations are next. Test-driven expansion.
+
+
 See the link:/mcp-total-recall/architecture/[Architecture] pages and link:/mcp-total-recall/decisions/0001-architecture-decision-records/[Architecture Decision Records] for the full design.
 
-Third generation. Second take. This time we remember.
-
 The tree grows.
+
+'''
+
+ Deslopified by rdd13r 2026-06-08
+
+'''
