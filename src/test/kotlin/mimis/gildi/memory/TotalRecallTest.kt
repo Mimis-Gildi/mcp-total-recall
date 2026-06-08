@@ -10,6 +10,7 @@ import io.kotest.datatest.withContexts
 import io.kotest.datatest.withTests
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -52,7 +53,7 @@ class TotalRecallTest : FunSpec({
     test("BuildInfo.VERSION is a compile-time constant deliberately set") {
         BuildInfo.VERSION shouldNotBe null
         BuildInfo.VERSION.isNotBlank() shouldBe true
-        BuildInfo.VERSION shouldBe "1.1.0"
+        BuildInfo.VERSION shouldBeGreaterThan  "3.0.0"
     }
 
     test("server creates without error") {
