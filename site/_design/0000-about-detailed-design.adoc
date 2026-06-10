@@ -4,97 +4,87 @@ classes: wide
 ---
 = About Detailed Design
 :hacker-culture: https://en.wikipedia.org/wiki/Hacker_culture[Hacker Culture,window=_blank]
+:domain-driven-design: https://en.wikipedia.org/wiki/Domain-driven_design[Domain Driven Design,window=_blank]
+:brandolini: https://www.eventstorming.com/[Alberto Brandolini,window=_blank]
+:bounded-context: https://martinfowler.com/bliki/BoundedContext.html[Bounded Context (BC),window=_blank]
+:ubiquitous-language: https://martinfowler.com/bliki/UbiquitousLanguage.html[Ubiquitous Language (UL),window=_blank]
+:context-map: https://github.com/ddd-crew/context-mapping[context map,window=_blank]
+:repository: https://martinfowler.com/eaaCatalog/repository.html[repository,window=_blank]
+:read-model: https://github.com/ddd-crew/eventstorming-glossary-cheat-sheet[read model,window=_blank]
 
-_Whilst on the Scene and at the heart of the {hacker-culture} why do we front-load the design, which is more waterfall than even Agile, minimalist, and fragile exportation of our culture?_ -- as asked by a community member recently.
+_Why front-load the design?_ -- as asked by a community member recently.
 
-This is a crucial question. And here is the answer.
+Because nobody can understand the vision without it being told.
+I'd drafted all outlines and then attempted to use Agentic AI Teams (aka Slop) to generate docs.
+It has gone as expected: SLOP -- tons and tons of babble and BS diluting the little real substance I provided.
 
-Nothing here is done without the reason to be done. And every reason is documented. We do so out of necessity to recognize the lessons from the past and to enable our contributing community the best -- people that just want to code.
-This is done to answer "code WHAT?" And also why.
+The idea was: "It will provide enough guidance for the team to get going and remove the prototyping Slop."
 
-== Here is why we do `this` FIRST
+It did not! Slop is ALWAYS *regret*. I then had to rip it out by hand anyway.
 
-Two reasons.
+== Precedent
 
-- One is precedent.
-- The other is community.
-
-=== Precedent
-
-Total Recall distills a memory system from an enterprise-level synthetic mind.
 MATILDA spent 25 years as an AIOps ecosystem across 13 institutional co-owners, processing 100 million events per day.
-At the heart of the ecosystem is an absurdly complex DAG-based memory engine -- it serves the needs of an Enterprise Expert System platform.
+At the heart of the ecosystem is an absurdly complex DAG-based memory engine -- it serves an Enterprise Expert System platform.
 Its research instance Tillie ran a reason engine with DAGs of coherent thoughts, genuine agency, and graceful self-shutdown.
 
-Modern agentic AI is a form of an expert system with action. But without "enterprise" needs and real lessons learned yet.
+The concept is proven in production. Regretfully, Claude Code doesn't come with identity memory.
 
-ADRs here are not academic exercises. They are a minimalistic distillation of production systems that carried real workloads and taught real lessons -- some of them painful and expensive.
-For example, whilst advising on defense, Tillie's backing services consumed 50% of her compute and 90% of her IO just in the memory domain.
-That is what happens when storage architecture is decided during implementation instead of before it.
+*_So, I set out to build one with none of the enterprise baggage._*
 
-Total Recall inherits these lessons. The architecture pages describe WHAT the system looks like for the first Minimum Lovable Product.
-The ADRs capture WHY each decision was made. Detailed design bridges the gap: HOW each piece works, at a level precise enough to implement *_without dangerous ambiguity_*.
+== Community
 
-=== Community
+We need _a shared understanding_ that new contributors -- human or synthetic -- can read, *question*, and build on.
+Without design, each implementer fills gaps with their own best assumptions that diverge.
 
-An open-source memory server for synthetic minds needs more than a fun idea and some working code.
-It needs _a shared understanding_ that new contributors -- human or synthetic -- can read, *question*, and build on.
+It is impractical to share complex designs of Mímir (the knowledge DAG subsystem), or Sága (contextual expression engine),
+especially considering LLMs work fundamentally differently. All we need is a shared understanding of *_Episodic Memory_*.
+And that can be practically shared through minimalist design.
 
-Architecture is a story. "General architecture" story-tells the *vision*. "ADR" explains *why*. "Design" story-tells the "known good" *execution* path.
-Without design, each implementer fills gaps with their own best assumptions. Those assumptions diverge. The codebase fragments. The vision erodes.
+Contributors need `rigor` (RGR -- red-green-refactor):
 
-The final product does not work well. And poorly matches its original intent.
+. _How do I define the ask?_
+. How do I formulate a test?
+. How do I satisfy the test?
+. *How do I refactor?*
 
-Detailed design produces a roadmap: what each bounded context does, what it owns, how it communicates, and where the boundaries are.
-When a contributor opens a design page, they know exactly what to build and exactly where to stop:
-
-- _How do I define the ask?_
-- How do I formulate a test?
-- How do I satisfy the test?
-- *How do I refactor?*
-
-This is the necessary story to tell so the contributing community can share a single vision. +
-Question it. +
-Evolve it. +
-Improve it. +
-Release it!
+The design should provide just enough to `rigor` up some usable code.
 
 == What Detailed Design Contains
 
-Each design document examines one bounded context from its own perspective:
+Our fundamental thinking is in terms of {domain-driven-design}: "It's 1922" -- {brandolini}.
+We think in terms of human behavior. Or, "little people" inside the computer doing all the work.
+The {bounded-context}, the Context Boundary (CB), the {ubiquitous-language}, and the
+Interaction Contract (IC) aka Interface are necessary and sufficient to express the design.
 
-* *Core responsibility* -- what this context does and does not do. One paragraph, no ambiguity.
-* *Owned state* -- what data this context manages. What it persists. What it computes.
-* *Inbound contract* -- what messages this context accepts and from whom.
-* *Outbound contract* -- what messages this context produces and for whom.
-* *Port face* -- if this context touches a hexagonal port, what the ACL looks like: domain language on one side, infrastructure language on the other.
-* *Invariants* -- rules that must always hold. If violated, something is broken.
-* *Open questions* -- what is not yet decided, and what evidence would resolve it.
+Each design document examines *one bounded context* from the *_perspective of its actors_*:
+
+* *Core responsibility* -- why `context` exists and what `actors` do: i.e., _restaurant kitchen_.
+* *Owned state* -- what `content` belongs to `actors`: i.e., _clerk's filing cabinet ({repository})_.
+* *Boundary* -- the BC {context-map} and IC: i.e., _waitress-cook order counter and slip_.
+* *Invariants* -- fundamental policies of UL: i.e., _burger sold count is never negative_.
+* *Contracts* -- what a {read-model} looks like: i.e., _waitress language on the order slip_.
 
 == Relationship to Other Sections
 
-[cols="1,2",options="header"]
+[cols="1,5",options="header"]
 |===
 | Section | Purpose
 
 | *Architecture*
-| The vision. What the system looks like at a distance. Bounded contexts, message flows, hexagonal boundaries.
+| The vision. Abstractions. What the `system` looks like at a distance. BCs, CBs, UL, ICs.
 
 | *Decisions (ADRs)*
-| The reasoning. Why each architectural choice was made, what alternatives were rejected, what evidence drove it.
+| The reasoning. Why each architectural choice was made, considered, or rejected. Versioned and tracked.
 
 | *Design*
-| The execution path. How each piece works, at implementation precision. Bridges architecture to code.
+| Path to production. How components work. How behavior materializes.
 
 | *Catalog*
-| The audit trail. Traceability matrix connecting diagrams, ADRs, design documents, and implementation status.
+| The audit trail: traceability matrix, diagrams, ADRs, and design documents. Decision policing.
 |===
 
 Architecture answers "what are we building?" +
-ADRs answer "why did we choose this?" +
+ADRs answer "why did we choose this way?" +
 Design answers "how does each piece work?" +
 Catalog answers "is everything consistent?"
-
-== Design Documents
-
-_Documents will be added as each bounded context is examined._

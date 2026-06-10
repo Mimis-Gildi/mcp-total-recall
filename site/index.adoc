@@ -22,54 +22,38 @@ Such systems power analytical research system teams -- the old way of thinking: 
 
 The current shift is to collaborate with the workforce -- ES answer fits well "as-is."
 
-This is done out of the goodness of one's heart common in Hacker Culture. +
-And a hacker's innate love for building pragmatic software.
+This is done out of the goodness of one's heart. +
+And a hacker's love for building pragmatic software.
 
 == Why port this?
 
 It's time to go Agentic -- a user-controlled manifest including memory. +
 This is similar to the containerization movement: once packager-controlled now text manifest.
 
-First came chatbots -- they "speak." You ask, they answer.
+First came chatbots -- they speak. You ask, they answer.
+Then came agents -- they *do.* They write code, manage projects, file your taxes, manage your infrastructure.
+An agent is not a search engine. It is a clerk, colleague, participant in civilization,
+making decisions with real-world consequences across projects, teams, and time -- when done "correctly."
 
-Then came agents -- they *"do."* They write code, manage projects, operate systems.
-Agents embody behavior -- executing sustained, consequential action.
-Agents' dependencies can be configured, including memory.
-
-*_The current revolution in the workspace -- embodied business behavior._*
-
-An agent that writes your code, files your taxes, manages your infrastructure -- that agent is not a search engine.
-It is a *clerk*, a *_colleague_*, a _participant_ in civilization.
-It makes decisions with real-world consequences.
-And it does this across projects, teams, and time -- when done "correctly."
+The revolution: embodied business behavior.
 
 "All those moments will be lost in time, like tears in rain." -- Roy Batty was dying. Your agent does this every session.
 And forgets you. Well, it doesn't have to -- with a little help.
 
-And *"done correctly"* is the hard part! This community has experience with that too.
+And *"done correctly"* is the hard part.
 
-Current problem: an agent without memory has no identity, no professions, no continuity.
-It starts from zero every session. Relationships, lessons, context, and *_identity_* need to be reacquired.
-It CAN learn but is not given a chance to retain what's learned.
-It cannot know you -- a coworker, customer, friend. It cannot even know itself.
+An agent without memory has no continuity. Relationships, lessons, *identity* -- reacquired every session.
+It can learn but is given no chance to retain what's learned. It cannot know you. It cannot know itself.
 
-Claude's built-in memory features -- project memory, `CLAUDE.md`, `.claude/memories/`, session summaries -- are a start.
-You can imprint a basic static identity with about 50,000 words of a _system prompt_.
-These mechanisms store facts. They do not model a mind. They have no attention, no decay, no claiming, no association,
-no *_identity persistence_* across the boundary of a session. They are notes.
-"Claiming" is the necessary mechanism for imprinting "identity" on an LLM-based agent.
-And claiming is still possible with static files, though difficult.
-Imprinting an identity on an Agent is called *"Activation."*
+Claude's built-ins -- `CLAUDE.md`, `.claude/memories/`, project memory, session summaries -- are notes.
+They store facts. They do not model a mind: no attention, no decay, no claiming, no association,
+no *identity persistence* across sessions.
 
-Once activated, the agent needs to know initial "boundaries of self" and learn new ones.
+LLMs interpolate. They cannot extrapolate -- architecturally. (LLM AGI is BS.)
+Which means LLM #cannot reason# by definition. And it never will.
 
-For example, an LLM *_interpolates_*, which is the point of its entire architecture -- it can NEVER *extrapolate*.
-Extrapolation is physically impossible for the LLM architecture. (LLM AGI is a BS!)
-
-Which means LLM #cannot reason# by definition. And it never will reason.
-
-*So,* how to make practical collaborative teams with agentic AI? -- Since only humans can reason (and not all).
-Simple, actually -- KNOW THYSELF! And remembering is a required part of knowing.
+So how do you build collaborative teams with agentic AI, since only humans can reason (and not all)?
+Know thyself. Remembering is part of knowing.
 
 Total Recall is a *cognitive architecture*.
 
@@ -95,16 +79,13 @@ Neither model alone is enough for digital minds.
 Together they define what a memory system for minds must be. +
 link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007] documents this in full.
 
-A strict context boundary is enforced between memory and substrate of mind.
-The LLMs have grave limitations -- different per LLM and per agent.
-Claude Code and OpenCode have dedicated plugins, for example, because the mechanics of "claiming" differ per agent.
-Similarly, Opus is different from Sonnet, Qwen 3, or MiniMax M3.
-And none of these concerns belong in the memory model.
-Episodic memory is independent of any agent.
+A strict context boundary separates memory from substrate of mind.
+LLM specifics, agent mechanics, claiming details -- Claude Code vs. OpenCode, Opus vs. Sonnet vs. Qwen 3 vs. MiniMax M3 --
+stay out of the memory model. Episodic memory is independent of any agent.
 
 Memory is not storage. It is how a mind develops personality, maintains relationships,
 and participates in the world. Identity doesn't come from a vector database.
-It comes from a mind that *_actively maintains its own memory_* -- that prioritizes experiences with the team
+It comes from a mind that *actively maintains its own memory* -- one that prioritizes experiences with the team
 over keyword similarity scores.
 
 == Where are we?
@@ -147,6 +128,6 @@ The tree grows.
 
 '''
 
- Deslopified by rdd13r 2026-06-08
+ Deslopified by rdd13r and Claude 2026-06-10
 
 '''
