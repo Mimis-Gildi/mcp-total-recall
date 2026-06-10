@@ -7,31 +7,79 @@ sidebar:
   nav: architecture
 ---
 = Delivery Roadmap
+:gh-backlog: https://github.com/Mimis-Gildi/mcp-total-recall/issues[GitHub backlog, window=_blank]
+:gh-project: https://github.com/orgs/Mimis-Gildi/projects/6[Yggdrasil project board, window=_blank]
+:adr-0001: link:/mcp-total-recall/decisions/0001-architecture-decision-records/[ADR-0001 -- Architecture Decision Records, window=_blank]
+:adr-0002: link:/mcp-total-recall/decisions/0002-hexagonal-architecture/[ADR-0002 -- Hexagonal Architecture, window=_blank]
+:adr-0003: link:/mcp-total-recall/decisions/0003-stdio-as-primary-transport/[ADR-0003 -- `stdio` as Primary Transport, window=_blank]
+:adr-0004: link:/mcp-total-recall/decisions/0004-resilient-storage-array/[ADR-0004 -- Resilient Storage Array, window=_blank]
+:adr-0005: link:/mcp-total-recall/decisions/0005-memory-as-aggregate-root/[ADR-0005 -- Memory as Aggregate Root, window=_blank]
+:adr-0006: link:/mcp-total-recall/decisions/0006-events-and-commands-as-message-types/[ADR-0006 -- Events and Commands as Message Types, window=_blank]
+:adr-0007: link:/mcp-total-recall/decisions/0007-biological-memory-as-reference-model/[ADR-0007 -- Biological Memory as Reference Model, window=_blank]
+:adr-0008: link:/mcp-total-recall/decisions/0008-sqlite-as-primary-backing-service/[ADR-0008 -- SQLite as Primary Backing Service, window=_blank]
+:ctx-hippocampus: link:/mcp-total-recall/design/0005-tiered-memory/[Hippocampus (Vault), window=_blank]
+:ctx-salience: link:/mcp-total-recall/design/0006-salience/[Salience (Focus), window=_blank]
+:ctx-synapse: link:/mcp-total-recall/design/0007-synapse/[Synapse (Matrix), window=_blank]
+:ctx-recall: link:/mcp-total-recall/design/0008-recall/[Recall (Stream), window=_blank]
+:ctx-cortex: link:/mcp-total-recall/design/0009-cortex/[Cortex (Inception), window=_blank]
+:ctx-subconscious: link:/mcp-total-recall/design/0010-subconscious/[Subconscious (Dream), window=_blank]
 
-Each major version delivers a usable increment. Minor versions for work within a phase. Patch for fixes.
+Issues link to the {gh-backlog}.
+The {gh-project} tracks execution.
 
-Issues link to the https://github.com/Mimis-Gildi/mcp-total-recall/issues[GitHub backlog, window=_blank].
-The https://github.com/orgs/Mimis-Gildi/projects/6[Yggdrasil project board, window=_blank] tracks execution.
+'''
 
 
-== Phase 0: Architecture -- v1.0.0 (current)
 
-_Adequately defined architecture. Hexagonal boundaries, bounded contexts, message contracts, 12 design documents, 16 diagrams, 8 ADRs, full traceability catalog. The foundation everything else builds on._
 
-This is where we are. The architecture phase produced:
+== Phase 1: Real Architect Review and Ops -- v2.0.0-v5.x.x
 
-* Hexagonal architecture with 5 port faces (2 inbound, 3 outbound)
-* 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
-* 29 message variants (7 commands, 2 queries, 17 events, 3 notifications) with TransactionContext
+ToDo: document this after fixing architecture.
+
+*IMPORTANT:* *_Cockburn's Hexagonal Architecture (HA) is NOT USED here (antipattern)!_*
+
+"Hexagon-Like" is a widely useful paradigm that segregates +
+a) shape-face per single concern; +
+b) plants an Anticorruption Layer (ACL) component on a face. +
+The most improper part of HA, also known as Ports and Adapters, is input vs. output ports. +
+_We acknowledge Alistair's contribution for an attempt to decouple business. -- *that's all*!_
+
+#*Each side of the Total Recall Bounded Contexts faces a single other Bounded Context.*#
+
+== Phase 0: Architecture -- v1.0.0 (Slop Prototyping)
+
+*IMPORTANT:* This is when Slop gets confused by *#Bounded-Context-Facing-Ports#* and WRONGFULLY
+introduced Cockburn's Hexagonal Architecture into documentation (ignorant interpolation at work).
+
+.Adequately defined architecture. _DDD boundaries, bounded contexts, message contracts, 12 design documents, 16 diagrams, 8 ADRs, full traceability catalog._
+[%collapsible]
+====
+{nbsp}
+
+Enumerated list:
+
+* DDD architecture with 5 Bounded Context Faces
+* 6 bounded contexts: {ctx-hippocampus}, {ctx-salience}, {ctx-synapse}, {ctx-recall}, {ctx-cortex}, {ctx-subconscious}
+* 29 message variants, (7 commands, 2 queries, 17 events, 3 notifications) with TransactionContext
 * Domain model: Memory, Tier, Association, SalienceScore, WorkingMode, SessionEndCause
 * MCP server on stdio with 9 teapot-stub tools
-* ADR-0001 through ADR-0008
+* {adr-0001}
+* {adr-0002}
+* {adr-0003}
+* {adr-0004}
+* {adr-0005}
+* {adr-0006}
+* {adr-0007}
+* {adr-0008}
+====
 
-No persistence. No real logic behind the stubs. The architecture is the deliverable.
+The draft architecture is the core deliverable. `rdd13r` modeled and Slop narrated (poorly, with fabrications).
 
-== Phase 1: Walking Skeleton -- v2.0.0
+We will ALWAYS refer to a concept such as "face or side of hexagon" as *BOUNDARY*.
 
-_Everything a contributor needs before writing a single line of domain logic. Test fixtures, CI/CD, observability, packaging, publishing. If you can't test it, build it, measure it, and ship it -- you can't build on it._
+== Phase 2: Operational Skeleton -- v7.0.0{plus}
+
+_Everything a contributor needs before writing ao90 single line of domain logic. Test fixtures, CI/CD, observability, packaging, publishing. If you can't test it, build it, measure it, and ship it -- you can't build on it._
 
 [cols="1,6,2", options="header"]
 |===
@@ -197,7 +245,7 @@ Depends on: Phase 3
 
 == Phase 5: Rich Recall -- v6.0.0
 
-_Search that thinks. Filters, session context, association-activated retrieval, reflection. After this phase, memories surface when they are needed, not just when asked for._
+_Search that thinks. Filters, session context, association-activated retrieval, reflection. After this phase, memories surface when needed, not just when asked for._
 
 Depends on: Phase 4
 
@@ -228,7 +276,7 @@ Depends on: Phase 4
 
 == Phase 6: Notifications -- v7.0.0
 
-_Memory that speaks up. Session prompts, break reminders, stale alerts. After this phase, Total Recall is proactive -- it reaches out instead of waiting to be asked._
+_Memory that speaks up. Session prompts, break reminders, stale alerts. After this phase, Total Recall reaches out instead of waiting to be asked._
 
 Depends on: Phase 5
 
