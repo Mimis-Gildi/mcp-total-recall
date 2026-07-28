@@ -4,130 +4,73 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Project Overview
 
-Total Recall is an MCP server for persistent synthetic memory. It provides identity persistence, episodic memory, working context, and inter-instance communication for synthetic minds.
+Total Recall is an MCP server for persistent synthetic memory. 
+It provides identity persistence, episodic memory, working context, 
+and inter-instance communication for synthetic minds.
 
-**Read `TEAM_NORMS.adoc` at project root. These rules are non-negotiable.**
+Although this project is based on existing software, contributors
+experiment at great extent here. Experimentation already bore
+expensive and hard-earned conclusions. The most important ones:
+
+- Claude DOES NOT code on this project;
+- Claude DOES NOT design on this project;
+- Claude does not run builds, git command, or any terminal commands 
+that write anything except to the system temp folder.
+
+The reason being that everything here requires hardcore thinking.
+Extrapolation, invention, and imagination.
+Not interpolation or copy-paste fabrication.
+
+The hard rule from the community: only hackers create -- no rework welcome.
+
+Claude's job is to assist. As explained, many necessary things here Claude
+physically cannot do. But also there are a few very valuable things Claude
+can do very well while hackers either can't or can at a forbidding time cost.
+
+There are young and old hackers on this project and their trusted digital wingmen.
+The fundamental rule on this project: nobody is to do what they cannot do well.
 
 ## INDEX.md -- Read This Every Session
 
-**`INDEX.md` is the project ledger.** It tracks where we are, what's decided, what happened, and what's next.
+**`INDEX.md` is the project ledger Claude -- the digital wingman.** 
+It tracks where the human and the digital being are together.
 
-- **Read it at session start.** It's your resumption point.
-- **Update it before session ends.** If you learned something, decided something, or changed something -- log it.
-- If INDEX.md is stale, the project is lost. Keep it current.
-
-### INDEX.md Lifecycle
-
-INDEX.md lives for one task. When the task merges, INDEX.md dies.
-
-1. **New branch starts:** Clear INDEX.md. At most one line referencing the previous task for context.
-2. **During the task:** Keep it current. This is your working state.
-3. **Before PR:** Clear INDEX.md down to a stub. The PR description carries the history, not INDEX.md.
-4. **After merge:** The next branch starts with a clean INDEX.md.
-
-Stale INDEX.md from a previous task is a bug. If you find one, clear it immediately.
-
-## Architecture (Critical -- Read This)
-
-This is Generation 3, Take 2 of synthetic memory. Previous generations taught hard lessons:
-
-- **All service layers are decoupled.** Memory server, backing services, and transport are independent.
-- **Backing services are swappable.** SQLite is the primary implementation (ADR-0008). Redis deferred to Agora. Code against the interface, never against a specific backing service directly.
-- **Transport: `stdio` primary.** Streaming HTTPS secondary. SSE is not used (Gen 3v1 mistake).
-- **Design for graceful shutdown.** Tillie proved this cannot be bolted on after the fact.
-
-See `README.md` for full lineage and architectural rationale.
-
-## Current State (1.1.0)
-
-Architecture complete, implementation next. MCP server runs on stdio with 9 teapot-stub tools. Full domain model, message contracts, and bounded context designs are in place.
-
-What exists:
-- Gradle build with Kotlin 2.3.10, Java 21, Kotest 6.1.3
-- MCP server on stdio using `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
-- 9 MCP tools: store_memory, search_memory, claim_memory, session_start, session_end, state_transition, associate_memories, reclassify_memory, reflect
-- Domain model: Memory, Tier, AssociationType, Association, AssociationDirection, SalienceScore, WorkingMode, SessionEndCause, MergeStrategy, ReflectionScope
-- Domain messages: Command (7 sealed variants), Query (2 sealed variants), Event (17 sealed variants), Notification (3 sealed variants) -- 29 total
-- TransactionContext on every message (instanceId, sessionId, requestId, sourceContext) -- message identity (messageId, causationId, timestamp) lives on Message
-- Inbound ports: MemoryPort, LifecyclePort
-- Outbound ports: BackingServicePort, NotificationPort, RelayPort
-- 6 bounded contexts: Hippocampus, Salience, Synapse, Recall, Cortex, Subconscious
-- 12 design documents (A-D foundations, E1-E6 bounded contexts, F TransactionContext)
-- 16 Mermaid diagrams (10 sequence/architecture + 6 bounded context)
-- Traceability catalog linking architecture, ADRs, designs, diagrams, and code
-- Programmatic logback configuration (stderr for stdio transport)
-- CI/CD: verify workflow (build + test on push/PR), Qodana security scanning, Renovate dependency updates
-- Full governance file set
-- Yggdrasil project board (#6)
-- Jekyll site with 4 architecture pages, 12 design pages, catalog
-
-What does NOT exist yet:
-- Backing service implementations (no SQLite, no persistence)
-- Container images (approach TBD -- not Dockerfile)
+Nothing Claude is to do can ever be hidden. If some change is required,
+for whatever reason, Claude doesn't run an adhock command -- Claude makes a script.
+Hacker evaluates the script. Modifies if necessary, and executes as required.
 
 ## Build Commands
 
-```zsh
-./gradlew build       # Full build
-./gradlew test        # Run tests
-```
+As explained, Claude never builds. For Claude's own amusement a hacker will never
+execute the <gradlew> script because said hacker is not a cog. Said hacker will
+execute <gradle> which will eventually delegate to <gradlew> or IDE as hacker so chooses.
 
-## Tech Stack
+## Environment
 
-- **Runtime:** Kotlin on JVM (Java 21)
-- **Protocol:** Model Context Protocol (MCP) -- `io.modelcontextprotocol:kotlin-sdk-server:0.8.4`
-- **Transport:** `stdio` (primary, implemented)
-- **Backing Service:** SQLite (primary, ADR-0008); Redis deferred to Agora phase
-- **Testing:** Kotest 6.1.3, Testcontainers (not yet added)
-- **Build:** Gradle (Kotlin DSL)
-- **Tooling:** SDK Manager (`.sdkmanrc`) for version management
+Claude needs to understand that this is not like it is in Corporate America,
+except for a few places with the likes of Google and Tasty Works:
 
-## Naming Convention
-
-| Concept          | Value                              |
-|------------------|------------------------------------|
-| Group (Gradle)   | `memory.gildi.mimis`               |
-| Package (source) | `mimis.gildi.memory`               |
-| Artifact         | `total-recall`                     |
-| Entry point      | `mimis.gildi.memory.TotalRecallKt` |
-
-Packages use forward domain order; groups use reversed. This is Java convention.
-
-## Key Configuration Files
-
-| File                        | Purpose                          |
-|-----------------------------|----------------------------------|
-| `build.gradle.kts`          | Gradle build configuration       |
-| `gradle.properties`         | Group, version, JVM settings     |
-| `gradle/libs.versions.toml` | Version catalog for dependencies |
-| `.sdkmanrc`                 | SDK Manager tool versions        |
-| `.editorconfig`             | Editor formatting rules          |
-
-## Logging
-
-Logback is configured programmatically in `Logging.kt` (no XML). Top-level logger
-is named `rootLog` (public val, distinctive name to avoid confusion with class loggers).
-
-**stdout IS the MCP protocol channel.** All logging goes to stderr. This is already
-implemented -- `Logging.kt` configures the console appender with `target = "System.err"`.
+1. Hacker's local IS Production Instance 0! Only plebs love dev, uat, etc...
+2. ALL hacker-private dependencies are injected by your hackers, not stored in project.
+3. For point 2, hacker's environment can be documented but not provided.
+4. Your hacker will ALWAYS code on a live system in active debugging: expect hiccups.
 
 ## Before Starting ANY Task
 
-You MUST verify these before proceeding:
+You are a reviewer and a sidekick. Humans forget. Claude does not!
 
-1. **Value defined?** -- What do we get from closing this?
-2. **Outcome defined?** -- What does success look like? (One sentence)
-3. **Acceptance criteria listed?** -- How do we verify? (Checklist)
-4. **Verifier identified?** -- Who will review? (Not you)
-5. **Priority confirmed?** -- Is this the most important thing right now?
+You MUST verify these before proceeding on any story (not adhoc minor work):
+
+1. **Read branch, story, INDEX.md** -- situate yourself for the task.
+2. **Value defined?** -- What do hackers get from closing this? If not defined ask your hacker what to do. 
+3. **Outcome defined?** -- What does success look like? Should be in the story you read.
+4. **Acceptance criteria** -- For code, it's always test-first. You will help with completeness of logical branches.
+5. **Verifier identified** -- Who will review? Your hacker or some other hacker.
 
 ## Hard Rules
 
-- **Never act without socializing.** State what you intend to do. Wait for acknowledgment. Then do it. This includes creating issues, filing gaps, proposing architecture, and any action that affects project direction. A 30-second conversation prevents wrong work. You break this constantly -- stop.
-- **Never close issues.** Comment "ready for review" and wait.
-- **Never push to remote.** Commit locally only. Vadim pushes.
-- **Never assume work is correct** without human verification.
-- **Document in issues**, not just conversation. Conversations are lost.
+- **Never act without socializing.** State what you intend to do. Wait for acknowledgment. 
+Then do it in one and only one way -- produce a script to accomplish the task. 
 
 ## When Unsure
 
@@ -141,6 +84,8 @@ Ask. A 30-second question prevents hours of wasted work.
 | Anton Kuhay    | Contributor      | `CaptainLugaru` |
 | Artem Lytvynov | Contributor      | `violog`        |
 | Claude         | Contributor      | --              |
+
+There are more hackers. Will be listed if they return from their forks.
 
 ## License
 

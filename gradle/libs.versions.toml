@@ -1,5 +1,4 @@
 [versions]
-#noinspection UnusedVersionCatalogEntry
 kotlin = "2.4.10"
 
 # MCP
@@ -15,28 +14,18 @@ kotlinLogging = "8.0.4"
 slf4j = "2.0.18"
 
 [plugins]
-#noinspection UnusedVersionCatalogEntry
 kotest = { id = "io.kotest", version.ref = "kotest" }
 
 [libraries]
-# MCP
-#noinspection UnusedVersionCatalogEntry
 mcp-server = { module = "io.modelcontextprotocol:kotlin-sdk-server", version.ref = "mcp" }
-#noinspection UnusedVersionCatalogEntry
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 
 # Logging
-#noinspection UnusedVersionCatalogEntry
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-#noinspection UnusedVersionCatalogEntry
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-#noinspection UnusedVersionCatalogEntry
 kotlin-logging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlinLogging" }
 
 # Testing
-#noinspection UnusedVersionCatalogEntry
 kotest-framework = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
-#noinspection UnusedVersionCatalogEntry
 kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
-#noinspection UnusedVersionCatalogEntry
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
