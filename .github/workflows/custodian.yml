@@ -5,7 +5,6 @@ on:
   push:
     branches-ignore:
       - 'renovate/**'
-      - 'dependabot/**'
   pull_request:
     types:
       - synchronize
@@ -37,4 +36,4 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run || 'false' }}
       keep-last: ${{ inputs.keep-last || '2' }}
-      stale-minutes: ${{ inputs.stale-minutes || '5' }}
+      stale-minutes: ${{ inputs.stale-minutes || '3' }}

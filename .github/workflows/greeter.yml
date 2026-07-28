@@ -17,5 +17,3 @@ on:
 jobs:
   greeting:
     uses: Mimis-Gildi/fluffle/.github/workflows/new-user-greeting.yml@main
-    with:
-      test_run: true
