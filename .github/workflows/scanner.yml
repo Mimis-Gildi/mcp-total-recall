@@ -34,7 +34,7 @@ jobs:
     steps:
 
       - name: Checkout full repository
-        uses: actions/checkout@v6.1.0
+        uses: actions/checkout@v7.0.1
         timeout-minutes: 3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
