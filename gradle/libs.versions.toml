@@ -10,9 +10,9 @@ coroutines = "1.11.0"
 kotest = "6.2.3"
 
 # Logging
-logback = "1.6.1"
+logback = "1.6.3"
 kotlinLogging = "8.0.4"
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 
 [plugins]
 #noinspection UnusedVersionCatalogEntry
